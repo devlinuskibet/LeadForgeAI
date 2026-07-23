@@ -8,6 +8,7 @@ from services.scraping_service import ScrapingService
 from services.ai_service import AIService
 from services.context_builder import ContextBuilder
 import json
+from datetime import datetime, timezone
 
 class SupervisorService:
     def __init__(self, db: Session):
@@ -21,6 +22,8 @@ class SupervisorService:
         try:
             job.status = "in_progress"
             job.current_step = "analyzing"
+            job.started_at = datetime.now(timezone.utc)
+            job.logs = ["Workflow started", "Analyzing website..."]
             self.db.commit()
 
             company = self.db.query(Company).filter(Company.id == job.entity_id).first()
@@ -54,10 +57,19 @@ class SupervisorService:
                 analysis.inferred_problems = response_json.get("inferred_problems", [])
                 analysis.recommended_solutions = response_json.get("recommended_solutions", [])
                 analysis.status = "completed"
+                
+                logs = list(job.logs) if job.logs else []
+                logs.append("✓ Website analyzed")
+                logs.append("✓ Problems identified")
+                logs.append("✓ Solutions recommended")
+                job.logs = logs
                 self.db.commit()
 
             # Step 2: Generate Outreach Draft
             job.current_step = "drafting"
+            logs = list(job.logs) if job.logs else []
+            logs.append("Drafting email...")
+            job.logs = logs
             self.db.commit()
 
             outreach_prompt = self.db.query(AIPrompt).filter(AIPrompt.feature == "email_outreach").first()
@@ -84,14 +96,32 @@ class SupervisorService:
                     status="draft"
                 )
                 self.db.add(draft_email)
+                
+                logs = list(job.logs) if job.logs else []
+                logs.append("✓ Email drafted")
+                logs.append("✓ Draft saved")
+                job.logs = logs
                 self.db.commit()
 
             job.status = "completed"
             job.current_step = "done"
+            job.completed_at = datetime.now(timezone.utc)
+            
+            if job.started_at and job.completed_at:
+                duration = (job.completed_at - job.started_at).total_seconds()
+                logs = list(job.logs) if job.logs else []
+                logs.append(f"Completed in {int(duration)} seconds")
+                job.logs = logs
+                
             self.db.commit()
 
         except Exception as e:
             self.db.rollback()
             job.status = "failed"
             job.error_message = str(e)
+            job.completed_at = datetime.now(timezone.utc)
+            
+            logs = list(job.logs) if job.logs else []
+            logs.append(f"❌ Error: {str(e)}")
+            job.logs = logs
             self.db.commit()

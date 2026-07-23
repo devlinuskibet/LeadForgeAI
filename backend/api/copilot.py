@@ -170,7 +170,20 @@ def get_job_status(job_id: uuid.UUID, db: Session = Depends(get_db)):
         "id": str(job.id),
         "status": job.status,
         "current_step": job.current_step,
-        "error_message": job.error_message
+        "error_message": job.error_message,
+        "logs": job.logs
     }
+
+@router.get("/company/{company_id}/jobs")
+def get_company_jobs(company_id: uuid.UUID, db: Session = Depends(get_db)):
+    jobs = db.query(OrchestrationJob).filter(OrchestrationJob.entity_id == company_id).order_by(OrchestrationJob.created_at.desc()).all()
+    return [{
+        "id": str(job.id),
+        "workflow_type": job.workflow_type,
+        "status": job.status,
+        "logs": job.logs,
+        "started_at": job.started_at.isoformat() if job.started_at else None,
+        "completed_at": job.completed_at.isoformat() if job.completed_at else None
+    } for job in jobs]
 
 

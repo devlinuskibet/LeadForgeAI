@@ -14,6 +14,7 @@ export default function CompanyDetails() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[]} | null>(null);
+  const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
 
   // Dummy data representing the Workspace view for Phase 1B
   const company = {
@@ -30,9 +31,23 @@ export default function CompanyDetails() {
     ]
   };
 
+  const fetchWorkflowHistory = async () => {
+    try {
+      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/jobs`);
+      if (res.ok) {
+        const data = await res.json();
+        setWorkflowHistory(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
+      fetchWorkflowHistory();
     }, 500);
   }, [id]);
 
@@ -49,12 +64,12 @@ export default function CompanyDetails() {
             
             if (data.status === "completed") {
               setAutoProspecting(false);
-              // Trigger a fetch to insights so UI updates
               handleAnalyze(); 
-              // And switch tab to emails
+              fetchWorkflowHistory();
               setActiveTab("emails");
             } else if (data.status === "failed") {
               setAutoProspecting(false);
+              fetchWorkflowHistory();
               console.error("Auto-prospect failed:", data.error_message);
             }
           } else {
@@ -62,6 +77,7 @@ export default function CompanyDetails() {
              setAutoProspecting(false);
              setJobStatus("completed");
              handleAnalyze();
+             fetchWorkflowHistory();
              setActiveTab("emails");
           }
         } catch (e) {
@@ -316,6 +332,31 @@ export default function CompanyDetails() {
               </div>
             </div>
           </div>
+
+          {workflowHistory.length > 0 && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-900 mb-4">Workflow History</h3>
+              <div className="space-y-4">
+                {workflowHistory.map((job) => (
+                  <div key={job.id} className="border-l-2 border-purple-200 pl-4 py-1">
+                    <p className="text-sm font-medium text-gray-900 flex items-center justify-between mb-2">
+                      Auto-Prospect Workflow
+                      <span className="text-xs font-normal text-gray-500">
+                        {new Date(job.started_at).toLocaleDateString()}
+                      </span>
+                    </p>
+                    <ul className="space-y-1">
+                      {job.logs?.map((log: string, i: number) => (
+                        <li key={i} className={`text-xs ${log.startsWith('✓') ? 'text-green-600' : 'text-gray-600'}`}>
+                          {log}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Unified Timeline */}
