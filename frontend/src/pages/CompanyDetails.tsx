@@ -1,40 +1,56 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Building2, Phone, Mail, Globe, MapPin, Tag, Briefcase, Search } from "lucide-react";
+import { ArrowLeft, Building2, Globe, MapPin, Search, Bot, Briefcase, Activity, PlayCircle, Target, BrainCircuit, ExternalLink, CalendarDays, CheckCircle2, ChevronRight, XCircle, Tag } from 'lucide-react';
+import { PreviewEmailModal } from '../components/PreviewEmailModal';
 import TimelineWidget from "../widgets/TimelineWidget";
 
 export default function CompanyDetails() {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("timeline");
-
-  const [generating, setGenerating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState('insights');
   const [autoProspecting, setAutoProspecting] = useState(false);
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<string | null>(null);
+  
+  // Real data state
+  const [company, setCompany] = useState<any>(null);
   const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[], opportunity_score?: number, sales_coach_advice?: string} | null>(null);
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
+  
+  // Email states
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
-  // Dummy data representing the Workspace view for Phase 1B
-  const company = {
-    id: id,
-    name: "Acme Corp",
-    website: "www.acme.com",
-    status: "ACTIVE",
-    pipeline_stage: "Qualified",
-    industry: "Software",
-    description: "Acme Corp provides leading software solutions for CRM.",
-    tags: [
-      { id: 1, name: "High Priority", color: "bg-red-100 text-red-700" },
-      { id: 2, name: "AI Interested", color: "bg-purple-100 text-purple-700" }
-    ]
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<string | null>(null);
+
+  const fetchCompanyData = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/companies/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCompany(data);
+        if (data.insights) {
+          setInsights(data.insights);
+        }
+        if (data.draft_email) {
+          setEmailSubject(data.draft_email.subject);
+          setEmailBody(data.draft_email.body);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchWorkflowHistory = async () => {
     try {
-      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/jobs`);
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/jobs`);
       if (res.ok) {
         const data = await res.json();
         setWorkflowHistory(data);
@@ -45,10 +61,8 @@ export default function CompanyDetails() {
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-      fetchWorkflowHistory();
-    }, 500);
+    fetchCompanyData();
+    fetchWorkflowHistory();
   }, [id]);
 
   // Polling for OrchestrationJob
@@ -64,7 +78,7 @@ export default function CompanyDetails() {
             
             if (data.status === "completed") {
               setAutoProspecting(false);
-              handleAnalyze(); 
+              fetchCompanyData(); // Re-fetch to get new insights and email
               fetchWorkflowHistory();
               setActiveTab("emails");
             } else if (data.status === "failed") {
@@ -72,13 +86,6 @@ export default function CompanyDetails() {
               fetchWorkflowHistory();
               console.error("Auto-prospect failed:", data.error_message);
             }
-          } else {
-             // Mock polling success if db disconnected
-             setAutoProspecting(false);
-             setJobStatus("completed");
-             handleAnalyze();
-             fetchWorkflowHistory();
-             setActiveTab("emails");
           }
         } catch (e) {
           console.error(e);
@@ -167,7 +174,51 @@ export default function CompanyDetails() {
     }
   };
 
-  if (loading) {
+  const handleSaveDraft = async () => {
+    if (!company?.draft_email) return;
+    setIsSavingDraft(true);
+    try {
+      const res = await fetch(`http://localhost:8000/api/emails/${company.draft_email.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: emailSubject, body: emailBody })
+      });
+      if (!res.ok) throw new Error("Failed to save draft");
+      fetchCompanyData(); // refresh to get updated data
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!company?.draft_email) return;
+    setIsSending(true);
+    try {
+      // First save any pending edits
+      await fetch(`http://localhost:8000/api/emails/${company.draft_email.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: emailSubject, body: emailBody })
+      });
+
+      const res = await fetch(`http://localhost:8000/api/emails/${company.draft_email.id}/send`, {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error("Failed to send email");
+      
+      setIsPreviewOpen(false);
+      fetchCompanyData(); // refresh
+      fetchWorkflowHistory(); // refresh timeline
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  if (loading || !company) {
     return <div className="p-8 text-gray-500">Loading company details...</div>;
   }
 
@@ -471,41 +522,96 @@ export default function CompanyDetails() {
           </div>
           
           <div className="flex-1 overflow-hidden bg-gray-50/30">
-            {activeTab === "timeline" && <TimelineWidget />}
+            {activeTab === "timeline" && <TimelineWidget companyId={id as string} refreshTrigger={workflowHistory.length} />}
             {activeTab === "notes" && <div className="p-6 flex flex-col h-full"><textarea className="w-full h-32 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4" placeholder="Write a note..."></textarea><button className="self-end bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">Save Note</button></div>}
             {activeTab === "emails" && (
               <div className="p-6 h-full overflow-y-auto">
-                <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-4">
-                  <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">[AI Draft] Opportunity with Acme</h4>
-                      <p className="text-sm text-gray-500 mt-1">To: John Doe • From: copilot@leadforge.ai</p>
+                {company.draft_email ? (
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-4">
+                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
+                      <div>
+                        {company.draft_email.status !== 'DRAFT' ? (
+                          <>
+                            <h4 className="font-semibold text-gray-900">{company.draft_email.subject}</h4>
+                            <p className="text-sm text-gray-500 mt-1">From: copilot@leadforge.ai</p>
+                          </>
+                        ) : (
+                          <>
+                            <input 
+                              type="text"
+                              value={emailSubject}
+                              onChange={(e) => setEmailSubject(e.target.value)}
+                              className="font-semibold text-gray-900 bg-transparent border-none p-0 focus:ring-0 w-full outline-none"
+                              placeholder="Subject"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">From: copilot@leadforge.ai</p>
+                          </>
+                        )}
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-md border ${company.draft_email.status !== 'DRAFT' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
+                        {company.draft_email.status !== 'DRAFT' && company.draft_email.sent_at ? `✓ Sent on ${new Date(company.draft_email.sent_at).toLocaleDateString()}` : company.draft_email.status}
+                      </span>
                     </div>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-md border border-yellow-200">
-                      Draft
-                    </span>
+                    <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap font-sans">
+                      {company.draft_email.status !== 'DRAFT' ? (
+                        company.draft_email.body
+                      ) : (
+                        <textarea
+                          value={emailBody}
+                          onChange={(e) => setEmailBody(e.target.value)}
+                          className="w-full h-64 bg-transparent border-none p-0 focus:ring-0 resize-y outline-none"
+                        />
+                      )}
+                    </div>
+                    <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 rounded-b-xl">
+                      {company.draft_email.status === 'DRAFT' && (
+                        <>
+                          <button 
+                            onClick={handleSaveDraft}
+                            disabled={isSavingDraft}
+                            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            {isSavingDraft ? 'Saving...' : 'Save Draft'}
+                          </button>
+                          <button 
+                            onClick={() => setIsPreviewOpen(true)}
+                            className="px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg shadow-sm hover:bg-purple-100"
+                          >
+                            Preview Email
+                          </button>
+                          <button 
+                            onClick={handleSendEmail}
+                            disabled={isSending}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {isSending ? 'Sending...' : 'Send Email'}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap font-sans">
-                    Hi John,
-
-I noticed that Acme Corp has been exploring CRM software upgrades. Our platform, LeadForgeAI, provides a highly customized solution tailored to software companies looking to streamline their sales pipelines with embedded AI.
-
-Would you have 10 minutes next week to discuss how we could integrate our tools with your current setup?
-
-Best regards,
-LeadForgeAI Copilot
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    No emails generated yet.
                   </div>
-                  <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 rounded-b-xl">
-                    <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50">Discard</button>
-                    <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700">Send Email</button>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
+          </div>
         </div>
       </div>
-      </div>
+      
+      <PreviewEmailModal 
+        isOpen={isPreviewOpen} 
+        onClose={() => setIsPreviewOpen(false)} 
+        email={company?.draft_email ? {
+          subject: emailSubject,
+          body: emailBody,
+          recipients: ["john.doe@example.com"], // Hardcoded for preview visual since it's mock
+          sender: "copilot@leadforge.ai"
+        } : null} 
+      />
     </div>
   );
 }

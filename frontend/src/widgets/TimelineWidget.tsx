@@ -1,41 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Edit3, Briefcase, Phone, MessageSquare } from "lucide-react";
 
 interface TimelineEvent {
   id: string;
-  type: "email" | "note" | "deal" | "call" | "status";
+  type: string;
   title: string;
   description?: string;
   date: string;
   user: string;
 }
 
-export default function TimelineWidget() {
-  const [events] = useState<TimelineEvent[]>([
-    {
-      id: "1",
-      type: "email",
-      title: "Email Sent: Follow up on proposal",
-      description: "Hi John, just following up on the proposal we sent yesterday.",
-      date: "Today, 10:30 AM",
-      user: "System Admin"
-    },
-    {
-      id: "2",
-      type: "note",
-      title: "Note Added",
-      description: "Client is very interested in the AI features. Wants a demo next week.",
-      date: "Yesterday, 2:15 PM",
-      user: "System Admin"
-    },
-    {
-      id: "3",
-      type: "status",
-      title: "Stage Changed to Qualified",
-      date: "Oct 12, 11:00 AM",
-      user: "System Admin"
+export default function TimelineWidget({ companyId, refreshTrigger }: { companyId: string, refreshTrigger?: number }) {
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/api/activities/entity/company/${companyId}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Map DB Activity to TimelineEvent
+          const mapped = data.map((act: any) => ({
+            id: act.id,
+            type: act.type.toLowerCase(), // e.g., 'email', 'note'
+            title: act.title,
+            description: act.description,
+            // Format to something like "Oct 12, 11:00 AM" (mocked for now, will use created_at when we have it in response)
+            date: "Recently", 
+            user: "System Admin"
+          }));
+          setEvents(mapped);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    if (companyId) {
+      fetchActivities();
     }
-  ]);
+  }, [companyId, refreshTrigger]);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -52,6 +55,12 @@ export default function TimelineWidget() {
       <div className="flex-1 p-6 overflow-y-auto">
         <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
           
+          {events.length === 0 && (
+            <div className="text-center text-gray-500 py-8 relative z-10 bg-white">
+              No activity recorded yet.
+            </div>
+          )}
+
           {events.map((event) => (
             <div key={event.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-50 text-gray-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
@@ -63,7 +72,7 @@ export default function TimelineWidget() {
                   <span className="text-xs text-gray-500">{event.date}</span>
                 </div>
                 {event.description && (
-                  <p className="text-sm text-gray-600 mt-2">{event.description}</p>
+                  <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{event.description}</p>
                 )}
                 <div className="mt-3 text-xs text-gray-400 font-medium">
                   By {event.user}

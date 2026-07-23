@@ -17,16 +17,21 @@ export default function CompaniesList() {
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    // In a real app, this would fetch from /api/companies
-    // Mocking for now since backend might not have seed data yet if Postgres isn't running
-    setTimeout(() => {
-      setCompanies([
-        { id: "1", name: "Acme Corp", website: "acme.com", status: "ACTIVE", opportunity_score: 94, estimated_value: 3200 },
-        { id: "2", name: "Global Tech", website: "global.tech", status: "ACTIVE", opportunity_score: 71, estimated_value: 1100 },
-        { id: "3", name: "Stark Industries", website: "stark.com", status: "PAUSED", opportunity_score: 35, estimated_value: 400 },
-      ] as any);
-      setLoading(false);
-    }, 500);
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/companies/");
+        if (response.ok) {
+          const data = await response.json();
+          setCompanies(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch companies:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCompanies();
   }, []);
 
   const handleBulkImport = async () => {
