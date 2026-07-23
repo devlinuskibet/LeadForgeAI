@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from api import auth, companies, contacts, activities, notes
+from api import auth, companies, contacts, activities, notes, ai_management
 from core.errors import AppException, app_exception_handler, http_exception_handler, generic_exception_handler
 
 app = FastAPI(title="LeadForgeAI API", version="0.1.0")
@@ -27,3 +27,4 @@ app.include_router(companies.router, prefix="/api")
 app.include_router(contacts.router, prefix="/api")
 app.include_router(activities.router, prefix="/api")
 app.include_router(notes.router, prefix="/api")
+app.include_router(ai_management.router, prefix="/api")

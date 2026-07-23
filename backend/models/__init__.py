@@ -17,3 +17,5 @@ from .tag import Tag, EntityTag
 from .attachment import Attachment
 from .audit_log import AuditLog
 from .notification import Notification
+from .ai_prompt import AIPrompt, AIPromptVersion
+from .ai_log import AIRequest, AIUsage
