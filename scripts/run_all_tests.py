@@ -22,10 +22,10 @@ def main():
     result = runner.run(suite)
 
     if result.wasSuccessful():
-        print("\n✅ ALL BACKEND TESTS PASSED SUCCESSFULLY!")
+        print("\n[SUCCESS] ALL BACKEND TESTS PASSED SUCCESSFULLY!")
         sys.exit(0)
     else:
-        print("\n❌ BACKEND TEST SUITE FAILED!")
+        print("\n[FAILURE] BACKEND TEST SUITE FAILED!")
         sys.exit(1)
 
 if __name__ == "__main__":
