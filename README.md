@@ -91,3 +91,6 @@ pytest backend/tests
    ```bash
    npm run dev
    ```
+
+---
+*LeadForgeAI platform codebase maintained and updated.*
