@@ -20,3 +20,4 @@ from .notification import Notification
 from .ai_prompt import AIPrompt, AIPromptVersion
 from .ai_log import AIRequest, AIUsage
 from .company_analysis import CompanyAnalysis
+from .orchestration_job import OrchestrationJob

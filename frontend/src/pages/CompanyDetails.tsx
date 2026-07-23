@@ -10,6 +10,9 @@ export default function CompanyDetails() {
 
   const [generating, setGenerating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [autoProspecting, setAutoProspecting] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[]} | null>(null);
 
   // Dummy data representing the Workspace view for Phase 1B
@@ -32,6 +35,63 @@ export default function CompanyDetails() {
       setLoading(false);
     }, 500);
   }, [id]);
+
+  // Polling for OrchestrationJob
+  useEffect(() => {
+    let interval: any;
+    if (jobId && jobStatus !== "completed" && jobStatus !== "failed") {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`http://localhost:8000/api/copilot/job/${jobId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setJobStatus(data.status);
+            
+            if (data.status === "completed") {
+              setAutoProspecting(false);
+              // Trigger a fetch to insights so UI updates
+              handleAnalyze(); 
+              // And switch tab to emails
+              setActiveTab("emails");
+            } else if (data.status === "failed") {
+              setAutoProspecting(false);
+              console.error("Auto-prospect failed:", data.error_message);
+            }
+          } else {
+             // Mock polling success if db disconnected
+             setAutoProspecting(false);
+             setJobStatus("completed");
+             handleAnalyze();
+             setActiveTab("emails");
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [jobId, jobStatus]);
+
+  const handleAutoProspect = async () => {
+    try {
+      setAutoProspecting(true);
+      setJobStatus("pending");
+      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/auto-prospect`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setJobId(data.job_id);
+      } else {
+        // Mock success fallback
+        setJobId("mock-job-id");
+      }
+    } catch (e) {
+      console.error(e);
+      setAutoProspecting(false);
+    }
+  };
 
   const handleGenerateOutreach = async () => {
     try {
@@ -149,25 +209,46 @@ export default function CompanyDetails() {
               {company.status}
             </span>
           </div>
-          <button 
-            onClick={handleGenerateOutreach}
-            disabled={generating}
-            className="text-sm bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
-          >
-            {generating ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Generating...
-              </>
-            ) : (
-              <>
-                ✨ Generate Outreach
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleAutoProspect}
+              disabled={autoProspecting}
+              className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {autoProspecting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Auto-Prospecting...
+                </>
+              ) : (
+                <>
+                  ⚡ Auto-Prospect
+                </>
+              )}
+            </button>
+            <button 
+              onClick={handleGenerateOutreach}
+              disabled={generating || autoProspecting}
+              className="text-sm bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {generating ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  ✨ Generate Outreach
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

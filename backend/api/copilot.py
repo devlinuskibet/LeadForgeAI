@@ -6,9 +6,11 @@ from models.email_message import EmailMessage
 from models.company import Company
 from models.organization import Organization
 from models.company_analysis import CompanyAnalysis
+from models.orchestration_job import OrchestrationJob
 from services.ai_service import AIService
 from services.context_builder import ContextBuilder
 from services.scraping_service import ScrapingService
+from workers.tasks import run_auto_prospect_task
 import uuid
 import json
 
@@ -128,4 +130,47 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
         "inferred_problems": inferred_problems,
         "recommended_solutions": recommended_solutions
     }
+
+@router.post("/company/{company_id}/auto-prospect")
+def auto_prospect(company_id: uuid.UUID, db: Session = Depends(get_db)):
+    company = db.query(Company).filter(Company.id == company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+        
+    org = db.query(Organization).first()
+
+    job_id = uuid.uuid4()
+    job = OrchestrationJob(
+        id=job_id,
+        organization_id=org.id if org else None,
+        entity_type="company",
+        entity_id=company_id,
+        workflow_type="auto_prospect",
+        status="pending"
+    )
+    db.add(job)
+    db.commit()
+
+    # Trigger Celery Task
+    run_auto_prospect_task.delay(str(job_id))
+
+    return {
+        "success": True,
+        "job_id": str(job_id),
+        "message": "Auto-prospecting started in background"
+    }
+
+@router.get("/job/{job_id}")
+def get_job_status(job_id: uuid.UUID, db: Session = Depends(get_db)):
+    job = db.query(OrchestrationJob).filter(OrchestrationJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return {
+        "id": str(job.id),
+        "status": job.status,
+        "current_step": job.current_step,
+        "error_message": job.error_message
+    }
+
 
