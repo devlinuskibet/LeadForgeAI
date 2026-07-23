@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 
 import CompaniesList from "./pages/CompaniesList";
 import CompanyDetails from "./pages/CompanyDetails";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="companies" element={<CompaniesList />} />
           <Route path="companies/:id" element={<CompanyDetails />} />
-          <Route path="settings" element={<div className="p-4">Settings Placeholder</div>} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </Router>

@@ -1,5 +1,6 @@
 import { Outlet, Link } from "react-router-dom";
 import { LayoutDashboard, Users, Settings, LogOut } from "lucide-react";
+import NotificationsButton from "../widgets/NotificationsButton";
 
 export default function DashboardLayout() {
   return (
@@ -30,10 +31,11 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Navbar */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 z-10">
           <h1 className="text-xl font-semibold">Overview</h1>
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+          <div className="flex items-center gap-6">
+            <NotificationsButton />
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer">
               U
             </div>
           </div>
