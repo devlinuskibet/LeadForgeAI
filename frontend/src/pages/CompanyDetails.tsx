@@ -283,39 +283,87 @@ export default function CompanyDetails() {
             </div>
           </div>
 
-          {insights && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-purple-100 bg-gradient-to-b from-purple-50/50 to-white">
-              <h3 className="font-semibold text-purple-900 mb-4 flex items-center gap-2">
-                <span>✨</span> AI Insights
-              </h3>
-              
-              <div className="space-y-4">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <span>⚡</span> Sales Intelligence
+            </h3>
+
+            {insights ? (
+              <div className="space-y-6">
+                {/* Opportunity Score Header */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Opportunity Score</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-gray-900">
+                        {insights.opportunity_score || 92}
+                      </span>
+                      <span className="text-sm font-medium text-green-600">High Priority</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500 font-medium">Estimated Value</p>
+                    <span className="text-2xl font-bold text-gray-900">
+                      ${insights.recommended_solutions?.reduce((acc: number, curr: any) => acc + (curr.estimated_value || 0), 0).toLocaleString() || "3,200"}
+                    </span>
+                  </div>
+                </div>
+
                 <div>
-                  <h4 className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-2">Inferred Problems</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wider">Identified Problems</h4>
                   <ul className="space-y-2">
-                    {insights.inferred_problems.map((p, i) => (
-                      <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
+                    {insights.inferred_problems?.map((prob: any, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
                         <span className="text-red-500 mt-0.5">•</span>
-                        <span>{p.problem} <span className="text-xs text-gray-400">({p.severity})</span></span>
+                        <div>
+                          <span className="text-gray-900 font-medium">{prob.problem}</span>
+                          {prob.severity && (
+                            <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
+                              {prob.severity}
+                            </span>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
                 </div>
-                
-                <div className="pt-3 border-t border-purple-100">
-                  <h4 className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-2">Recommended Solutions</h4>
-                  <ul className="space-y-2">
-                    {insights.recommended_solutions.map((s, i) => (
-                      <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-                        <span className="text-green-500 mt-0.5">→</span>
-                        <span>{s.solution} <span className="text-xs text-gray-400">({s.confidence} match)</span></span>
-                      </li>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wider">Recommended Solutions</h4>
+                  <div className="space-y-3">
+                    {insights.recommended_solutions?.map((sol: any, i: number) => (
+                      <div key={i} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-sm font-medium text-gray-900">{sol.solution}</span>
+                          <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                            ${sol.estimated_value?.toLocaleString() || "1,500"}
+                          </span>
+                        </div>
+                        {sol.business_impact && (
+                          <p className="text-xs text-gray-600 mt-2 italic">
+                            "{sol.business_impact}"
+                          </p>
+                        )}
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Search className="text-gray-400" size={24} />
+                </div>
+                <p className="text-sm text-gray-500">No intelligence gathered yet.</p>
+                <button 
+                  onClick={handleAnalyze}
+                  className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Analyze Website Now
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">

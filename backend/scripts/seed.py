@@ -135,7 +135,21 @@ def seed():
             id=uuid.uuid4(),
             prompt_id=analysis_prompt_id,
             version_number=1,
-            template='{"status": "success", "mock": true, "inferred_problems": [{"problem": "No mobile app", "severity": "High"}], "recommended_solutions": [{"solution": "Build React Native App", "confidence": "High"}]}',
+            template='''{
+  "status": "success",
+  "opportunity_score": 92,
+  "inferred_problems": [
+    {"problem": "No mobile app", "severity": "High"}
+  ],
+  "recommended_solutions": [
+    {
+      "solution": "Build React Native App",
+      "business_impact": "Captures mobile users and increases engagement by 40%",
+      "estimated_value": 4500,
+      "confidence": "High"
+    }
+  ]
+}''',
             variables=["website_text"],
             model="mock-model-v1",
             temperature=0.1,

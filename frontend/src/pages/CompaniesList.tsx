@@ -12,29 +12,70 @@ interface Company {
 export default function CompaniesList() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkData, setBulkData] = useState("");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     // In a real app, this would fetch from /api/companies
     // Mocking for now since backend might not have seed data yet if Postgres isn't running
     setTimeout(() => {
       setCompanies([
-        { id: "1", name: "Acme Corp", website: "acme.com", status: "ACTIVE" },
-        { id: "2", name: "Global Tech", website: "global.tech", status: "ACTIVE" },
-        { id: "3", name: "Stark Industries", website: "stark.com", status: "PAUSED" },
-      ]);
+        { id: "1", name: "Acme Corp", website: "acme.com", status: "ACTIVE", opportunity_score: 94, estimated_value: 3200 },
+        { id: "2", name: "Global Tech", website: "global.tech", status: "ACTIVE", opportunity_score: 71, estimated_value: 1100 },
+        { id: "3", name: "Stark Industries", website: "stark.com", status: "PAUSED", opportunity_score: 35, estimated_value: 400 },
+      ] as any);
       setLoading(false);
     }, 500);
   }, []);
+
+  const handleBulkImport = async () => {
+    try {
+      setImporting(true);
+      
+      // Basic CSV parser
+      const lines = bulkData.split("\n").filter(l => l.trim() !== "");
+      const items = lines.map(line => {
+        const parts = line.split(",");
+        return { name: parts[0]?.trim(), website: parts[1]?.trim() || "" };
+      });
+
+      const res = await fetch("http://localhost:8000/api/prospecting/bulk-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(items)
+      });
+      
+      if (res.ok) {
+        setShowBulkImport(false);
+        setBulkData("");
+        // In a real app, refresh the table here
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setImporting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-          <Plus size={20} />
-          Add Company
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setShowBulkImport(true)}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            <Plus size={20} />
+            Bulk Import Prospects
+          </button>
+          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <Plus size={20} />
+            Add Company
+          </button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -70,6 +111,12 @@ export default function CompaniesList() {
                   Website
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Opportunity
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Value
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th scope="col" className="relative px-6 py-3">
@@ -102,6 +149,17 @@ export default function CompaniesList() {
                       <div className="text-sm text-gray-500">{company.website || "N/A"}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium flex items-center gap-1">
+                        {(company as any).opportunity_score >= 90 ? <span className="text-green-500">🟢</span> :
+                         (company as any).opportunity_score >= 70 ? <span className="text-yellow-500">🟡</span> :
+                         <span className="text-red-500">🔴</span>}
+                        {(company as any).opportunity_score}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">${(company as any).estimated_value?.toLocaleString() || "0"}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         company.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 
                         company.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-800' : 
@@ -122,6 +180,39 @@ export default function CompaniesList() {
           </table>
         </div>
       </div>
+
+      {/* Bulk Import Modal */}
+      {showBulkImport && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full">
+            <h2 className="text-xl font-bold mb-4">Bulk Import Prospects</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Paste CSV data below. Format: <code>Company Name, Website URL</code>
+            </p>
+            <textarea
+              className="w-full h-48 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-purple-500 mb-4"
+              placeholder="ABC School, abcschool.edu&#10;XYZ Hotel, xyzhotel.com"
+              value={bulkData}
+              onChange={(e) => setBulkData(e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setShowBulkImport(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleBulkImport}
+                disabled={importing || !bulkData.trim()}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg disabled:opacity-50"
+              >
+                {importing ? "Importing & Analyzing..." : "Start Auto-Prospecting"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
