@@ -2,38 +2,55 @@
 
 LeadForgeAI is an enterprise-grade AI-powered B2B prospecting, company discovery, and automated email outreach orchestration platform.
 
-## Features
+## Key Features
 
 - **Automated Prospecting & Discovery**: Discover target companies and key decision-maker contacts with enrichment data.
 - **AI Outreach Copilot**: Generates personalized email templates and discovery insights backed by LLMs.
 - **CSV Data Export**: Export company and contact datasets seamlessly via dedicated REST endpoints.
 - **Bulk Data Import**: High-performance batch endpoints for contact and company creation.
-- **System Health & Observability**: Real-time service uptime, database check, and security middleware headers.
-- **Frontend App**: Modern React TypeScript web application powered by Vite.
+- **Security & Observability**: Real-time service uptime checks, IP-based rate limiting, security headers, and structured audit logging.
+- **Dynamic Template Engine**: Email placeholder variable rendering with fallback defaults.
+- **Frontend UI Architecture**: Modern React + TypeScript application with reusable components (`LoadingSpinner`, `ErrorBoundary`, `NotificationToast`, `ExportDataModal`) and custom hooks (`useFetch`, `useLocalStorage`).
 
 ## Backend Architecture
 
-Built with **FastAPI**, **SQLAlchemy**, and **Alembic**.
+Built with **FastAPI**, **SQLAlchemy**, **Pydantic v2**, and **Alembic**.
 
-### API Routes Overview
+### API Routes & Utilities
 
-- `GET /api/health` - System health check, database status, and uptime.
+- `GET /api/health` - System health check, database connectivity, and uptime.
 - `GET /api/export/companies/csv` - Export company records as CSV.
 - `GET /api/export/contacts/csv` - Export contact records as CSV.
 - `POST /api/contacts/batch` - Bulk creation of contact records.
 - `POST /api/discovery/search` - Discovery search provider endpoint.
 - `POST /api/emails/generate` - AI email generation & tracking.
 
+### Core Utilities & Middleware
+
+- `RateLimiterMiddleware` (`backend/core/rate_limiter.py`): In-memory token bucket rate limiter.
+- `SecurityHeadersMiddleware` (`backend/core/middleware.py`): Enforces secure response headers.
+- `AuditLogger` (`backend/utils/audit.py`): Formats and records structured audit events.
+- `PaginationParams` & `PaginatedResponse` (`backend/utils/pagination.py`): Reusable pagination helpers.
+- `APIEnvelope` (`backend/utils/response.py`): Standard JSON response envelope (`success`, `data`, `error_code`, `timestamp`).
+- `EmailTemplateService` (`backend/services/email_template_service.py`): Dynamic placeholder substitution engine.
+- `SearchFilterBuilder` (`backend/utils/search_filter.py`): Dynamic multi-column SQL search query builder.
+
 ## Testing & Quality Assurance
 
-Run the automated test suite using Python's native `unittest` framework:
+Run the complete test suite using the standalone test runner script:
+
+```bash
+python scripts/run_all_tests.py
+```
+
+Or using Python's native `unittest` framework:
 
 ```bash
 $env:PYTHONPATH="backend"
 python -m unittest discover -s backend/tests
 ```
 
-Or with `pytest` inside the virtual environment:
+Or with `pytest`:
 
 ```bash
 pytest backend/tests
