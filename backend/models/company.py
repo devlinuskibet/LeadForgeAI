@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Enum, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, String, Integer, Enum, ForeignKey, DateTime, Boolean, Float
 from models.base import Base
 import enum
 
@@ -23,3 +23,13 @@ class Company(Base):
     ai_score = Column(Integer, nullable=True)
     ai_summary = Column(String, nullable=True)
     needs_reanalysis = Column(Boolean, default=False)
+    
+    # Discovery & Enrichment Columns
+    google_place_id = Column(String, nullable=True, unique=True, index=True)
+    rating = Column(Float, nullable=True)
+    review_count = Column(Integer, nullable=True)
+    business_status = Column(String, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    discovered_at = Column(DateTime(timezone=True), nullable=True)
+    discovery_source = Column(String, nullable=True) # e.g., "Google Places", "Manual", "CSV Import"
