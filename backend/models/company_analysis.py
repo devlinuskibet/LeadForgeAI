@@ -1,9 +1,9 @@
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
-from models.base import CustomBase
+from models.base import Base
 
-class CompanyAnalysis(CustomBase):
+class CompanyAnalysis(Base):
     __tablename__ = "company_analyses"
 
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=False, index=True)
