@@ -9,7 +9,8 @@ from models.organization import Organization
 from models.company import Company, CompanyStatus
 from models.contact import Contact
 from models.pipeline_stage import PipelineStage
-from models.custom_field import CustomField, CustomFieldValue
+from models.custom_field import CustomField
+from models.custom_field_value import CustomFieldValue
 from models.ai_prompt import AIPrompt, AIPromptVersion
 from core.security import get_password_hash
 from faker import Faker
