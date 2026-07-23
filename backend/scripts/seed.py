@@ -118,6 +118,31 @@ def seed():
             is_active=True
         )
         db.add(outreach_version)
+
+        follow_up_id = uuid.uuid4()
+        follow_up_prompt = AIPrompt(
+            id=follow_up_id,
+            name="Follow-up Email",
+            description="Generates context-aware follow-up emails based on previous outreach and statuses.",
+            feature="follow_up_email"
+        )
+        db.add(follow_up_prompt)
+
+        follow_up_version = AIPromptVersion(
+            id=uuid.uuid4(),
+            prompt_id=follow_up_id,
+            version_number=1,
+            template='''{
+  "subject": "Quick follow-up on {{company_name}}",
+  "body": "Hi {{contact_name}}, I wanted to follow up on my previous email regarding {{previous_topic}}. Many schools are preparing for the upcoming season, and I believe we can help you streamline operations. Let me know if you have 10 minutes this week."
+}''',
+            variables=["company_name", "contact_name", "previous_topic", "company_context"],
+            model="mock-model-v1",
+            temperature=0.7,
+            is_active=True
+        )
+        db.add(follow_up_version)
+
         db.commit()
 
         # 7. Create AI Prompt for Website Analysis
@@ -138,6 +163,9 @@ def seed():
             template='''{
   "status": "success",
   "opportunity_score": 92,
+  "priority_score": 96,
+  "sales_coach_advice": "Their admissions season begins in two weeks. They lack an online portal.",
+  "why_today": "Admissions season begins in two weeks. No outreach has been sent.",
   "inferred_problems": [
     {"problem": "No mobile app", "severity": "High"}
   ],

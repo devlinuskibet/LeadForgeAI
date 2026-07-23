@@ -18,5 +18,9 @@ class CompanyAnalysis(CustomBase):
     estimated_value = Column(Integer, nullable=True) # Total estimated value
     website_hash = Column(String, nullable=True)
     last_analysis_date = Column(DateTime, nullable=True)
+    
+    priority_score = Column(Integer, nullable=True) # Opportunity * Value * Urgency
+    sales_coach_advice = Column(String, nullable=True)
+    why_today = Column(String, nullable=True)
 
     company = relationship("Company")

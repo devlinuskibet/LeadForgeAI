@@ -15,6 +15,9 @@ class Company(Base):
     status = Column(Enum(CompanyStatus), default=CompanyStatus.ACTIVE, nullable=False)
     pipeline_stage_id = Column(ForeignKey("pipeline_stages.id"), nullable=True)
     
+    last_contact_date = Column(DateTime, nullable=True)
+    next_action_due = Column(DateTime, nullable=True)
+    
     # AI Readiness Columns
     last_ai_analysis = Column(DateTime(timezone=True), nullable=True)
     ai_score = Column(Integer, nullable=True)

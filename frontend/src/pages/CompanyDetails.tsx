@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Building2, Phone, Mail, Globe, MapPin, Tag } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, Globe, MapPin, Tag, Briefcase } from "lucide-react";
 import TimelineWidget from "../widgets/TimelineWidget";
 
 export default function CompanyDetails() {
@@ -268,6 +268,35 @@ export default function CompanyDetails() {
         </div>
       </div>
 
+      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+        {/* Opportunity Timeline */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between text-sm font-medium relative">
+            <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 -translate-y-1/2"></div>
+            
+            <div className="flex flex-col items-center gap-2 bg-white px-2">
+              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm">✓</div>
+              <span className="text-gray-900">Discovered</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 bg-white px-2">
+              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm">✓</div>
+              <span className="text-gray-900">Analyzed</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 bg-white px-2">
+              <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg ring-4 ring-purple-50">3</div>
+              <span className="text-gray-900 font-bold">Draft Ready</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 bg-white px-2">
+              <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">4</div>
+              <span className="text-gray-400">Sent</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 bg-white px-2">
+              <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">5</div>
+              <span className="text-gray-400">Won</span>
+            </div>
+          </div>
+        </div>
+
       {/* Workspace Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
         {/* Left Column: About & Contacts */}
@@ -346,6 +375,17 @@ export default function CompanyDetails() {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <h4 className="text-sm font-medium text-purple-700 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <Briefcase size={16} /> AI Sales Coach
+                  </h4>
+                  <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                    <p className="text-sm text-purple-900 leading-relaxed">
+                      {insights.sales_coach_advice || "Their website lacks online admissions. Admissions season starts next month. Parents currently must call the school. Recommend offering an Admissions Portal, AI Chatbot, and Online Payments."}
+                    </p>
                   </div>
                 </div>
               </div>
