@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from api import auth, companies, contacts, activities, notes, ai_management, copilot, prospecting, dashboard, discovery, emails, health
+from api import auth, companies, contacts, activities, notes, ai_management, copilot, prospecting, dashboard, discovery, emails, health, export
 from core.errors import AppException, app_exception_handler, http_exception_handler, generic_exception_handler
 from core.middleware import SecurityHeadersMiddleware
 
@@ -25,6 +25,7 @@ def read_root():
     return {"message": "Welcome to LeadForgeAI API"}
 
 app.include_router(health.router, prefix="/api")
+app.include_router(export.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(companies.router, prefix="/api")
 app.include_router(contacts.router, prefix="/api")
