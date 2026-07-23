@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CheckSquare, ArrowRight, DollarSign, Briefcase, Mail, AlertCircle } from "lucide-react";
+import { CheckSquare, ArrowRight, DollarSign, Briefcase, Mail, AlertCircle, Building2 } from "lucide-react";
 
 export default function Dashboard() {
   const [briefing, setBriefing] = useState<any>(null);

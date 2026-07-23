@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Building2, Phone, Mail, Globe, MapPin, Tag, Briefcase } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, Globe, MapPin, Tag, Briefcase, Search } from "lucide-react";
 import TimelineWidget from "../widgets/TimelineWidget";
 
 export default function CompanyDetails() {
@@ -13,7 +13,7 @@ export default function CompanyDetails() {
   const [autoProspecting, setAutoProspecting] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
-  const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[]} | null>(null);
+  const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[], opportunity_score?: number, sales_coach_advice?: string} | null>(null);
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
 
   // Dummy data representing the Workspace view for Phase 1B
@@ -504,6 +504,7 @@ LeadForgeAI Copilot
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
