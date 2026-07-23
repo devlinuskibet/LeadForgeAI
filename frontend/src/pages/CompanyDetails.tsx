@@ -8,6 +8,8 @@ export default function CompanyDetails() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("timeline");
 
+  const [generating, setGenerating] = useState(false);
+
   // Dummy data representing the Workspace view for Phase 1B
   const company = {
     id: id,
@@ -28,6 +30,34 @@ export default function CompanyDetails() {
       setLoading(false);
     }, 500);
   }, [id]);
+
+  const handleGenerateOutreach = async () => {
+    try {
+      setGenerating(true);
+      // We assume standard ID for mock purposes or we use the UUID if available.
+      // Since `id` from URL might be "1" in dummy data, we just mock the request.
+      // In a real app we'd use the real DB UUID.
+      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
+      
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/generate-outreach`, {
+        method: 'POST'
+      });
+      
+      // We don't fail hard on mock UUIDs right now for frontend preview
+      if (!res.ok) {
+        console.warn("Copilot API failed (likely missing UUID in DB), simulating success for UI.");
+      }
+      
+      // Simulate network delay for effect
+      await new Promise(r => setTimeout(r, 1500));
+      
+      setActiveTab("emails");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   if (loading) {
     return <div className="p-8 text-gray-500">Loading company details...</div>;
@@ -77,8 +107,24 @@ export default function CompanyDetails() {
               {company.status}
             </span>
           </div>
-          <button className="text-sm bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-            Generate Outreach
+          <button 
+            onClick={handleGenerateOutreach}
+            disabled={generating}
+            className="text-sm bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            {generating ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating...
+              </>
+            ) : (
+              <>
+                ✨ Generate Outreach
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -141,7 +187,35 @@ export default function CompanyDetails() {
           <div className="flex-1 overflow-hidden bg-gray-50/30">
             {activeTab === "timeline" && <TimelineWidget />}
             {activeTab === "notes" && <div className="p-6 flex flex-col h-full"><textarea className="w-full h-32 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4" placeholder="Write a note..."></textarea><button className="self-end bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">Save Note</button></div>}
-            {activeTab === "emails" && <div className="p-6 text-center text-gray-400 mt-10">No emails sent yet.</div>}
+            {activeTab === "emails" && (
+              <div className="p-6 h-full overflow-y-auto">
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-4">
+                  <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
+                    <div>
+                      <h4 className="font-semibold text-gray-900">[AI Draft] Opportunity with Acme</h4>
+                      <p className="text-sm text-gray-500 mt-1">To: John Doe • From: copilot@leadforge.ai</p>
+                    </div>
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-md border border-yellow-200">
+                      Draft
+                    </span>
+                  </div>
+                  <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap font-sans">
+                    Hi John,
+
+I noticed that Acme Corp has been exploring CRM software upgrades. Our platform, LeadForgeAI, provides a highly customized solution tailored to software companies looking to streamline their sales pipelines with embedded AI.
+
+Would you have 10 minutes next week to discuss how we could integrate our tools with your current setup?
+
+Best regards,
+LeadForgeAI Copilot
+                  </div>
+                  <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 rounded-b-xl">
+                    <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50">Discard</button>
+                    <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700">Send Email</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -9,6 +9,8 @@ from models.organization import Organization
 from models.company import Company, CompanyStatus
 from models.contact import Contact
 from models.pipeline_stage import PipelineStage
+from models.custom_field import CustomField, CustomFieldValue
+from models.ai_prompt import AIPrompt, AIPromptVersion
 from core.security import get_password_hash
 from faker import Faker
 import random
@@ -92,7 +94,33 @@ def seed():
             db.add(cont)
         
         db.commit()
-        print("Successfully seeded database with Organization, Admin, 20 Companies, and 50 Contacts.")
+        
+        # 6. Create AI Prompt for Email Outreach
+        prompt_id = uuid.uuid4()
+        outreach_prompt = AIPrompt(
+            id=prompt_id,
+            name="Email Outreach",
+            description="Generates a personalized first-touch sales email based on company context.",
+            feature="email_outreach"
+        )
+        db.add(outreach_prompt)
+        db.commit()
+        
+        outreach_version = AIPromptVersion(
+            id=uuid.uuid4(),
+            prompt_id=prompt_id,
+            version_number=1,
+            template="You are an expert B2B sales representative.\nWrite a highly personalized, concise outreach email to the following company.\n\nContext:\n{{company_context}}\n\nThe email should have a compelling subject line, reference their context, and end with a soft call to action.",
+            variables=["company_context"],
+            model="mock-model-v1",
+            temperature=0.7,
+            max_tokens=500,
+            is_active=True
+        )
+        db.add(outreach_version)
+        db.commit()
+
+        print("Successfully seeded database with Organization, Admin, 20 Companies, 50 Contacts, and AI Prompts.")
     except Exception as e:
         db.rollback()
         print(f"Error seeding database: {e}")
