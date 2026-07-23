@@ -120,6 +120,31 @@ def seed():
         db.add(outreach_version)
         db.commit()
 
+        # 7. Create AI Prompt for Website Analysis
+        analysis_prompt_id = uuid.uuid4()
+        analysis_prompt = AIPrompt(
+            id=analysis_prompt_id,
+            name="Website Analysis",
+            description="Analyzes website text to extract business problems and recommended solutions.",
+            feature="website_analysis"
+        )
+        db.add(analysis_prompt)
+        db.commit()
+        
+        analysis_version = AIPromptVersion(
+            id=uuid.uuid4(),
+            prompt_id=analysis_prompt_id,
+            version_number=1,
+            template='{"status": "success", "mock": true, "inferred_problems": [{"problem": "No mobile app", "severity": "High"}], "recommended_solutions": [{"solution": "Build React Native App", "confidence": "High"}]}',
+            variables=["website_text"],
+            model="mock-model-v1",
+            temperature=0.1,
+            max_tokens=1000,
+            is_active=True
+        )
+        db.add(analysis_version)
+        db.commit()
+
         print("Successfully seeded database with Organization, Admin, 20 Companies, 50 Contacts, and AI Prompts.")
     except Exception as e:
         db.rollback()

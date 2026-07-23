@@ -5,9 +5,12 @@ from models.ai_prompt import AIPrompt, AIPromptVersion
 from models.email_message import EmailMessage
 from models.company import Company
 from models.organization import Organization
+from models.company_analysis import CompanyAnalysis
 from services.ai_service import AIService
 from services.context_builder import ContextBuilder
+from services.scraping_service import ScrapingService
 import uuid
+import json
 
 router = APIRouter(prefix="/copilot", tags=["copilot"])
 
@@ -65,3 +68,64 @@ def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
         "draft_id": draft_email.id,
         "message": "Outreach drafted successfully."
     }
+
+@router.post("/company/{company_id}/analyze")
+def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
+    company = db.query(Company).filter(Company.id == company_id).first()
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    org = db.query(Organization).first()
+
+    # 1. Scrape Website
+    scraper = ScrapingService()
+    website_url = company.website or "http://example.com"
+    website_text = scraper.scrape_url(website_url)
+
+    # 2. Get AI Prompt
+    prompt = db.query(AIPrompt).filter(AIPrompt.feature == "website_analysis").first()
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Website analysis prompt not found")
+        
+    active_version = next((v for v in prompt.versions if v.is_active), None)
+    if not active_version:
+        raise HTTPException(status_code=404, detail="No active version for website analysis prompt")
+
+    # 3. Analyze with AI
+    ai_service = AIService(db)
+    try:
+        response_text = ai_service.execute_prompt(
+            prompt_version=active_version,
+            variables={"website_text": website_text},
+            organization_id=org.id if org else None
+        )
+        
+        # We expect a JSON response from our mock or real AI model
+        response_json = json.loads(response_text)
+        inferred_problems = response_json.get("inferred_problems", [])
+        recommended_solutions = response_json.get("recommended_solutions", [])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI execution failed: {str(e)}")
+
+    # 4. Save to Database
+    analysis = db.query(CompanyAnalysis).filter(CompanyAnalysis.company_id == company_id).first()
+    if not analysis:
+        analysis = CompanyAnalysis(
+            organization_id=org.id if org else None,
+            company_id=company_id,
+        )
+        db.add(analysis)
+
+    analysis.raw_scraped_text = website_text
+    analysis.inferred_problems = inferred_problems
+    analysis.recommended_solutions = recommended_solutions
+    analysis.status = "completed"
+
+    db.commit()
+
+    return {
+        "success": True,
+        "inferred_problems": inferred_problems,
+        "recommended_solutions": recommended_solutions
+    }
+

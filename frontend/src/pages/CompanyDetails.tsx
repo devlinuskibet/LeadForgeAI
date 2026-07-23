@@ -9,6 +9,8 @@ export default function CompanyDetails() {
   const [activeTab, setActiveTab] = useState("timeline");
 
   const [generating, setGenerating] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[]} | null>(null);
 
   // Dummy data representing the Workspace view for Phase 1B
   const company = {
@@ -59,6 +61,36 @@ export default function CompanyDetails() {
     }
   };
 
+  const handleAnalyze = async () => {
+    try {
+      setAnalyzing(true);
+      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/analyze`, {
+        method: 'POST'
+      });
+      
+      if (!res.ok) {
+        console.warn("Analysis API failed (mocking response for UI).");
+        // Mock fallback for UI if DB isn't seeded right
+        await new Promise(r => setTimeout(r, 1500));
+        setInsights({
+          inferred_problems: [{ problem: "No mobile app", severity: "High" }],
+          recommended_solutions: [{ solution: "Build React Native App", confidence: "High" }]
+        });
+      } else {
+        const data = await res.json();
+        setInsights({
+          inferred_problems: data.inferred_problems,
+          recommended_solutions: data.recommended_solutions
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8 text-gray-500">Loading company details...</div>;
   }
@@ -82,7 +114,17 @@ export default function CompanyDetails() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
             <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-              <span className="flex items-center gap-1"><Globe size={14} /> {company.website}</span>
+              <span className="flex items-center gap-1 group">
+                <Globe size={14} /> 
+                <a href={`https://${company.website}`} target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">{company.website}</a>
+                <button 
+                  onClick={handleAnalyze} 
+                  disabled={analyzing}
+                  className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors disabled:opacity-50"
+                >
+                  {analyzing ? 'Analyzing...' : 'Analyze Website'}
+                </button>
+              </span>
               <span className="flex items-center gap-1"><MapPin size={14} /> San Francisco, CA</span>
             </div>
             {/* Tags */}
@@ -143,6 +185,40 @@ export default function CompanyDetails() {
               </div>
             </div>
           </div>
+
+          {insights && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-purple-100 bg-gradient-to-b from-purple-50/50 to-white">
+              <h3 className="font-semibold text-purple-900 mb-4 flex items-center gap-2">
+                <span>✨</span> AI Insights
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-2">Inferred Problems</h4>
+                  <ul className="space-y-2">
+                    {insights.inferred_problems.map((p, i) => (
+                      <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
+                        <span className="text-red-500 mt-0.5">•</span>
+                        <span>{p.problem} <span className="text-xs text-gray-400">({p.severity})</span></span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="pt-3 border-t border-purple-100">
+                  <h4 className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-2">Recommended Solutions</h4>
+                  <ul className="space-y-2">
+                    {insights.recommended_solutions.map((s, i) => (
+                      <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">→</span>
+                        <span>{s.solution} <span className="text-xs text-gray-400">({s.confidence} match)</span></span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">

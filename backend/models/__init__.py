@@ -19,3 +19,4 @@ from .audit_log import AuditLog
 from .notification import Notification
 from .ai_prompt import AIPrompt, AIPromptVersion
 from .ai_log import AIRequest, AIUsage
+from .company_analysis import CompanyAnalysis
