@@ -4,6 +4,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from api import auth, companies, contacts, activities, notes, ai_management, copilot, prospecting, dashboard, discovery, emails, health, export
 from core.errors import AppException, app_exception_handler, http_exception_handler, generic_exception_handler
 from core.middleware import SecurityHeadersMiddleware
+from core.rate_limiter import RateLimiterMiddleware
 
 app = FastAPI(title="LeadForgeAI API", version="0.1.0")
 
@@ -11,6 +12,7 @@ app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
+app.add_middleware(RateLimiterMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
