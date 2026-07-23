@@ -10,3 +10,10 @@ from .opportunity import Opportunity, OpportunityStatus
 from .deal import Deal, DealStatus
 from .custom_field import CustomField
 from .custom_field_value import CustomFieldValue
+from .activity import Activity
+from .note import Note
+from .email_message import EmailMessage, EmailStatus
+from .tag import Tag, EntityTag
+from .attachment import Attachment
+from .audit_log import AuditLog
+from .notification import Notification
