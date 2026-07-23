@@ -30,11 +30,25 @@ class CompanyResponse(BaseModel):
     class Config:
         from_attributes = True
 
-@router.get("/", response_model=List[CompanyResponse])
+@router.get("/")
 def get_companies(db: Session = Depends(get_db)):
+    from models.company_analysis import CompanyAnalysis
     # In a real app, organization_id would come from the current_user
-    companies = db.query(Company).filter(Company.is_deleted == False).all()
-    return companies
+    companies = db.query(Company).filter(Company.is_deleted == False).order_by(Company.created_at.desc()).all()
+    
+    results = []
+    for c in companies:
+        analysis = db.query(CompanyAnalysis).filter(CompanyAnalysis.company_id == c.id).order_by(CompanyAnalysis.created_at.desc()).first()
+        results.append({
+            "id": str(c.id),
+            "name": c.name,
+            "website": c.website,
+            "status": c.status,
+            "opportunity_score": analysis.opportunity_score if analysis else 0,
+            "estimated_value": analysis.estimated_value if analysis else 0,
+            "discovery_source": c.discovery_source
+        })
+    return results
 
 @router.post("/", response_model=CompanyResponse)
 def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
@@ -55,9 +69,39 @@ def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
     db.refresh(new_comp)
     return new_comp
 
-@router.get("/{company_id}", response_model=CompanyResponse)
+@router.get("/{company_id}")
 def get_company(company_id: UUID, db: Session = Depends(get_db)):
+    from models.company_analysis import CompanyAnalysis
+    from models.email_message import EmailMessage
+    
     company = db.query(Company).filter(Company.id == company_id, Company.is_deleted == False).first()
     if not company:
         raise AppException("COMPANY_NOT_FOUND", "Company not found", 404)
-    return company
+        
+    analysis = db.query(CompanyAnalysis).filter(CompanyAnalysis.company_id == company.id).order_by(CompanyAnalysis.created_at.desc()).first()
+    email = db.query(EmailMessage).filter(
+        EmailMessage.entity_type == "company",
+        EmailMessage.entity_id == company.id
+    ).order_by(EmailMessage.created_at.desc()).first()
+    
+    return {
+        "id": str(company.id),
+        "name": company.name,
+        "website": company.website,
+        "status": company.status,
+        "description": company.ai_summary or "No summary available.",
+        "industry": "Unknown",
+        "insights": {
+            "opportunity_score": analysis.opportunity_score if analysis else 0,
+            "estimated_value": analysis.estimated_value if analysis else 0,
+            "inferred_problems": analysis.inferred_problems if analysis else [],
+            "recommended_solutions": analysis.recommended_solutions if analysis else [],
+            "sales_coach_advice": "No advice generated yet." # Simplified for now
+        } if analysis else None,
+        "draft_email": {
+            "id": str(email.id),
+            "subject": email.subject,
+            "body": email.body,
+            "status": email.status.value
+        } if email else None
+    }
