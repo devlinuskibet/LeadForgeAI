@@ -17,3 +17,16 @@ def run_auto_prospect_task(job_id: str):
         logger.error(f"Failed auto-prospect workflow for job_id {job_id}: {str(e)}")
     finally:
         db.close()
+
+@celery_app.task(name="discovery_task")
+def run_discovery_task(job_id: str):
+    db = SessionLocal()
+    try:
+        logger.info(f"Starting discovery workflow for job_id: {job_id}")
+        supervisor = SupervisorService(db)
+        supervisor.run_discovery(job_id)
+        logger.info(f"Completed discovery workflow for job_id: {job_id}")
+    except Exception as e:
+        logger.error(f"Failed discovery workflow for job_id {job_id}: {str(e)}")
+    finally:
+        db.close()
