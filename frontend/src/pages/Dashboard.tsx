@@ -45,15 +45,6 @@ export default function Dashboard() {
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-            <DollarSign size={24} />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 font-medium">Expected Revenue</p>
-            <p className="text-2xl font-bold text-gray-900">${briefing?.expected_revenue?.toLocaleString() || "0"}</p>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
             <Mail size={24} />
           </div>
           <div>
@@ -62,12 +53,25 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-            <AlertCircle size={24} />
+          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+            <ArrowRight size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">Follow-ups Due</p>
-            <p className="text-2xl font-bold text-gray-900">{briefing?.follow_ups_due || 0}</p>
+            <p className="text-sm text-gray-500 font-medium">Emails Sent</p>
+            <p className="text-2xl font-bold text-gray-900">{briefing?.emails_sent || 0}</p>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+            <CheckSquare size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 font-medium">Opened</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {briefing?.emails_sent > 0 
+                ? `${Math.round((briefing?.emails_opened / briefing?.emails_sent) * 100)}%` 
+                : "0%"}
+            </p>
           </div>
         </div>
       </div>
