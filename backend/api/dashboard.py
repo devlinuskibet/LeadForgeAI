@@ -4,6 +4,7 @@ from sqlalchemy import func
 from core.database import get_db
 from models.company import Company
 from models.company_analysis import CompanyAnalysis
+from models.email_message import EmailMessage
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -15,10 +16,14 @@ def get_daily_briefing(db: Session = Depends(get_db)):
     # Calculate Expected Revenue (dummy logic: assuming 40% win rate for now)
     expected_revenue = pipeline_value * 0.4
     
-    # Get total companies with drafts ready
-    drafts_ready = db.query(Company).filter(Company.status == "ACTIVE").count() # Mock logic
+    # Get total companies with drafts ready (mock logic)
+    drafts_ready = db.query(EmailMessage).filter(EmailMessage.status == "DRAFT").count()
     
-    # Follow-ups due (mock logic: last_contact_date < 3 days ago)
+    emails_sent = db.query(EmailMessage).filter(EmailMessage.status.in_(["SENT", "DELIVERED", "OPENED", "REPLIED"])).count()
+    emails_opened = db.query(EmailMessage).filter(EmailMessage.status.in_(["OPENED", "REPLIED"])).count()
+    emails_replied = db.query(EmailMessage).filter(EmailMessage.status == "REPLIED").count()
+    
+    # Follow-ups due (mock logic)
     follow_ups_due = 5
     
     # Top Priorities (using priority_score)
@@ -40,6 +45,9 @@ def get_daily_briefing(db: Session = Depends(get_db)):
         "pipeline_value": pipeline_value,
         "expected_revenue": expected_revenue,
         "drafts_ready": drafts_ready,
+        "emails_sent": emails_sent,
+        "emails_opened": emails_opened,
+        "emails_replied": emails_replied,
         "follow_ups_due": follow_ups_due,
         "top_priorities": priorities_list
     }
