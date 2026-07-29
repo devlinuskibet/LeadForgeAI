@@ -91,12 +91,16 @@ def get_company(company_id: UUID, db: Session = Depends(get_db)):
         "status": company.status,
         "description": company.ai_summary or "No summary available.",
         "industry": "Unknown",
+        "rating": company.rating,
+        "review_count": company.review_count,
+        "business_status": company.business_status,
+        "discovery_source": company.discovery_source,
         "insights": {
             "opportunity_score": analysis.opportunity_score if analysis else 0,
             "estimated_value": analysis.estimated_value if analysis else 0,
             "inferred_problems": analysis.inferred_problems if analysis else [],
             "recommended_solutions": analysis.recommended_solutions if analysis else [],
-            "sales_coach_advice": "No advice generated yet." # Simplified for now
+            "sales_coach_advice": analysis.sales_coach_advice if analysis else "No advice generated yet."
         } if analysis else None,
         "draft_email": {
             "id": str(email.id),
