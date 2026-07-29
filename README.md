@@ -10,6 +10,7 @@ LeadForgeAI is an enterprise-grade AI-powered B2B prospecting, company discovery
 - **Bulk Data Import**: High-performance batch endpoints for contact and company creation.
 - **Security & Observability**: Real-time service uptime checks, IP-based rate limiting, security headers, and structured audit logging.
 - **Dynamic Template Engine**: Email placeholder variable rendering with fallback defaults.
+- **Email Delivery Event Webhooks**: Ingest real-time delivery, open, reply, and bounce events with live timeline updates.
 - **Frontend UI Architecture**: Modern React + TypeScript application with reusable components (`LoadingSpinner`, `ErrorBoundary`, `NotificationToast`, `ExportDataModal`) and custom hooks (`useFetch`, `useLocalStorage`).
 
 ## Backend Architecture
