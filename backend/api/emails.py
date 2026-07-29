@@ -69,6 +69,10 @@ class WebhookPayload(BaseModel):
 
 @router.post("/webhook/{provider_name}")
 def receive_webhook(provider_name: str, payload: WebhookPayload, db: Session = Depends(get_db)):
+    """
+    Ingests provider webhook delivery and engagement events (DELIVERED, OPENED, REPLIED, BOUNCED).
+    Updates EmailMessage status and appends timeline activity events.
+    """
     service = EmailService(db)
     try:
         service.process_webhook_event(provider_name, payload.dict())
