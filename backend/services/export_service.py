@@ -54,8 +54,38 @@ def export_contacts_to_csv(contacts: List[Contact]) -> str:
             getattr(ct, "email", ""),
             getattr(ct, "phone", ""),
             getattr(ct, "title", ""),
-            getattr(ct, "company_id", ""),
+            str(getattr(ct, "company_id", "")),
             str(getattr(ct, "created_at", ""))
+        ])
+        
+    return output.getvalue()
+
+from models.email_message import EmailMessage
+
+def export_email_messages_to_csv(emails: List[EmailMessage]) -> str:
+    """
+    Serializes a list of EmailMessage objects into CSV string content with engagement tracking.
+    """
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    writer.writerow([
+        "ID", "Subject", "Sender", "Recipients", "Status", 
+        "Sent At", "Opened At", "Replied At", "Provider Name", "Provider Message ID"
+    ])
+    
+    for email in emails:
+        writer.writerow([
+            str(getattr(email, "id", "")),
+            getattr(email, "subject", ""),
+            getattr(email, "sender", ""),
+            ", ".join(getattr(email, "recipients", []) or []),
+            getattr(email, "status", ""),
+            str(getattr(email, "sent_at", "") or ""),
+            str(getattr(email, "opened_at", "") or ""),
+            str(getattr(email, "replied_at", "") or ""),
+            getattr(email, "provider_name", ""),
+            getattr(email, "provider_message_id", "")
         ])
         
     return output.getvalue()
