@@ -61,3 +61,17 @@ def send_email(email_id: UUID, db: Session = Depends(get_db)):
         return {"message": "Email sent", "status": email.status.value}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class WebhookPayload(BaseModel):
+    provider_message_id: str
+    event: str
+    timestamp: str
+
+@router.post("/webhook/{provider_name}")
+def receive_webhook(provider_name: str, payload: WebhookPayload, db: Session = Depends(get_db)):
+    service = EmailService(db)
+    try:
+        service.process_webhook_event(provider_name, payload.dict())
+        return {"message": "Event processed"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
