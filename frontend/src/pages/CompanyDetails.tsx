@@ -99,8 +99,7 @@ export default function CompanyDetails() {
     try {
       setAutoProspecting(true);
       setJobStatus("pending");
-      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/auto-prospect`, {
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/auto-prospect`, {
         method: 'POST'
       });
       if (res.ok) {
@@ -119,12 +118,8 @@ export default function CompanyDetails() {
   const handleGenerateOutreach = async () => {
     try {
       setGenerating(true);
-      // We assume standard ID for mock purposes or we use the UUID if available.
-      // Since `id` from URL might be "1" in dummy data, we just mock the request.
-      // In a real app we'd use the real DB UUID.
-      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
       
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/generate-outreach`, {
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/generate-outreach`, {
         method: 'POST'
       });
       
@@ -136,6 +131,7 @@ export default function CompanyDetails() {
       // Simulate network delay for effect
       await new Promise(r => setTimeout(r, 1500));
       
+      fetchCompanyData(); // Re-fetch to get new email draft
       setActiveTab("emails");
     } catch (e) {
       console.error(e);
@@ -147,25 +143,14 @@ export default function CompanyDetails() {
   const handleAnalyze = async () => {
     try {
       setAnalyzing(true);
-      const mockUuid = "00000000-0000-0000-0000-000000000000"; 
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${mockUuid}/analyze`, {
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/analyze`, {
         method: 'POST'
       });
       
       if (!res.ok) {
-        console.warn("Analysis API failed (mocking response for UI).");
-        // Mock fallback for UI if DB isn't seeded right
-        await new Promise(r => setTimeout(r, 1500));
-        setInsights({
-          inferred_problems: [{ problem: "No mobile app", severity: "High" }],
-          recommended_solutions: [{ solution: "Build React Native App", confidence: "High" }]
-        });
+        console.warn("Analysis API failed.");
       } else {
-        const data = await res.json();
-        setInsights({
-          inferred_problems: data.inferred_problems,
-          recommended_solutions: data.recommended_solutions
-        });
+        fetchCompanyData(); // refresh insights
       }
     } catch (e) {
       console.error(e);
@@ -257,7 +242,7 @@ export default function CompanyDetails() {
             {/* Tags */}
             <div className="flex items-center gap-2 mt-3">
               <Tag size={14} className="text-gray-400" />
-              {company.tags.map(tag => (
+              {(company.tags || []).map((tag: any) => (
                 <span key={tag.id} className={`px-2 py-0.5 text-xs font-medium rounded-md ${tag.color}`}>
                   {tag.name}
                 </span>
@@ -360,6 +345,22 @@ export default function CompanyDetails() {
                 <span className="text-gray-500">Industry</span>
                 <span className="font-medium text-gray-900">{company.industry}</span>
               </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Discovery Source</span>
+                <span className="font-medium text-gray-900">{company.discovery_source || "Manual Entry"}</span>
+              </div>
+              {company.rating && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Google Rating</span>
+                  <span className="font-medium text-gray-900">{company.rating} ⭐ ({company.review_count} reviews)</span>
+                </div>
+              )}
+              {company.business_status && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Business Status</span>
+                  <span className="font-medium text-gray-900">{company.business_status}</span>
+                </div>
+              )}
             </div>
           </div>
 
