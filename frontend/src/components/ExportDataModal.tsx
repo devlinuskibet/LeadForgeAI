@@ -10,7 +10,7 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({ isOpen, onClos
 
   if (!isOpen) return null;
 
-  const handleExport = async (type: 'companies' | 'contacts') => {
+  const handleExport = async (type: 'companies' | 'contacts' | 'emails') => {
     try {
       setDownloading(type);
       const response = await fetch(`/api/export/${type}/csv`);
