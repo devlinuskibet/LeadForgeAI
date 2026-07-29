@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "LeadForgeAI"
+    VERSION: str = "0.9.0"
     DATABASE_URL: str = "postgresql://user:password@localhost/leadforge"
     SECRET_KEY: str = "supersecretkey"  # change in prod
     ALGORITHM: str = "HS256"
