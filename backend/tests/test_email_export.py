@@ -1,4 +1,3 @@
-import pytest
 from services.export_service import export_email_messages_to_csv
 from models.email_message import EmailMessage
 
