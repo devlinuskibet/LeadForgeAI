@@ -38,6 +38,8 @@ class EmailMessage(Base):
     
     sent_by_user_id = Column(UUID(as_uuid=True), nullable=True)
     sent_at = Column(DateTime(timezone=True), nullable=True)
+    opened_at = Column(DateTime(timezone=True), nullable=True)
+    replied_at = Column(DateTime(timezone=True), nullable=True)
     thread_id = Column(String, nullable=True)
     
     # Polymorphic association
