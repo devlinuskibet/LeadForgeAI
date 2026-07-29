@@ -58,6 +58,11 @@ class EmailService:
             self.db.add(activity)
             self.db.commit()
             self.db.refresh(email)
+            
+            if email.provider_name == "MockProvider":
+                from workers.tasks import simulate_email_events_task
+                simulate_email_events_task.delay(email.provider_message_id)
+                
             return email
             
         except Exception as e:
@@ -65,3 +70,51 @@ class EmailService:
             email.status = EmailStatus.FAILED
             self.db.commit()
             raise Exception(f"Failed to send email: {str(e)}")
+
+    def process_webhook_event(self, provider_name: str, payload: dict):
+        provider_message_id = payload.get("provider_message_id")
+        event = payload.get("event", "").upper()
+        
+        if not provider_message_id:
+            raise Exception("provider_message_id is missing")
+            
+        email = self.db.query(EmailMessage).filter(EmailMessage.provider_message_id == provider_message_id).first()
+        if not email:
+            raise Exception("Email not found for provider_message_id")
+            
+        # Update email status and timestamps
+        if event == "DELIVERED":
+            email.status = EmailStatus.DELIVERED
+            title = "📬 Email Delivered"
+            desc = "The email was successfully delivered to the recipient's inbox."
+        elif event == "OPENED":
+            email.status = EmailStatus.OPENED
+            email.opened_at = datetime.now(timezone.utc)
+            title = "👀 Email Opened"
+            desc = "The recipient opened the email."
+        elif event == "REPLIED":
+            email.status = EmailStatus.REPLIED
+            email.replied_at = datetime.now(timezone.utc)
+            title = "↩️ Email Replied"
+            desc = "The recipient replied to the email."
+        elif event == "BOUNCED":
+            email.status = EmailStatus.BOUNCED
+            title = "⚠️ Email Bounced"
+            desc = "The email could not be delivered (bounced)."
+        else:
+            # Log unknown event but don't change status
+            return
+            
+        self.db.commit()
+        
+        # Add Activity to timeline
+        activity = Activity(
+            organization_id=email.organization_id,
+            entity_type=email.entity_type,
+            entity_id=email.entity_id,
+            type="email",
+            title=title,
+            description=desc
+        )
+        self.db.add(activity)
+        self.db.commit()
