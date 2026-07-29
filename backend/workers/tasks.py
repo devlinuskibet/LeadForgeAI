@@ -4,6 +4,9 @@ from services.supervisor_service import SupervisorService
 import logging
 
 logger = logging.getLogger(__name__)
+import time
+import requests
+from datetime import datetime, timezone
 
 @celery_app.task(name="auto_prospect_task")
 def run_auto_prospect_task(job_id: str):
@@ -30,3 +33,33 @@ def run_discovery_task(job_id: str):
         logger.error(f"Failed discovery workflow for job_id {job_id}: {str(e)}")
     finally:
         db.close()
+
+@celery_app.task(name="simulate_email_events_task")
+def simulate_email_events_task(provider_message_id: str):
+    logger.info(f"Simulating events for message {provider_message_id}")
+    webhook_url = "http://127.0.0.1:8000/api/emails/webhook/mock"
+    
+    # 1. Simulate DELIVERED after 10 seconds
+    time.sleep(10)
+    try:
+        requests.post(webhook_url, json={
+            "provider_message_id": provider_message_id,
+            "event": "DELIVERED",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        logger.info(f"Simulated DELIVERED for {provider_message_id}")
+    except Exception as e:
+        logger.error(f"Failed to simulate DELIVERED: {e}")
+        
+    # 2. Simulate OPENED after 30 seconds
+    time.sleep(30)
+    try:
+        requests.post(webhook_url, json={
+            "provider_message_id": provider_message_id,
+            "event": "OPENED",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        logger.info(f"Simulated OPENED for {provider_message_id}")
+    except Exception as e:
+        logger.error(f"Failed to simulate OPENED: {e}")
+
