@@ -241,7 +241,7 @@ export default function CompanyDetails() {
                   <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{company.website}</a>
                 </span>
               )}
-              <span className="flex items-center gap-1"><MapPin size={13} className="text-gray-400" /> {company.location || "San Francisco, CA"}</span>
+              <span className="flex items-center gap-1"><MapPin size={13} className="text-gray-400" /> {company.location || company.address || "Location unavailable"}</span>
               {company.rating && (
                 <span className="flex items-center gap-1 text-gray-700">
                   <Star size={13} className="text-yellow-400 fill-current" /> {company.rating} ({company.review_count || 30})

@@ -36,6 +36,8 @@ class MockDiscoveryProvider(DiscoveryProviderInterface):
                 "business_status": "OPERATIONAL",
                 "latitude": 0.0,
                 "longitude": 0.0,
+                "address": f"{100 + i*10} Main St, {location}",
+                "location": location,
                 "discovery_source": "MockProvider"
             })
             
@@ -56,7 +58,7 @@ class GooglePlacesProvider(DiscoveryProviderInterface):
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
-            "X-Goog-FieldMask": "places.id,places.displayName,places.websiteUri,places.rating,places.userRatingCount,places.businessStatus,places.location"
+            "X-Goog-FieldMask": "places.id,places.displayName,places.websiteUri,places.rating,places.userRatingCount,places.businessStatus,places.location,places.formattedAddress"
         }
         
         payload = {
@@ -89,6 +91,7 @@ class GooglePlacesProvider(DiscoveryProviderInterface):
                     continue
                     
                 location_data = place.get("location", {})
+                formatted_address = place.get("formattedAddress", location)
                 results.append({
                     "google_place_id": place.get("id"),
                     "name": place.get("displayName", {}).get("text", "Unknown Business"),
@@ -98,6 +101,8 @@ class GooglePlacesProvider(DiscoveryProviderInterface):
                     "business_status": place.get("businessStatus"),
                     "latitude": location_data.get("latitude"),
                     "longitude": location_data.get("longitude"),
+                    "address": formatted_address,
+                    "location": formatted_address or location,
                     "discovery_source": "Google Places"
                 })
                 

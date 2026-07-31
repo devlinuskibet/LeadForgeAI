@@ -25,6 +25,8 @@ class Company(Base):
     needs_reanalysis = Column(Boolean, default=False)
     
     # Discovery & Enrichment Columns
+    location = Column(String, nullable=True)
+    address = Column(String, nullable=True)
     google_place_id = Column(String, nullable=True, unique=True, index=True)
     rating = Column(Float, nullable=True)
     review_count = Column(Integer, nullable=True)

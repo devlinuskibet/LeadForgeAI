@@ -263,6 +263,8 @@ class SupervisorService:
                         website=result.get("website"),
                         status=CompanyStatus.ACTIVE,
                         google_place_id=result.get("google_place_id"),
+                        location=result.get("location") or result.get("address"),
+                        address=result.get("address") or result.get("location"),
                         rating=result.get("rating"),
                         review_count=result.get("review_count"),
                         business_status=result.get("business_status"),

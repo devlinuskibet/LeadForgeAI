@@ -44,6 +44,8 @@ def get_companies(db: Session = Depends(get_db)):
             "name": c.name,
             "website": c.website,
             "status": c.status,
+            "location": c.location or c.address or "Location unavailable",
+            "address": c.address or c.location or "Location unavailable",
             "opportunity_score": analysis.opportunity_score if analysis else 0,
             "estimated_value": analysis.estimated_value if analysis else 0,
             "discovery_source": c.discovery_source
@@ -89,6 +91,8 @@ def get_company(company_id: UUID, db: Session = Depends(get_db)):
         "name": company.name,
         "website": company.website,
         "status": company.status,
+        "location": company.location or company.address or "Location unavailable",
+        "address": company.address or company.location or "Location unavailable",
         "description": company.ai_summary or "No summary available.",
         "industry": "Unknown",
         "rating": company.rating,
