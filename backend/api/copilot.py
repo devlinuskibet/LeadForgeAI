@@ -151,8 +151,13 @@ def auto_prospect(company_id: uuid.UUID, db: Session = Depends(get_db)):
     db.add(job)
     db.commit()
 
-    # Trigger Celery Task
-    run_auto_prospect_task.delay(str(job_id))
+    # Trigger Celery Task (or fallback to direct execution)
+    try:
+        run_auto_prospect_task.delay(str(job_id))
+    except Exception:
+        from services.supervisor_service import SupervisorService
+        supervisor = SupervisorService(db)
+        supervisor.run_auto_prospect(str(job_id))
 
     return {
         "success": True,

@@ -42,8 +42,13 @@ def start_discovery(request: DiscoveryRequest, db: Session = Depends(get_db)):
     db.add(job)
     db.commit()
     
-    # Launch the Celery worker
-    run_discovery_task.delay(str(job.id))
+    # Try to launch via Celery, fallback to direct execution if Celery worker is offline
+    try:
+        run_discovery_task.delay(str(job.id))
+    except Exception:
+        from services.supervisor_service import SupervisorService
+        supervisor = SupervisorService(db)
+        supervisor.run_discovery(str(job.id))
     
     return {"message": "Discovery agent launched", "job_id": str(job.id)}
 

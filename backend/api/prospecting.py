@@ -49,8 +49,13 @@ def bulk_import_prospects(items: List[BulkImportItem], db: Session = Depends(get
         db.add(job)
         db.flush()
 
-        # Trigger Celery Task
-        run_auto_prospect_task.delay(str(job_id))
+        # Trigger Celery Task (or fallback to direct execution)
+        try:
+            run_auto_prospect_task.delay(str(job_id))
+        except Exception:
+            from services.supervisor_service import SupervisorService
+            supervisor = SupervisorService(db)
+            supervisor.run_auto_prospect(str(job_id))
         
         created_companies.append({"company_id": str(company.id), "job_id": str(job_id)})
 
