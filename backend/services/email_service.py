@@ -1,18 +1,17 @@
 from sqlalchemy.orm import Session
 from models.email_message import EmailMessage, EmailStatus
 from models.activity import Activity
-from services.email_provider import EmailProviderInterface, MockEmailProvider
+from services.email_provider import EmailProviderInterface, MockEmailProvider, get_email_provider
+from services.crm_service import CRMService
 from datetime import datetime, timezone
 
 class EmailService:
-    def __init__(self, db: Session, use_mock: bool = True):
+    def __init__(self, db: Session, use_mock: bool = False):
         self.db = db
-        # For now, default to mock provider as per Phase 8 plan
         if use_mock:
             self.provider: EmailProviderInterface = MockEmailProvider()
         else:
-            # Future: return SendGridEmailProvider() or similar
-            self.provider: EmailProviderInterface = MockEmailProvider()
+            self.provider: EmailProviderInterface = get_email_provider()
 
     def send_draft(self, email_id: str, user_id: str = None) -> EmailMessage:
         email = self.db.query(EmailMessage).filter(EmailMessage.id == email_id).first()
@@ -82,21 +81,29 @@ class EmailService:
         if not email:
             raise Exception("Email not found for provider_message_id")
             
+        crm = CRMService(self.db)
+        
         # Update email status and timestamps
         if event == "DELIVERED":
             email.status = EmailStatus.DELIVERED
             title = "Email Delivered"
             desc = "The email was successfully delivered to the recipient's inbox."
+            if email.entity_type == "company":
+                crm.advance_pipeline_stage(email.entity_id, "Sent")
         elif event == "OPENED":
             email.status = EmailStatus.OPENED
             email.opened_at = datetime.now(timezone.utc)
             title = "Email Opened"
             desc = "The recipient opened the email."
+            if email.entity_type == "company":
+                crm.advance_pipeline_stage(email.entity_id, "Engaged")
         elif event == "REPLIED":
             email.status = EmailStatus.REPLIED
             email.replied_at = datetime.now(timezone.utc)
             title = "Email Replied"
             desc = "The recipient replied to the email."
+            if email.entity_type == "company":
+                crm.advance_pipeline_stage(email.entity_id, "Scheduled")
         elif event == "BOUNCED":
             email.status = EmailStatus.BOUNCED
             title = "Email Bounced"
