@@ -2,8 +2,9 @@ import time
 from sqlalchemy.orm import Session
 from models.ai_prompt import AIPromptVersion
 from models.ai_log import AIRequest, AIUsage
-from services.ai_provider import AIProviderInterface, MockProvider
+from services.ai_provider import AIProviderInterface, MockProvider, GeminiProvider
 from core.ai_config import ai_config
+from core.config import settings
 import uuid
 
 class AIService:
@@ -13,9 +14,10 @@ class AIService:
         self.provider: AIProviderInterface = self._get_provider()
 
     def _get_provider(self) -> AIProviderInterface:
+        if settings.GEMINI_API_KEY or ai_config.AI_PROVIDER == "gemini":
+            return GeminiProvider(api_key=settings.GEMINI_API_KEY or "")
         if ai_config.AI_PROVIDER == "mock":
             return MockProvider()
-        # Fallback to mock for now
         return MockProvider()
 
     def _render_prompt(self, template: str, variables: dict) -> str:
