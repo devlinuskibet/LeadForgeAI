@@ -15,6 +15,15 @@ except Exception:
     sqlite_url = "sqlite:///./leadforge.db"
     engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
 
+# Auto-migrate new schema columns if missing
+try:
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS location VARCHAR;"))
+        conn.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS address VARCHAR;"))
+except Exception as e:
+    print(f"Auto-migration note: {e}")
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
