@@ -7,6 +7,8 @@ interface Company {
   name: string;
   website: string | null;
   status: string;
+  location?: string | null;
+  address?: string | null;
 }
 
 export default function CompaniesList() {

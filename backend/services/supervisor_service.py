@@ -1,14 +1,15 @@
+import uuid
+import json
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from models.orchestration_job import OrchestrationJob
-from models.company import Company
+from models.company import Company, CompanyStatus
 from models.company_analysis import CompanyAnalysis
 from models.email_message import EmailMessage
-from models.ai_prompt import AIPrompt
+from models.ai_prompt import AIPrompt, AIPromptVersion
 from services.scraping_service import ScrapingService
 from services.ai_service import AIService
 from services.context_builder import ContextBuilder
-import json
-from datetime import datetime, timezone
 
 class SupervisorService:
     def __init__(self, db: Session):

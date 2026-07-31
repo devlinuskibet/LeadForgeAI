@@ -10,13 +10,25 @@ interface TimelineEvent {
   user: string;
 }
 
-export default function TimelineWidget({ companyId, refreshTrigger }: { companyId: string, refreshTrigger?: number }) {
+export default function TimelineWidget({ 
+  companyId, 
+  entityType = "company", 
+  entityId, 
+  refreshTrigger 
+}: { 
+  companyId?: string; 
+  entityType?: string; 
+  entityId?: string; 
+  refreshTrigger?: number 
+}) {
+  const targetId = companyId || entityId;
   const [events, setEvents] = useState<TimelineEvent[]>([]);
 
   useEffect(() => {
     const fetchActivities = async () => {
+      if (!targetId) return;
       try {
-        const res = await fetch(`http://localhost:8000/api/activities/entity/company/${companyId}`);
+        const res = await fetch(`http://localhost:8000/api/activities/entity/${entityType}/${targetId}`);
         if (res.ok) {
           const data = await res.json();
           // Map DB Activity to TimelineEvent

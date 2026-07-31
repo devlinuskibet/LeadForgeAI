@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Building2, Globe, MapPin, Search, Bot, Briefcase, Activity, PlayCircle, Target, BrainCircuit, ExternalLink, CalendarDays, CheckCircle2, ChevronRight, XCircle, Tag, Zap, Sparkles, Check, Star, ChevronDown, Users, FileText, History } from 'lucide-react';
+import { ArrowLeft, Building2, Globe, MapPin, Bot, Briefcase, Activity, Tag, Zap, Sparkles, Check, Star, ChevronDown, Users, History } from 'lucide-react';
 import { PreviewEmailModal } from '../components/PreviewEmailModal';
 import TimelineWidget from "../widgets/TimelineWidget";
 
@@ -534,15 +534,12 @@ export default function CompanyDetails() {
       <PreviewEmailModal 
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        subject={emailSubject}
-        setSubject={setEmailSubject}
-        body={emailBody}
-        setBody={setEmailBody}
-        recipient={company?.website || "contact@example.com"}
-        onSend={handleSendEmail}
-        onSaveDraft={handleSaveDraft}
-        isSending={isSending}
-        isSavingDraft={isSavingDraft}
+        email={{
+          subject: emailSubject || (company?.draft_email?.subject || "Outreach Email"),
+          body: emailBody || (company?.draft_email?.body || "Outreach content..."),
+          recipients: [company?.website || "contact@example.com"],
+          sender: "copilot@leadforge.ai"
+        }}
       />
     </div>
   );
