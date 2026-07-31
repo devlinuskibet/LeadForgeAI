@@ -1,0 +1,67 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from core.database import get_db
+from services.deal_service import DealService
+from services.proposal_service import ProposalService
+from pydantic import BaseModel
+from typing import Optional
+from uuid import UUID
+
+router = APIRouter(prefix="/deals", tags=["deals"])
+
+class DealCreate(BaseModel):
+    name: str
+    amount: float
+    company_id: UUID
+    status: Optional[str] = "OPEN"
+
+class DealUpdate(BaseModel):
+    status: str
+    amount: Optional[float] = None
+
+@router.get("/")
+def get_deals(db: Session = Depends(get_db)):
+    service = DealService(db)
+    return service.get_all_deals()
+
+@router.get("/metrics")
+def get_deal_metrics(db: Session = Depends(get_db)):
+    service = DealService(db)
+    return service.get_pipeline_metrics()
+
+@router.post("/")
+def create_deal(payload: DealCreate, db: Session = Depends(get_db)):
+    service = DealService(db)
+    deal = service.create_deal(
+        name=payload.name,
+        amount=payload.amount,
+        company_id=payload.company_id,
+        status=payload.status or "OPEN"
+    )
+    return {
+        "success": True,
+        "deal_id": str(deal.id),
+        "status": deal.status.value
+    }
+
+@router.put("/{deal_id}")
+def update_deal(deal_id: UUID, payload: DealUpdate, db: Session = Depends(get_db)):
+    service = DealService(db)
+    try:
+        deal = service.update_deal_status(deal_id=deal_id, status=payload.status, amount=payload.amount)
+        return {
+            "success": True,
+            "deal_id": str(deal.id),
+            "status": deal.status.value
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/company/{company_id}/generate-proposal")
+def generate_proposal(company_id: UUID, db: Session = Depends(get_db)):
+    service = ProposalService(db)
+    try:
+        proposal = service.generate_proposal_for_company(company_id)
+        return proposal
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

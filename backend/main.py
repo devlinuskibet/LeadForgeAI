@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from api import auth, companies, contacts, activities, notes, ai_management, copilot, prospecting, dashboard, discovery, emails, health, export
+from api import auth, companies, contacts, activities, notes, ai_management, copilot, prospecting, dashboard, discovery, emails, health, export, deals
 from core.errors import AppException, app_exception_handler, http_exception_handler, generic_exception_handler
 from core.middleware import SecurityHeadersMiddleware
 from core.rate_limiter import RateLimiterMiddleware
@@ -39,3 +39,4 @@ app.include_router(prospecting.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(discovery.router, prefix="/api")
 app.include_router(emails.router, prefix="/api")
+app.include_router(deals.router, prefix="/api")
