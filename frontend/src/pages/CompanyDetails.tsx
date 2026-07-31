@@ -209,7 +209,7 @@ export default function CompanyDetails() {
   }
 
   return (
-    <div className="flex flex-col h-full space-y-6 max-w-7xl mx-auto w-full pb-12">
+    <div className="flex flex-col min-h-full space-y-6 max-w-7xl mx-auto w-full pb-12">
       {/* Top Breadcrumb */}
       <div className="flex items-center justify-between">
         <Link to="/companies" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">

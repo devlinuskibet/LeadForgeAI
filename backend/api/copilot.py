@@ -79,7 +79,7 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
     
     org = db.query(Organization).first()
     if not org:
-        org = Organization(id=uuid.uuid4(), organization_id=uuid.uuid4(), name="Default Org")
+        org = Organization(id=uuid.uuid4(), name="Default Org")
         db.add(org)
         db.commit()
     org_id = org.id
