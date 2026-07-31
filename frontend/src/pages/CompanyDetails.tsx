@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Building2, Globe, MapPin, Search, Bot, Briefcase, Activity, PlayCircle, Target, BrainCircuit, ExternalLink, CalendarDays, CheckCircle2, ChevronRight, XCircle, Tag } from 'lucide-react';
+import { ArrowLeft, Building2, Globe, MapPin, Search, Bot, Briefcase, Activity, PlayCircle, Target, BrainCircuit, ExternalLink, CalendarDays, CheckCircle2, ChevronRight, XCircle, Tag, Zap, Sparkles, Check, Star } from 'lucide-react';
 import { PreviewEmailModal } from '../components/PreviewEmailModal';
 import TimelineWidget from "../widgets/TimelineWidget";
 
@@ -277,7 +277,7 @@ export default function CompanyDetails() {
                 </>
               ) : (
                 <>
-                  ⚡ Auto-Prospect
+                  <Zap size={16} /> Auto-Prospect
                 </>
               )}
             </button>
@@ -296,7 +296,7 @@ export default function CompanyDetails() {
                 </>
               ) : (
                 <>
-                  ✨ Generate Outreach
+                  <Sparkles size={16} /> Generate Outreach
                 </>
               )}
             </button>
@@ -311,11 +311,11 @@ export default function CompanyDetails() {
             <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 -translate-y-1/2"></div>
             
             <div className="flex flex-col items-center gap-2 bg-white px-2">
-              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm">✓</div>
+              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm"><Check size={16} /></div>
               <span className="text-gray-900">Discovered</span>
             </div>
             <div className="flex flex-col items-center gap-2 bg-white px-2">
-              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm">✓</div>
+              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm"><Check size={16} /></div>
               <span className="text-gray-900">Analyzed</span>
             </div>
             <div className="flex flex-col items-center gap-2 bg-white px-2">
@@ -352,7 +352,9 @@ export default function CompanyDetails() {
               {company.rating && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Google Rating</span>
-                  <span className="font-medium text-gray-900">{company.rating} ⭐ ({company.review_count} reviews)</span>
+                  <span className="font-medium text-gray-900 flex items-center gap-1">
+                    {company.rating} <Star size={14} className="text-yellow-400 fill-current" /> ({company.review_count} reviews)
+                  </span>
                 </div>
               )}
               {company.business_status && (
@@ -366,7 +368,7 @@ export default function CompanyDetails() {
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span>⚡</span> Sales Intelligence
+              <Zap size={18} className="text-purple-600" /> Sales Intelligence
             </h3>
 
             {insights ? (
@@ -550,7 +552,7 @@ export default function CompanyDetails() {
                         )}
                       </div>
                       <span className={`px-2 py-1 text-xs font-medium rounded-md border ${company.draft_email.status !== 'DRAFT' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
-                        {company.draft_email.status !== 'DRAFT' && company.draft_email.sent_at ? `✓ Sent on ${new Date(company.draft_email.sent_at).toLocaleDateString()}` : company.draft_email.status}
+                        {company.draft_email.status !== 'DRAFT' && company.draft_email.sent_at ? `Sent on ${new Date(company.draft_email.sent_at).toLocaleDateString()}` : company.draft_email.status}
                       </span>
                     </div>
                     <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap font-sans">
