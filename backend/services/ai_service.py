@@ -70,6 +70,7 @@ class AIService:
                 cost = (response.input_tokens / 1000 * 0.0015) + (response.output_tokens / 1000 * 0.002)
                 ai_usage = AIUsage(
                     request_id=ai_request.id,
+                    organization_id=organization_id,
                     input_tokens=response.input_tokens,
                     output_tokens=response.output_tokens,
                     total_tokens=response.total_tokens,
