@@ -30,7 +30,7 @@ export default function Dashboard() {
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl font-bold text-gray-900">Good Morning, Linus 👋</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Good Morning, Linus</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
