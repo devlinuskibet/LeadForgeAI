@@ -78,6 +78,11 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Company not found")
     
     org = db.query(Organization).first()
+    if not org:
+        org = Organization(id=uuid.uuid4(), organization_id=uuid.uuid4(), name="Default Org")
+        db.add(org)
+        db.commit()
+    org_id = org.id
 
     # 1. Scrape Website
     scraper = ScrapingService()
@@ -89,7 +94,7 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
     if not prompt:
         prompt = AIPrompt(
             id=uuid.uuid4(),
-            organization_id=org.id if org else uuid.uuid4(),
+            organization_id=org_id,
             name="Website Analysis",
             feature="website_analysis",
             description="Analyzes target website text for operational & tech issues"
@@ -102,6 +107,7 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
         active_version = AIPromptVersion(
             id=uuid.uuid4(),
             prompt_id=prompt.id,
+            organization_id=org_id,
             version_number=1,
             template="Analyze this website text: {{website_text}}. Identify inferred problems and recommended solutions as JSON.",
             model="gemini-1.5-flash",

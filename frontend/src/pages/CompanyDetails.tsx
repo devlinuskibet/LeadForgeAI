@@ -333,10 +333,107 @@ export default function CompanyDetails() {
           </div>
         </div>
 
+      {/* Sales Intelligence Full Width Banner */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2 text-base">
+          <Zap size={20} className="text-purple-600 fill-current" /> Sales Intelligence & AI Insights
+        </h3>
+
+        {insights ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Opportunity Score Card */}
+            <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100 flex flex-col justify-between">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Opportunity Score</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl font-bold text-gray-900">
+                    {insights.opportunity_score || 92}
+                  </span>
+                  <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">High Priority</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-purple-100">
+                <p className="text-xs text-gray-500 font-medium">Estimated Deal Value</p>
+                <span className="text-2xl font-bold text-gray-900">
+                  ${insights.recommended_solutions?.reduce((acc: number, curr: any) => acc + (curr.estimated_value || 0), 0).toLocaleString() || "3,200"}
+                </span>
+              </div>
+            </div>
+
+            {/* Identified Problems & Solutions */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Identified Operational Gaps</h4>
+                <ul className="space-y-2">
+                  {insights.inferred_problems?.map((prob: any, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-xs">
+                      <span className="text-red-500 font-bold">•</span>
+                      <div>
+                        <span className="text-gray-900 font-medium">{prob.problem || prob}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Recommended Solutions</h4>
+                <div className="space-y-2">
+                  {insights.recommended_solutions?.map((sol: any, i: number) => (
+                    <div key={i} className="bg-gray-50 p-2.5 rounded-lg border border-gray-100 flex justify-between items-center text-xs">
+                      <span className="font-medium text-gray-900">{sol.solution || sol}</span>
+                      <span className="font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full shrink-0">
+                        ${sol.estimated_value?.toLocaleString() || "1,500"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* AI Sales Coach */}
+            <div>
+              <h4 className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Briefcase size={14} /> AI Sales Coach Strategy
+              </h4>
+              <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 h-full max-h-[220px] overflow-y-auto">
+                <p className="text-xs text-purple-900 leading-relaxed italic">
+                  "{insights.sales_coach_advice || "Their website lacks online admissions. Admissions season starts next month. Parents currently must call the school. Recommend offering an Admissions Portal, AI Chatbot, and Online Payments."}"
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-6 px-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-100/80">
+            <div className="w-10 h-10 bg-white text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
+              <Zap size={20} className="fill-current" />
+            </div>
+            <h4 className="text-sm font-bold text-gray-900 mb-1">AI Website Analysis Ready</h4>
+            <p className="text-xs text-gray-600 max-w-md mx-auto mb-3">Run automated website scraping to infer operational problems, calculate deal opportunity score, and generate AI solution packages.</p>
+            <button 
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-lg text-xs transition-colors shadow-sm inline-flex items-center gap-2"
+            >
+              {analyzing ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Analyzing Website...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={14} /> Run AI Analysis Now
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Workspace Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
         {/* Left Column: About & Contacts */}
-        <div className="lg:col-span-1 space-y-6 overflow-y-auto">
+        <div className="lg:col-span-1 space-y-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 className="font-semibold text-gray-900 mb-4">About</h3>
             <p className="text-sm text-gray-600">{company.description}</p>
@@ -364,110 +461,6 @@ export default function CompanyDetails() {
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Zap size={18} className="text-purple-600" /> Sales Intelligence
-            </h3>
-
-            {insights ? (
-              <div className="space-y-6">
-                {/* Opportunity Score Header */}
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
-                  <div>
-                    <p className="text-sm text-gray-500 font-medium">Opportunity Score</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-gray-900">
-                        {insights.opportunity_score || 92}
-                      </span>
-                      <span className="text-sm font-medium text-green-600">High Priority</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500 font-medium">Estimated Value</p>
-                    <span className="text-2xl font-bold text-gray-900">
-                      ${insights.recommended_solutions?.reduce((acc: number, curr: any) => acc + (curr.estimated_value || 0), 0).toLocaleString() || "3,200"}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wider">Identified Problems</h4>
-                  <ul className="space-y-2">
-                    {insights.inferred_problems?.map((prob: any, i: number) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <span className="text-red-500 mt-0.5">•</span>
-                        <div>
-                          <span className="text-gray-900 font-medium">{prob.problem}</span>
-                          {prob.severity && (
-                            <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
-                              {prob.severity}
-                            </span>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-4 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wider">Recommended Solutions</h4>
-                  <div className="space-y-3">
-                    {insights.recommended_solutions?.map((sol: any, i: number) => (
-                      <div key={i} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                        <div className="flex justify-between items-start mb-1">
-                          <span className="text-sm font-medium text-gray-900">{sol.solution}</span>
-                          <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                            ${sol.estimated_value?.toLocaleString() || "1,500"}
-                          </span>
-                        </div>
-                        {sol.business_impact && (
-                          <p className="text-xs text-gray-600 mt-2 italic">
-                            "{sol.business_impact}"
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-purple-700 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <Briefcase size={16} /> AI Sales Coach
-                  </h4>
-                  <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
-                    <p className="text-sm text-purple-900 leading-relaxed">
-                      {insights.sales_coach_advice || "Their website lacks online admissions. Admissions season starts next month. Parents currently must call the school. Recommend offering an Admissions Portal, AI Chatbot, and Online Payments."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 px-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-100/80">
-                <div className="w-12 h-12 bg-white text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                  <Zap size={22} className="fill-current" />
-                </div>
-                <h4 className="text-sm font-bold text-gray-900 mb-1">AI Website Analysis Ready</h4>
-                <p className="text-xs text-gray-600 max-w-sm mx-auto mb-4">Run automated website scraping to infer operational problems, calculate deal opportunity score, and generate AI solution packages.</p>
-                <button 
-                  onClick={handleAnalyze}
-                  disabled={analyzing}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors shadow-sm inline-flex items-center gap-2"
-                >
-                  {analyzing ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      Analyzing Website...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={16} /> Run AI Analysis Now
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

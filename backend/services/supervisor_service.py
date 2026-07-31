@@ -53,6 +53,7 @@ class SupervisorService:
                 analysis_version = AIPromptVersion(
                     id=uuid.uuid4(),
                     prompt_id=analysis_prompt.id,
+                    organization_id=org_id or uuid.uuid4(),
                     version_number=1,
                     template="Analyze this website text: {{website_text}}. Identify inferred problems and recommended solutions as JSON.",
                     model="gemini-1.5-flash",
@@ -113,6 +114,7 @@ class SupervisorService:
                 outreach_version = AIPromptVersion(
                     id=uuid.uuid4(),
                     prompt_id=outreach_prompt.id,
+                    organization_id=org_id or uuid.uuid4(),
                     version_number=1,
                     template="Draft a personalized outreach email for {{company_context}}.",
                     model="gemini-1.5-flash",
