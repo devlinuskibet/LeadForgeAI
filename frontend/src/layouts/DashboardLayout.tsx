@@ -1,5 +1,5 @@
 import { Outlet, Link } from "react-router-dom";
-import { LayoutDashboard, Users, Settings, LogOut, Radar } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Radar, DollarSign } from "lucide-react";
 import NotificationsButton from "../widgets/NotificationsButton";
 
 export default function DashboardLayout() {
@@ -19,6 +19,9 @@ export default function DashboardLayout() {
           </Link>
           <Link to="/discovery" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 font-medium">
             <Radar size={20} /> Discovery
+          </Link>
+          <Link to="/deals" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 font-medium">
+            <DollarSign size={20} /> Deals & Revenue
           </Link>
           <Link to="/settings" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 font-medium">
             <Settings size={20} /> Settings
