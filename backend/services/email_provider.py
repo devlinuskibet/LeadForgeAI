@@ -28,14 +28,16 @@ class SendGridEmailProvider(EmailProviderInterface):
     def __init__(self, api_key: str):
         self.api_key = api_key
 
-    def send_email(self, to_addresses: List[str], subject: str, body: str, sender: str = "noreply@leadforge.ai") -> Dict[str, Any]:
+    def send_email(self, to_addresses: List[str], subject: str, body: str, sender: str = None) -> Dict[str, Any]:
+        from core.config import settings
+        sender_addr = sender or settings.DEFAULT_SENDER_EMAIL
         import uuid
         try:
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail
 
             message = Mail(
-                from_email=sender,
+                from_email=sender_addr,
                 to_emails=to_addresses,
                 subject=subject,
                 html_content=body
