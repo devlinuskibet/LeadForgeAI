@@ -37,7 +37,31 @@ class SupervisorService:
             website_text = scraper.scrape_url(company.website or "http://example.com")
 
             analysis_prompt = self.db.query(AIPrompt).filter(AIPrompt.feature == "website_analysis").first()
-            analysis_version = next((v for v in analysis_prompt.versions if v.is_active), None) if analysis_prompt else None
+            if not analysis_prompt:
+                analysis_prompt = AIPrompt(
+                    id=uuid.uuid4(),
+                    organization_id=org_id or uuid.uuid4(),
+                    name="Website Analysis",
+                    feature="website_analysis",
+                    description="Analyzes target website text for operational & tech issues"
+                )
+                self.db.add(analysis_prompt)
+                self.db.commit()
+
+            analysis_version = next((v for v in analysis_prompt.versions if v.is_active), None) if analysis_prompt.versions else None
+            if not analysis_version:
+                analysis_version = AIPromptVersion(
+                    id=uuid.uuid4(),
+                    prompt_id=analysis_prompt.id,
+                    version_number=1,
+                    template="Analyze this website text: {{website_text}}. Identify inferred problems and recommended solutions as JSON.",
+                    model="gemini-1.5-flash",
+                    temperature=0.3,
+                    max_tokens=1000,
+                    is_active=True
+                )
+                self.db.add(analysis_version)
+                self.db.commit()
             
             ai_service = AIService(self.db)
             if analysis_version:
@@ -73,7 +97,31 @@ class SupervisorService:
             self.db.commit()
 
             outreach_prompt = self.db.query(AIPrompt).filter(AIPrompt.feature == "email_outreach").first()
-            outreach_version = next((v for v in outreach_prompt.versions if v.is_active), None) if outreach_prompt else None
+            if not outreach_prompt:
+                outreach_prompt = AIPrompt(
+                    id=uuid.uuid4(),
+                    organization_id=org_id or uuid.uuid4(),
+                    name="Email Outreach",
+                    feature="email_outreach",
+                    description="Generates cold outreach email drafts based on company analysis"
+                )
+                self.db.add(outreach_prompt)
+                self.db.commit()
+
+            outreach_version = next((v for v in outreach_prompt.versions if v.is_active), None) if outreach_prompt.versions else None
+            if not outreach_version:
+                outreach_version = AIPromptVersion(
+                    id=uuid.uuid4(),
+                    prompt_id=outreach_prompt.id,
+                    version_number=1,
+                    template="Draft a personalized outreach email for {{company_context}}.",
+                    model="gemini-1.5-flash",
+                    temperature=0.7,
+                    max_tokens=1000,
+                    is_active=True
+                )
+                self.db.add(outreach_version)
+                self.db.commit()
 
             if outreach_version:
                 context_builder = ContextBuilder(self.db)
@@ -111,7 +159,9 @@ class SupervisorService:
             job.completed_at = datetime.now(timezone.utc)
             
             if job.started_at and job.completed_at:
-                duration = (job.completed_at - job.started_at).total_seconds()
+                started = job.started_at.replace(tzinfo=timezone.utc) if job.started_at.tzinfo is None else job.started_at
+                completed = job.completed_at.replace(tzinfo=timezone.utc) if job.completed_at.tzinfo is None else job.completed_at
+                duration = (completed - started).total_seconds()
                 logs = list(job.logs) if job.logs else []
                 logs.append(f"Completed in {int(duration)} seconds")
                 job.logs = logs

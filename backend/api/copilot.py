@@ -87,11 +87,30 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
     # 2. Get AI Prompt
     prompt = db.query(AIPrompt).filter(AIPrompt.feature == "website_analysis").first()
     if not prompt:
-        raise HTTPException(status_code=404, detail="Website analysis prompt not found")
-        
-    active_version = next((v for v in prompt.versions if v.is_active), None)
+        prompt = AIPrompt(
+            id=uuid.uuid4(),
+            organization_id=org.id if org else uuid.uuid4(),
+            name="Website Analysis",
+            feature="website_analysis",
+            description="Analyzes target website text for operational & tech issues"
+        )
+        db.add(prompt)
+        db.commit()
+
+    active_version = next((v for v in prompt.versions if v.is_active), None) if prompt.versions else None
     if not active_version:
-        raise HTTPException(status_code=404, detail="No active version for website analysis prompt")
+        active_version = AIPromptVersion(
+            id=uuid.uuid4(),
+            prompt_id=prompt.id,
+            version_number=1,
+            template="Analyze this website text: {{website_text}}. Identify inferred problems and recommended solutions as JSON.",
+            model="gemini-1.5-flash",
+            temperature=0.3,
+            max_tokens=1000,
+            is_active=True
+        )
+        db.add(active_version)
+        db.commit()
 
     # 3. Analyze with AI
     ai_service = AIService(db)

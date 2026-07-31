@@ -444,16 +444,27 @@ export default function CompanyDetails() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Search className="text-gray-400" size={24} />
+              <div className="text-center py-8 px-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-100/80">
+                <div className="w-12 h-12 bg-white text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                  <Zap size={22} className="fill-current" />
                 </div>
-                <p className="text-sm text-gray-500">No intelligence gathered yet.</p>
+                <h4 className="text-sm font-bold text-gray-900 mb-1">AI Website Analysis Ready</h4>
+                <p className="text-xs text-gray-600 max-w-sm mx-auto mb-4">Run automated website scraping to infer operational problems, calculate deal opportunity score, and generate AI solution packages.</p>
                 <button 
                   onClick={handleAnalyze}
-                  className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  disabled={analyzing}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors shadow-sm inline-flex items-center gap-2"
                 >
-                  Analyze Website Now
+                  {analyzing ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      Analyzing Website...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} /> Run AI Analysis Now
+                    </>
+                  )}
                 </button>
               </div>
             )}
