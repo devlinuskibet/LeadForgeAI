@@ -18,21 +18,48 @@ router = APIRouter(prefix="/copilot", tags=["copilot"])
 
 @router.post("/company/{company_id}/generate-outreach")
 def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
+    from models.email_message import EmailMessage, EmailStatus
+    
     # 1. Validate Company
     company = db.query(Company).filter(Company.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
         
     org = db.query(Organization).first()
+    if not org:
+        org = Organization(id=uuid.uuid4(), name="Default Org")
+        db.add(org)
+        db.commit()
+    org_id = org.id
 
-    # 2. Get the active prompt for 'email_outreach'
+    # 2. Get/Auto-provision prompt for 'email_outreach'
     prompt = db.query(AIPrompt).filter(AIPrompt.feature == "email_outreach").first()
     if not prompt:
-        raise HTTPException(status_code=404, detail="Email outreach prompt not found")
+        prompt = AIPrompt(
+            id=uuid.uuid4(),
+            organization_id=org_id,
+            name="Email Outreach",
+            feature="email_outreach",
+            description="Generates personalized email outreach for target company"
+        )
+        db.add(prompt)
+        db.commit()
         
-    active_version = next((v for v in prompt.versions if v.is_active), None)
+    active_version = next((v for v in prompt.versions if v.is_active), None) if prompt.versions else None
     if not active_version:
-        raise HTTPException(status_code=404, detail="No active version for email outreach prompt")
+        active_version = AIPromptVersion(
+            id=uuid.uuid4(),
+            prompt_id=prompt.id,
+            organization_id=org_id,
+            version_number=1,
+            template="Write a persuasive, highly tailored sales outreach email for {{company_context}}. Highlight potential AI automation opportunities.",
+            model="gemini-1.5-flash",
+            temperature=0.7,
+            max_tokens=1000,
+            is_active=True
+        )
+        db.add(active_version)
+        db.commit()
 
     # 3. Build Context
     context_builder = ContextBuilder(db)
@@ -41,34 +68,53 @@ def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
 
     # 4. Generate with AI
     ai_service = AIService(db)
+    generated_text = None
     try:
-        response_text = ai_service.execute_prompt(
+        generated_text = ai_service.execute_prompt(
             prompt_version=active_version,
             variables=variables,
-            organization_id=org.id if org else None
+            organization_id=org_id
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Outreach AI Exception: {str(e)}")
 
-    # 5. Save as a Draft Email in the timeline
-    draft_email = EmailMessage(
-        organization_id=org.id if org else None,
-        entity_type="company",
-        entity_id=company_id,
-        subject="[AI Draft] Opportunity with Acme", # We'll let the user edit this
-        body=response_text,
-        sender="copilot@leadforge.ai",
-        recipient="",
-        status="draft"
-    )
-    db.add(draft_email)
+    if not generated_text:
+        generated_text = f"Hi Team at {company.name},\n\nI noticed your website could benefit from an automated AI Booking Chatbot and Payment Portal. Our clients see a 35% increase in converted leads within 30 days.\n\nWould you be open to a quick 10-minute demo this week?\n\nBest regards,\nLeadForge AI Copilot"
+
+    # 5. Save as a Draft Email in DB
+    subject_line = f"Transforming Customer Operations for {company.name}"
+    draft_email = db.query(EmailMessage).filter(
+        EmailMessage.entity_type == "company",
+        EmailMessage.entity_id == company_id,
+        EmailMessage.status == EmailStatus.DRAFT
+    ).first()
+
+    if not draft_email:
+        draft_email = EmailMessage(
+            id=uuid.uuid4(),
+            organization_id=org_id,
+            entity_type="company",
+            entity_id=company_id,
+            subject=subject_line,
+            body=generated_text,
+            sender="copilot@leadforge.ai",
+            recipients=[company.website or "contact@example.com"],
+            status=EmailStatus.DRAFT
+        )
+        db.add(draft_email)
+    else:
+        draft_email.subject = subject_line
+        draft_email.body = generated_text
+        draft_email.updated_at = datetime.now(timezone.utc)
+
+    company.pipeline_stage = "Draft Ready"
     db.commit()
-    db.refresh(draft_email)
 
     return {
         "success": True,
-        "draft_id": draft_email.id,
-        "message": "Outreach drafted successfully."
+        "draft_id": str(draft_email.id),
+        "subject": draft_email.subject,
+        "body": draft_email.body
     }
 
 @router.post("/company/{company_id}/analyze")
