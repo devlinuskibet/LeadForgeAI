@@ -63,3 +63,19 @@ def simulate_email_events_task(provider_message_id: str):
     except Exception as e:
         logger.error(f"Failed to simulate OPENED: {e}")
 
+@celery_app.task(name="evaluate_campaign_followups_task")
+def evaluate_campaign_followups_task():
+    logger.info("Evaluating multi-touch campaign follow-up rules...")
+    db = SessionLocal()
+    try:
+        from services.campaign_service import CampaignService
+        service = CampaignService(db)
+        followups = service.evaluate_followups()
+        logger.info(f"Evaluated campaign follow-ups: created {len(followups)} drafts")
+        return {"created_count": len(followups), "followups": followups}
+    except Exception as e:
+        logger.error(f"Error evaluating campaign follow-ups: {e}")
+        return {"error": str(e)}
+    finally:
+        db.close()
+
