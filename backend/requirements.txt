@@ -46,3 +46,4 @@ vine==5.1.0
 wcwidth==0.8.2
 beautifulsoup4==4.12.3
 requests==2.31.0
+sendgrid==6.11.0
