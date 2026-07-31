@@ -4,7 +4,7 @@ from sqlalchemy import func
 from core.database import get_db
 from models.company import Company
 from models.company_analysis import CompanyAnalysis
-from models.email_message import EmailMessage
+from models.email_message import EmailMessage, EmailStatus
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -17,11 +17,11 @@ def get_daily_briefing(db: Session = Depends(get_db)):
     expected_revenue = pipeline_value * 0.4
     
     # Get total companies with drafts ready (mock logic)
-    drafts_ready = db.query(EmailMessage).filter(EmailMessage.status == "DRAFT").count()
+    drafts_ready = db.query(EmailMessage).filter(EmailMessage.status == EmailStatus.DRAFT).count()
     
-    emails_sent = db.query(EmailMessage).filter(EmailMessage.status.in_(["SENT", "DELIVERED", "OPENED", "REPLIED"])).count()
-    emails_opened = db.query(EmailMessage).filter(EmailMessage.status.in_(["OPENED", "REPLIED"])).count()
-    emails_replied = db.query(EmailMessage).filter(EmailMessage.status == "REPLIED").count()
+    emails_sent = db.query(EmailMessage).filter(EmailMessage.status.in_([EmailStatus.SENT, EmailStatus.DELIVERED, EmailStatus.OPENED, EmailStatus.REPLIED])).count()
+    emails_opened = db.query(EmailMessage).filter(EmailMessage.status.in_([EmailStatus.OPENED, EmailStatus.REPLIED])).count()
+    emails_replied = db.query(EmailMessage).filter(EmailMessage.status == EmailStatus.REPLIED).count()
     
     # Follow-ups due (mock logic)
     follow_ups_due = 5
