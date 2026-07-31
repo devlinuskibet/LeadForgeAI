@@ -59,9 +59,9 @@ class SupervisorService:
                 analysis.status = "completed"
                 
                 logs = list(job.logs) if job.logs else []
-                logs.append("✓ Website analyzed")
-                logs.append("✓ Problems identified")
-                logs.append("✓ Solutions recommended")
+                logs.append("Website analyzed")
+                logs.append("Problems identified")
+                logs.append("Solutions recommended")
                 job.logs = logs
                 self.db.commit()
 
@@ -101,8 +101,8 @@ class SupervisorService:
                 self.db.add(draft_email)
                 
                 logs = list(job.logs) if job.logs else []
-                logs.append("✓ Email drafted")
-                logs.append("✓ Draft saved")
+                logs.append("Email drafted")
+                logs.append("Draft saved")
                 job.logs = logs
                 self.db.commit()
 
@@ -125,7 +125,7 @@ class SupervisorService:
             job.completed_at = datetime.now(timezone.utc)
             
             logs = list(job.logs) if job.logs else []
-            logs.append(f"❌ Error: {str(e)}")
+            logs.append(f"Error: {str(e)}")
             job.logs = logs
             self.db.commit()
 
@@ -180,9 +180,9 @@ class SupervisorService:
             search_duration = round(time.time() - search_start, 1)
             
             logs = list(job.logs) if job.logs else []
-            logs.append(f"✓ {len(results)} businesses found")
+            logs.append(f"{len(results)} businesses found")
             logs.append(f"{search_duration} seconds")
-            logs.append("────────────────")
+            logs.append("----------------")
             logs.append("Checking websites...")
             job.logs = logs
             self.db.commit()
@@ -228,9 +228,9 @@ class SupervisorService:
             
             check_duration = round(time.time() - check_start, 1)
             logs = list(job.logs) if job.logs else []
-            logs.append(f"✓ {website_count} websites available")
+            logs.append(f"{website_count} websites available")
             logs.append(f"{check_duration} seconds")
-            logs.append("────────────────")
+            logs.append("----------------")
             logs.append("Analyzing...")
             logs.append(f"{created_count} queued")
             job.logs = logs
@@ -256,7 +256,7 @@ class SupervisorService:
             job.completed_at = datetime.now(timezone.utc)
             
             logs = list(job.logs) if job.logs else []
-            logs.append("────────────────")
+            logs.append("----------------")
             logs.append(f"Generating outreach for {created_count} prospects in background")
             job.logs = logs
             self.db.commit()
@@ -268,6 +268,6 @@ class SupervisorService:
             job.completed_at = datetime.now(timezone.utc)
             
             logs = list(job.logs) if job.logs else []
-            logs.append(f"❌ Error: {str(e)}")
+            logs.append(f"Error: {str(e)}")
             job.logs = logs
             self.db.commit()

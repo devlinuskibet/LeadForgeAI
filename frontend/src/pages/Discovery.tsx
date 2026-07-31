@@ -52,7 +52,7 @@ export function Discovery() {
     } catch (err) {
       console.error("Failed to start discovery", err);
       setJobStatus('failed');
-      setLogs(prev => [...prev, "❌ Failed to connect to discovery service"]);
+      setLogs(prev => [...prev, "Failed to connect to discovery service"]);
     }
   };
 
@@ -257,9 +257,8 @@ export function Discovery() {
             <div className="space-y-2">
               {logs.map((log, i) => (
                 <div key={i} className={`flex items-start ${
-                  log.startsWith('✓') ? 'text-green-400' :
-                  log.startsWith('❌') ? 'text-red-400' :
-                  log.startsWith('─') ? 'text-gray-600' :
+                  log.toLowerCase().includes('error') || log.toLowerCase().includes('failed') ? 'text-red-400' :
+                  log.startsWith('---') || log.startsWith('──') ? 'text-gray-600' :
                   'text-gray-300'
                 }`}>
                   {log.startsWith('─') ? (
@@ -379,9 +378,8 @@ export function Discovery() {
             <div className="space-y-2">
               {logs.map((log, i) => (
                 <div key={i} className={`flex items-start ${
-                  log.startsWith('✓') ? 'text-green-400' :
-                  log.startsWith('❌') ? 'text-red-400' :
-                  log.startsWith('─') ? 'text-gray-600' :
+                  log.toLowerCase().includes('error') || log.toLowerCase().includes('failed') ? 'text-red-400' :
+                  log.startsWith('---') || log.startsWith('──') ? 'text-gray-600' :
                   'text-gray-300'
                 }`}>
                   {log.startsWith('─') ? (
