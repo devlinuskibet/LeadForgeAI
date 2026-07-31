@@ -11,6 +11,7 @@ interface Company {
 
 export default function CompaniesList() {
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [bulkData, setBulkData] = useState("");
@@ -91,6 +92,8 @@ export default function CompaniesList() {
           </div>
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
             placeholder="Search companies..."
           />
@@ -132,18 +135,20 @@ export default function CompaniesList() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     Loading companies...
                   </td>
                 </tr>
-              ) : companies.length === 0 ? (
+              ) : companies.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.website || '').toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     No companies found.
                   </td>
                 </tr>
               ) : (
-                companies.map((company) => (
+                companies
+                  .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.website || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                  .map((company) => (
                   <tr key={company.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link to={`/companies/${company.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900">
