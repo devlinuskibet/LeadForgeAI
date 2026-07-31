@@ -75,7 +75,11 @@ pytest backend/tests
    ```
 4. Start FastAPI server:
    ```bash
-   uvicorn main:app --reload
+   uvicorn main:app --reload --port 8000
+   ```
+5. Start Celery Worker (Optional background worker for asynchronous jobs):
+   ```bash
+   python -m celery -A workers.tasks worker --loglevel=info -P solo
    ```
 
 ### Frontend Setup
