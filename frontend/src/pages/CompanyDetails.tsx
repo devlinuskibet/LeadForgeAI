@@ -489,7 +489,7 @@ export default function CompanyDetails() {
                     </p>
                     <ul className="space-y-1">
                       {job.logs?.map((log: string, i: number) => (
-                        <li key={i} className={`text-xs ${log.startsWith('✓') ? 'text-green-600' : 'text-gray-600'}`}>
+                        <li key={i} className={`text-xs ${log.toLowerCase().includes('error') ? 'text-red-600' : 'text-green-600'}`}>
                           {log}
                         </li>
                       ))}

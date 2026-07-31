@@ -346,7 +346,7 @@ export function Discovery() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">Estimated Outreach Time</span>
-                    <span className="text-sm font-bold text-gray-900">≈ {Math.ceil(summary.estimated_outreach_time_mins)} mins</span>
+                    <span className="text-sm font-bold text-gray-900">~ {Math.ceil(summary.estimated_outreach_time_mins)} mins</span>
                   </div>
                 </div>
               </div>
@@ -467,7 +467,7 @@ export function Discovery() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">Estimated Outreach Time</span>
-                    <span className="text-sm font-bold text-gray-900">≈ {Math.ceil(summary.estimated_outreach_time_mins)} mins</span>
+                    <span className="text-sm font-bold text-gray-900">~ {Math.ceil(summary.estimated_outreach_time_mins)} mins</span>
                   </div>
                 </div>
               </div>
