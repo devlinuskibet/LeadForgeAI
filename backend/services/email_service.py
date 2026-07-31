@@ -51,7 +51,7 @@ class EmailService:
                 entity_type=email.entity_type,
                 entity_id=email.entity_id,
                 type="email",
-                title="📧 Outreach Email Sent",
+                title="Outreach Email Sent",
                 description=activity_desc,
                 created_by_id=user_id
             )
@@ -85,21 +85,21 @@ class EmailService:
         # Update email status and timestamps
         if event == "DELIVERED":
             email.status = EmailStatus.DELIVERED
-            title = "📬 Email Delivered"
+            title = "Email Delivered"
             desc = "The email was successfully delivered to the recipient's inbox."
         elif event == "OPENED":
             email.status = EmailStatus.OPENED
             email.opened_at = datetime.now(timezone.utc)
-            title = "👀 Email Opened"
+            title = "Email Opened"
             desc = "The recipient opened the email."
         elif event == "REPLIED":
             email.status = EmailStatus.REPLIED
             email.replied_at = datetime.now(timezone.utc)
-            title = "↩️ Email Replied"
+            title = "Email Replied"
             desc = "The recipient replied to the email."
         elif event == "BOUNCED":
             email.status = EmailStatus.BOUNCED
-            title = "⚠️ Email Bounced"
+            title = "Email Bounced"
             desc = "The email could not be delivered (bounced)."
         else:
             # Log unknown event but don't change status
