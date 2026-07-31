@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, Plus, MoreHorizontal } from "lucide-react";
+import { Search, Filter, Plus, MoreHorizontal, Circle } from "lucide-react";
 
 interface Company {
   id: string;
@@ -155,9 +155,9 @@ export default function CompaniesList() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium flex items-center gap-1">
-                        {(company as any).opportunity_score >= 90 ? <span className="text-green-500">🟢</span> :
-                         (company as any).opportunity_score >= 70 ? <span className="text-yellow-500">🟡</span> :
-                         <span className="text-red-500">🔴</span>}
+                        {(company as any).opportunity_score >= 90 ? <Circle size={10} className="fill-current text-green-500" /> :
+                         (company as any).opportunity_score >= 70 ? <Circle size={10} className="fill-current text-yellow-500" /> :
+                         <Circle size={10} className="fill-current text-red-500" />}
                         {(company as any).opportunity_score}
                       </div>
                     </td>
