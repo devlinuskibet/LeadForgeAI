@@ -221,30 +221,34 @@ export default function CompanyDetails() {
         </span>
       </div>
 
-      {/* Header Card with Dropdown Actions */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Elevated Hero Header */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100/90 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="flex items-start md:items-center gap-5">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-200">
             <Building2 size={32} />
           </div>
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">{company.name}</h1>
-              <span className="px-2.5 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded-full border border-green-200">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">{company.name}</h1>
+              <span className="px-3 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 shadow-2xs flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 {company.status}
               </span>
+              <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-bold rounded-full border border-purple-100">
+                {company.pipeline_stage || "Analyzed"}
+              </span>
             </div>
-            <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-4 mt-2 text-xs font-medium text-gray-600">
               {company.website && (
-                <span className="flex items-center gap-1">
-                  <Globe size={13} className="text-gray-400" /> 
-                  <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{company.website}</a>
+                <span className="flex items-center gap-1.5 text-purple-700">
+                  <Globe size={13} className="text-purple-500" /> 
+                  <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" className="font-semibold hover:underline">{company.website}</a>
                 </span>
               )}
-              <span className="flex items-center gap-1"><MapPin size={13} className="text-gray-400" /> {company.location || company.address || "Location unavailable"}</span>
+              <span className="flex items-center gap-1.5"><MapPin size={13} className="text-gray-400" /> {company.location || company.address || "Location unavailable"}</span>
               {company.rating && (
-                <span className="flex items-center gap-1 text-gray-700">
-                  <Star size={13} className="text-yellow-400 fill-current" /> {company.rating} ({company.review_count || 30})
+                <span className="flex items-center gap-1 text-gray-800 font-semibold">
+                  <Star size={13} className="text-amber-400 fill-current" /> {company.rating} ({company.review_count || 30} reviews)
                 </span>
               )}
             </div>
@@ -252,7 +256,7 @@ export default function CompanyDetails() {
             <div className="flex items-center gap-2 mt-3">
               <Tag size={13} className="text-gray-400" />
               {(company.tags || []).map((tag: any) => (
-                <span key={tag.id} className={`px-2 py-0.5 text-xs font-medium rounded-md ${tag.color}`}>
+                <span key={tag.id} className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md ${tag.color}`}>
                   {tag.name}
                 </span>
               ))}
