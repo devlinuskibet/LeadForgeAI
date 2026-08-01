@@ -316,33 +316,37 @@ export default function CompanyDetails() {
       </div>
 
       {/* Storyteller Lead Journey Stepper */}
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100/90">
         <div className="flex items-center justify-between text-xs font-semibold relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -z-10 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-purple-500 to-gray-200 -z-10 -translate-y-1/2 rounded-full"></div>
           
-          <div className="flex flex-col items-center gap-1.5 bg-white px-3">
-            <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm"><Check size={14} /></div>
-            <span className="text-gray-900 font-bold">1. Discovered</span>
+          <div className="flex flex-col items-center gap-2 bg-white px-4">
+            <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-100 ring-4 ring-emerald-50 font-bold"><Check size={16} /></div>
+            <span className="text-gray-900 font-extrabold tracking-tight">1. Discovered</span>
           </div>
-          <div className="flex flex-col items-center gap-1.5 bg-white px-3">
-            <div className={`w-7 h-7 rounded-full ${insights ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'} flex items-center justify-center shadow-sm`}>
-              {insights ? <Check size={14} /> : '2'}
+
+          <div className="flex flex-col items-center gap-2 bg-white px-4">
+            <div className={`w-8 h-8 rounded-full ${insights ? 'bg-emerald-500 text-white shadow-md ring-4 ring-emerald-50' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-bold`}>
+              {insights ? <Check size={16} /> : '2'}
             </div>
-            <span className={insights ? 'text-gray-900 font-bold' : 'text-gray-400'}>2. Analyzed</span>
+            <span className={insights ? 'text-gray-900 font-extrabold tracking-tight' : 'text-gray-400 font-medium'}>2. Analyzed</span>
           </div>
-          <div className="flex flex-col items-center gap-1.5 bg-white px-3">
-            <div className={`w-7 h-7 rounded-full ${company.draft_email ? 'bg-purple-600 text-white shadow-md ring-4 ring-purple-50' : 'bg-gray-200 text-gray-500'} flex items-center justify-center`}>
+
+          <div className="flex flex-col items-center gap-2 bg-white px-4">
+            <div className={`w-8 h-8 rounded-full ${company.draft_email ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 ring-4 ring-purple-50 animate-pulse' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-bold`}>
               3
             </div>
-            <span className={company.draft_email ? 'text-purple-700 font-bold' : 'text-gray-400'}>3. Draft Ready</span>
+            <span className={company.draft_email ? 'text-purple-700 font-extrabold tracking-tight' : 'text-gray-400 font-medium'}>3. Draft Ready</span>
           </div>
-          <div className="flex flex-col items-center gap-1.5 bg-white px-3">
-            <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">4</div>
-            <span className="text-gray-400">4. Sent</span>
+
+          <div className="flex flex-col items-center gap-2 bg-white px-4">
+            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold border border-gray-200">4</div>
+            <span className="text-gray-400 font-medium">4. Sent</span>
           </div>
-          <div className="flex flex-col items-center gap-1.5 bg-white px-3">
-            <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">5</div>
-            <span className="text-gray-400">5. Won</span>
+
+          <div className="flex flex-col items-center gap-2 bg-white px-4">
+            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold border border-gray-200">5</div>
+            <span className="text-gray-400 font-medium">5. Won</span>
           </div>
         </div>
       </div>
