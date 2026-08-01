@@ -69,19 +69,29 @@ export default function DashboardLayout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Navbar */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 z-10">
-          <h1 className="text-xl font-semibold">Overview</h1>
-          <div className="flex items-center gap-6">
+        {/* Glassmorphic Navbar */}
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 z-10">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-extrabold text-gray-900 tracking-tight">
+              {location.pathname === "/" ? "Pipeline Overview" :
+               location.pathname.startsWith("/companies") ? "Accounts & Lead Management" :
+               location.pathname.startsWith("/discovery") ? "Autonomous Prospect Discovery" :
+               location.pathname.startsWith("/deals") ? "Deals & Revenue Intelligence" :
+               "AI System Settings"}
+            </h1>
+          </div>
+          <div className="flex items-center gap-5">
             <NotificationsButton />
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer">
-              U
+            <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-xs cursor-pointer hover:opacity-90 transition-opacity">
+                LK
+              </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-8 bg-slate-50/40">
           <Outlet />
         </main>
       </div>
