@@ -386,21 +386,26 @@ export default function CompanyDetails() {
             {insights ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Opportunity Score Card */}
-                <div className="p-5 bg-gradient-to-br from-purple-50 to-indigo-50/60 rounded-xl border border-purple-100 flex flex-col justify-between shadow-sm">
+                <div className="p-6 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 text-white rounded-2xl shadow-lg shadow-purple-100 flex flex-col justify-between relative overflow-hidden group">
+                  <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform"></div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700">AI Deal Valuation</span>
-                    <p className="text-xs text-gray-500 font-medium mt-1">Opportunity Score</p>
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-4xl font-extrabold text-gray-900">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold uppercase tracking-widest text-purple-200">AI Deal Valuation</span>
+                      <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 px-2.5 py-0.5 rounded-full">
+                        High Priority
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-3 mt-4">
+                      <span className="text-5xl font-black tracking-tight">
                         {insights.opportunity_score || 92}
                       </span>
-                      <span className="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-0.5 rounded-full">High Priority</span>
+                      <span className="text-xs text-purple-200 font-semibold">/ 100 Opportunity</span>
                     </div>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-purple-100/80">
-                    <p className="text-xs text-gray-500 font-medium">Estimated Solution Value</p>
-                    <span className="text-2xl font-bold text-gray-900">
-                      ${insights.recommended_solutions?.reduce((acc: number, curr: any) => acc + (curr.estimated_value || 0), 0).toLocaleString() || "3,200"}
+                  <div className="mt-6 pt-4 border-t border-white/15">
+                    <p className="text-[11px] text-purple-200 font-semibold uppercase tracking-wider">Estimated Solution Value</p>
+                    <span className="text-3xl font-black tracking-tight">
+                      ${insights.recommended_solutions?.reduce((acc: number, curr: any) => acc + (curr.estimated_value || 0), 0).toLocaleString() || "3,500"}
                     </span>
                   </div>
                 </div>
