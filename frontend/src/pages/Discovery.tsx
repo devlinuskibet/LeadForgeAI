@@ -270,40 +270,43 @@ export function Discovery() {
       </div>
 
       {(logs.length > 0 || isRunning) && (
-        <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-800">
-          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-950">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-green-400" />
-              <span className="text-xs font-mono text-gray-400">telemetry_terminal</span>
+        <div className="bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800/80 bg-slate-900/90">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+              </div>
+              <span className="text-xs font-mono font-bold text-slate-400 border-l border-slate-800 pl-3">telemetry_terminal.log</span>
             </div>
-            {jobStatus === 'completed' && <span className="text-xs font-mono text-green-400">PROCESS_COMPLETE</span>}
-            {jobStatus === 'failed' && <span className="text-xs font-mono text-red-400">PROCESS_FAILED</span>}
+            {jobStatus === 'completed' && <span className="text-[11px] font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2.5 py-0.5 rounded-full shadow-2xs">PROCESS_COMPLETE</span>}
+            {jobStatus === 'failed' && <span className="text-[11px] font-mono font-bold text-red-400 bg-red-950/60 border border-red-800/50 px-2.5 py-0.5 rounded-full shadow-2xs">PROCESS_FAILED</span>}
+            {isRunning && <span className="text-[11px] font-mono font-bold text-purple-400 bg-purple-950/60 border border-purple-800/50 px-2.5 py-0.5 rounded-full shadow-2xs animate-pulse">EXECUTING_PIPELINE...</span>}
           </div>
-          <div className="p-6 font-mono text-sm h-80 overflow-y-auto">
-            <div className="space-y-2">
-              {logs.map((log, i) => (
-                <div key={i} className={`flex items-start ${
-                  log.toLowerCase().includes('error') || log.toLowerCase().includes('failed') ? 'text-red-400' :
-                  log.startsWith('---') || log.startsWith('──') ? 'text-gray-600' :
-                  'text-gray-300'
-                }`}>
-                  {log.startsWith('─') ? (
-                    <div className="w-full tracking-widest">{log}</div>
-                  ) : (
-                    <>
-                      <span className="text-gray-600 mr-4 shrink-0">[{new Date().toISOString().split('T')[1].split('.')[0]}]</span>
-                      <span className="break-all">{log}</span>
-                    </>
-                  )}
-                </div>
-              ))}
-              {isRunning && (
-                <div className="flex items-center text-purple-400 mt-4 animate-pulse">
-                  <span className="text-gray-600 mr-4">[{new Date().toISOString().split('T')[1].split('.')[0]}]</span>
-                  <span>Agent is working...</span>
-                </div>
-              )}
-            </div>
+          <div className="p-6 font-mono text-xs h-80 overflow-y-auto space-y-2 bg-slate-950">
+            {logs.map((log, i) => (
+              <div key={i} className={`flex items-start ${
+                log.toLowerCase().includes('error') || log.toLowerCase().includes('failed') ? 'text-red-400 font-semibold' :
+                log.startsWith('---') || log.startsWith('──') ? 'text-slate-600' :
+                'text-emerald-400/90'
+              }`}>
+                {log.startsWith('─') ? (
+                  <div className="w-full tracking-widest text-slate-700">{log}</div>
+                ) : (
+                  <>
+                    <span className="text-slate-600 mr-3 shrink-0">[{new Date().toISOString().split('T')[1].split('.')[0]}]</span>
+                    <span className="break-all">{log}</span>
+                  </>
+                )}
+              </div>
+            ))}
+            {isRunning && (
+              <div className="flex items-center gap-2 text-purple-400 animate-pulse pt-2">
+                <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span>Executing live scraping & AI opportunity scoring...</span>
+              </div>
+            )}
           </div>
         </div>
       )}
