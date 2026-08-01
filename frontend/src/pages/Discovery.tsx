@@ -123,27 +123,53 @@ export function Discovery() {
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Search className="w-5 h-5 text-gray-500" />
-            Structured Search Parameters
-          </h2>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100/90 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-purple-50/30">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-base font-extrabold text-gray-900 flex items-center gap-2 tracking-tight">
+              <Search className="w-4 h-4 text-purple-600" />
+              Structured Search Parameters
+            </h2>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0">Presets:</span>
+              <button 
+                type="button"
+                onClick={() => setSearchParams({ ...searchParams, business_type: 'Plumbers', location: 'Rongai' })}
+                className="px-2.5 py-1 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold rounded-lg shadow-2xs transition-colors shrink-0"
+              >
+                Plumbers in Rongai
+              </button>
+              <button 
+                type="button"
+                onClick={() => setSearchParams({ ...searchParams, business_type: 'Schools', location: 'Nairobi' })}
+                className="px-2.5 py-1 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold rounded-lg shadow-2xs transition-colors shrink-0"
+              >
+                Schools in Nairobi
+              </button>
+              <button 
+                type="button"
+                onClick={() => setSearchParams({ ...searchParams, business_type: 'Dentists', location: 'Westlands' })}
+                className="px-2.5 py-1 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 text-xs font-semibold rounded-lg shadow-2xs transition-colors shrink-0"
+              >
+                Dentists in Westlands
+              </button>
+            </div>
+          </div>
           
           <form onSubmit={startDiscovery} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Business Type</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Business Type</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Briefcase className="h-4 w-4 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Briefcase className="h-4 w-4" />
                   </div>
                   <input
                     type="text"
                     required
                     value={searchParams.business_type}
                     onChange={(e) => setSearchParams({...searchParams, business_type: e.target.value})}
-                    className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                    className="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-xs font-medium transition-all shadow-2xs"
                     placeholder="e.g., Schools, HVAC, Plumbers"
                     disabled={isRunning}
                   />
@@ -151,18 +177,18 @@ export function Discovery() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Location</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPin className="h-4 w-4 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <MapPin className="h-4 w-4" />
                   </div>
                   <input
                     type="text"
                     required
                     value={searchParams.location}
                     onChange={(e) => setSearchParams({...searchParams, location: e.target.value})}
-                    className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                    placeholder="e.g., Nairobi, Chicago IL"
+                    className="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-xs font-medium transition-all shadow-2xs"
+                    placeholder="e.g., Rongai, Nairobi, Chicago IL"
                     disabled={isRunning}
                   />
                 </div>
