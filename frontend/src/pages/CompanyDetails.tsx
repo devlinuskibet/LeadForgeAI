@@ -444,14 +444,20 @@ export default function CompanyDetails() {
                   <h4 className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Briefcase size={14} /> AI Sales Coach Strategy
                   </h4>
-                  <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 text-xs text-purple-900 leading-relaxed italic space-y-3">
-                    <p>
-                      "{insights.sales_coach_advice || "Their website lacks online booking & automated admissions. Recommend introducing our AI Booking Chatbot and Payment Portal package."}"
+                  <div className="bg-gradient-to-br from-purple-50 via-indigo-50/70 to-purple-100/60 p-5 rounded-2xl border border-purple-200/80 text-xs text-purple-950 leading-relaxed space-y-4 shadow-2xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 bg-purple-600 text-white text-[10px] font-extrabold uppercase rounded-md tracking-wider">
+                        Tailored Pitch
+                      </span>
+                      <span className="text-[11px] font-semibold text-purple-700">Digital Transformation</span>
+                    </div>
+                    <p className="font-medium italic leading-relaxed text-gray-900 bg-white/70 backdrop-blur-xs p-3 rounded-xl border border-purple-100/60">
+                      "{insights.sales_coach_advice || "Website lacks online admissions & payment portal. High priority for AI digital transformation package."}"
                     </p>
                     <button 
                       onClick={handleGenerateOutreach}
                       disabled={generating}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg text-xs transition-colors shadow-sm inline-flex items-center justify-center gap-2 not-italic"
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-purple-200 inline-flex items-center justify-center gap-2"
                     >
                       <Sparkles size={14} /> Generate Outreach for Strategy
                     </button>
