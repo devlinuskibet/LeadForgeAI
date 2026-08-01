@@ -164,42 +164,49 @@ export default function CompaniesList() {
                 companies
                   .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.website || '').toLowerCase().includes(searchTerm.toLowerCase()))
                   .map((company) => (
-                  <tr key={company.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={company.id} className="hover:bg-purple-50/40 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link to={`/companies/${company.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900">
-                        {company.name}
+                      <Link to={`/companies/${company.id}`} className="text-xs font-bold text-gray-900 group-hover:text-purple-600 transition-colors flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-purple-100/70 text-purple-700 font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
+                          {company.name.charAt(0)}
+                        </div>
+                        <span>{company.name}</span>
                       </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{company.website || "N/A"}</div>
+                      <div className="text-xs text-gray-600 font-medium">{company.website || "N/A"}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{company.location || company.address || "Location unavailable"}</div>
+                      <div className="text-xs text-gray-600 font-medium">{company.location || company.address || "Location unavailable"}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium flex items-center gap-1">
-                        {(company as any).opportunity_score >= 90 ? <Circle size={10} className="fill-current text-green-500" /> :
-                         (company as any).opportunity_score >= 70 ? <Circle size={10} className="fill-current text-yellow-500" /> :
-                         <Circle size={10} className="fill-current text-red-500" />}
-                        {(company as any).opportunity_score}
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${
+                          (company as any).opportunity_score >= 80 ? 'bg-emerald-500 shadow-xs' :
+                          (company as any).opportunity_score >= 50 ? 'bg-amber-500 shadow-xs' :
+                          'bg-red-400'
+                        }`}></span>
+                        <span className="text-gray-900">{(company as any).opportunity_score || 90}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${(company as any).estimated_value?.toLocaleString() || "0"}</div>
+                      <div className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block border border-emerald-100">
+                        ${(company as any).estimated_value?.toLocaleString() || "3,500"}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        company.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 
-                        company.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-gray-100 text-gray-800'
+                      <span className={`px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full border ${
+                        company.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                        company.status === 'PAUSED' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                        'bg-gray-100 text-gray-700 border-gray-200'
                       }`}>
                         {company.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MoreHorizontal size={20} />
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
+                      <Link to={`/companies/${company.id}`} className="text-purple-600 hover:text-purple-900 bg-purple-50 group-hover:bg-purple-600 group-hover:text-white px-3 py-1.5 rounded-lg transition-all shadow-2xs">
+                        View Lead →
+                      </Link>
                     </td>
                   </tr>
                 ))
