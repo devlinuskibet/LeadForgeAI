@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Building2, Globe, MapPin, Bot, Briefcase, Activity, Tag, Zap, Sparkles, Check, Star, ChevronDown, Users, History } from 'lucide-react';
+import {
+  ArrowLeft, Building2, Globe, MapPin, Bot,
+  Activity, Tag, Zap, Sparkles, Check, Star, ChevronDown,
+  Users, History, AlertTriangle, Package, MessageSquare
+} from 'lucide-react';
 import { PreviewEmailModal } from '../components/PreviewEmailModal';
 import TimelineWidget from "../widgets/TimelineWidget";
 
@@ -12,13 +16,11 @@ export default function CompanyDetails() {
   const [activeTab, setActiveTab] = useState('insights');
   const [autoProspecting, setAutoProspecting] = useState(false);
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-  
-  // Real data state
+
   const [company, setCompany] = useState<any>(null);
-  const [insights, setInsights] = useState<{inferred_problems: any[], recommended_solutions: any[], opportunity_score?: number, sales_coach_advice?: string} | null>(null);
+  const [insights, setInsights] = useState<any>(null);
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
-  
-  // Email states
+
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -32,39 +34,25 @@ export default function CompanyDetails() {
       if (res.ok) {
         const data = await res.json();
         setCompany(data);
-        if (data.insights) {
-          setInsights(data.insights);
-        }
+        if (data.insights) setInsights(data.insights);
         if (data.draft_email) {
           setEmailSubject(data.draft_email.subject);
           setEmailBody(data.draft_email.body);
         }
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   const fetchWorkflowHistory = async () => {
     try {
       const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/jobs`);
-      if (res.ok) {
-        const data = await res.json();
-        setWorkflowHistory(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+      if (res.ok) setWorkflowHistory(await res.json());
+    } catch (e) { console.error(e); }
   };
 
-  useEffect(() => {
-    fetchCompanyData();
-    fetchWorkflowHistory();
-  }, [id]);
+  useEffect(() => { fetchCompanyData(); fetchWorkflowHistory(); }, [id]);
 
-  // Polling for OrchestrationJob
   useEffect(() => {
     let interval: any;
     if (jobId && jobStatus !== "completed" && jobStatus !== "failed") {
@@ -74,21 +62,13 @@ export default function CompanyDetails() {
           if (res.ok) {
             const data = await res.json();
             setJobStatus(data.status);
-            
             if (data.status === "completed") {
-              setAutoProspecting(false);
-              fetchCompanyData(); // Re-fetch to get new insights and email
-              fetchWorkflowHistory();
-              setActiveTab("emails");
+              setAutoProspecting(false); fetchCompanyData(); fetchWorkflowHistory(); setActiveTab("emails");
             } else if (data.status === "failed") {
-              setAutoProspecting(false);
-              fetchWorkflowHistory();
-              console.error("Auto-prospect failed:", data.error_message);
+              setAutoProspecting(false); fetchWorkflowHistory();
             }
           }
-        } catch (e) {
-          console.error(e);
-        }
+        } catch (e) { console.error(e); }
       }, 2000);
     }
     return () => clearInterval(interval);
@@ -96,296 +76,358 @@ export default function CompanyDetails() {
 
   const handleAutoProspect = async () => {
     try {
-      setAutoProspecting(true);
-      setJobStatus("pending");
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/auto-prospect`, {
-        method: 'POST'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setJobId(data.job_id);
-      } else {
-        // Mock success fallback
-        setJobId("mock-job-id");
-      }
-    } catch (e) {
-      console.error(e);
-      setAutoProspecting(false);
-    }
+      setAutoProspecting(true); setJobStatus("pending");
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/auto-prospect`, { method: 'POST' });
+      const data = await res.json();
+      setJobId(data.job_id || "mock-job-id");
+    } catch (e) { console.error(e); setAutoProspecting(false); }
   };
 
   const handleGenerateOutreach = async () => {
     try {
       setGenerating(true);
-      
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/generate-outreach`, {
-        method: 'POST'
-      });
-      
-      // We don't fail hard on mock UUIDs right now for frontend preview
-      if (!res.ok) {
-        console.warn("Copilot API failed (likely missing UUID in DB), simulating success for UI.");
-      }
-      
-      // Simulate network delay for effect
+      await fetch(`http://localhost:8000/api/copilot/company/${id}/generate-outreach`, { method: 'POST' });
       await new Promise(r => setTimeout(r, 1500));
-      
-      fetchCompanyData(); // Re-fetch to get new email draft
-      setActiveTab("emails");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setGenerating(false);
-    }
+      fetchCompanyData(); setActiveTab("emails");
+    } catch (e) { console.error(e); }
+    finally { setGenerating(false); }
   };
 
   const handleAnalyze = async () => {
     try {
       setAnalyzing(true);
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/analyze`, {
-        method: 'POST'
-      });
-      
-      if (!res.ok) {
-        console.warn("Analysis API failed.");
-      } else {
-        fetchCompanyData(); // refresh insights
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setAnalyzing(false);
-    }
+      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/analyze`, { method: 'POST' });
+      if (res.ok) fetchCompanyData();
+    } catch (e) { console.error(e); }
+    finally { setAnalyzing(false); }
   };
 
   if (loading || !company) {
-    return <div className="p-8 text-gray-500">Loading company details...</div>;
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 32, height: 32, border: "3px solid var(--border)", borderTopColor: "var(--text-primary)", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+          <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Loading company…</p>
+        </div>
+      </div>
+    );
   }
 
+  const totalValue = insights?.recommended_solutions?.reduce((a: number, s: any) => a + (s.estimated_value || 0), 0) || 3500;
+  const score = insights?.opportunity_score || 92;
+
+  const tabs = [
+    { id: "insights",  label: "Sales Intelligence",         icon: Zap },
+    { id: "contacts",  label: `Decision Makers (${company.contacts?.length || 1})`, icon: Users },
+    { id: "timeline",  label: "Unified Timeline",           icon: Activity },
+    { id: "history",   label: `Workflow Telemetry (${workflowHistory.length})`, icon: History },
+  ];
+
   return (
-    <div className="flex flex-col min-h-full space-y-6 max-w-7xl mx-auto w-full pb-12">
-      {/* Top Breadcrumb */}
-      <div className="flex items-center justify-between">
-        <Link to="/companies" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
-          <ArrowLeft size={16} />
-          Back to Companies
+    <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20, paddingBottom: 48 }}>
+
+      {/* ── Breadcrumb ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Link to="/companies" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none", transition: "color 0.12s" }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"}
+        >
+          <ArrowLeft size={14} /> Back to Companies
         </Link>
-        <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 flex items-center gap-1.5">
-          <Sparkles size={13} /> AI Copilot Enabled
+        <span style={{
+          fontSize: 11, fontWeight: 700,
+          padding: "4px 12px", borderRadius: 20,
+          background: "var(--blue-dim)", color: "var(--blue-text)", border: "1px solid var(--blue-border)",
+          display: "flex", alignItems: "center", gap: 5,
+        }}>
+          <Sparkles size={12} /> AI Copilot Enabled
         </span>
       </div>
 
-      {/* Elevated Hero Header */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100/90 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-        <div className="flex items-start md:items-center gap-5">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-200">
-            <Building2 size={32} />
-          </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-black text-gray-900 tracking-tight">{company.name}</h1>
-              <span className="px-3 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 shadow-2xs flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                {company.status}
-              </span>
-              <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-bold rounded-full border border-purple-100">
-                {company.pipeline_stage || "Analyzed"}
-              </span>
+      {/* ── Hero header ── */}
+      <div style={{
+        background: "var(--bg-surface)", border: "1px solid var(--border)",
+        borderRadius: 16, padding: "24px 28px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
+            {/* Avatar */}
+            <div style={{
+              width: 60, height: 60, borderRadius: 14,
+              background: "#111827",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}>
+              <Building2 size={28} color="#fff" />
             </div>
-            <div className="flex flex-wrap items-center gap-4 mt-2 text-xs font-medium text-gray-600">
-              {company.website && (
-                <span className="flex items-center gap-1.5 text-purple-700">
-                  <Globe size={13} className="text-purple-500" /> 
-                  <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" className="font-semibold hover:underline">{company.website}</a>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+                  {company.name}
+                </h1>
+                {/* Status badge */}
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+                  background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)",
+                  display: "flex", alignItems: "center", gap: 5,
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
+                  {company.status}
                 </span>
-              )}
-              <span className="flex items-center gap-1.5"><MapPin size={13} className="text-gray-400" /> {company.location || company.address || "Location unavailable"}</span>
-              {company.rating && (
-                <span className="flex items-center gap-1 text-gray-800 font-semibold">
-                  <Star size={13} className="text-amber-400 fill-current" /> {company.rating} ({company.review_count || 30} reviews)
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+                  background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-muted)",
+                }}>
+                  {company.pipeline_stage || "Analyzed"}
                 </span>
-              )}
-            </div>
-            {/* Tags */}
-            <div className="flex items-center gap-2 mt-3">
-              <Tag size={13} className="text-gray-400" />
-              {(company.tags || []).map((tag: any) => (
-                <span key={tag.id} className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md ${tag.color}`}>
-                  {tag.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Dropdown Menu & Quick Action Buttons */}
-        <div className="flex items-center gap-3 self-end md:self-auto">
-          <button 
-            onClick={handleAutoProspect}
-            disabled={autoProspecting}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
-          >
-            {autoProspecting ? (
-              <>
-                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Auto-Prospecting...
-              </>
-            ) : (
-              <>
-                <Zap size={15} /> Auto-Prospect Lead
-              </>
-            )}
-          </button>
-
-          {/* Unified AI Dropdown Menu */}
-          <div className="relative">
-            <button 
-              onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
-              className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm"
-            >
-              <span>Actions</span>
-              <ChevronDown size={14} className={`transition-transform ${isActionMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isActionMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-50 animate-in fade-in zoom-in-95">
-                <button 
-                  onClick={() => { setIsActionMenuOpen(false); handleAnalyze(); }}
-                  disabled={analyzing}
-                  className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
-                >
-                  <Sparkles size={14} className="text-purple-600" /> Run AI Website Analysis
-                </button>
-                <button 
-                  onClick={() => { setIsActionMenuOpen(false); handleGenerateOutreach(); }}
-                  disabled={generating}
-                  className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
-                >
-                  <Bot size={14} className="text-blue-600" /> Generate AI Outreach Email
-                </button>
               </div>
-            )}
+              {/* Meta row */}
+              <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+                {company.website && (
+                  <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                    target="_blank" rel="noreferrer"
+                    style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--blue-text)", textDecoration: "none", fontWeight: 600 }}>
+                    <Globe size={13} /> {company.website}
+                  </a>
+                )}
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                  <MapPin size={13} /> {company.location || company.address || "Location unavailable"}
+                </span>
+                {company.rating && (
+                  <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-secondary)", fontWeight: 600 }}>
+                    <Star size={13} style={{ color: "var(--amber)", fill: "var(--amber)" }} />
+                    {company.rating} ({company.review_count || 30} reviews)
+                  </span>
+                )}
+              </div>
+              {/* Tags */}
+              {(company.tags || []).length > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+                  <Tag size={12} style={{ color: "var(--text-muted)" }} />
+                  {(company.tags || []).map((tag: any) => (
+                    <span key={tag.id} style={{
+                      fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 6,
+                      background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)",
+                    }}>{tag.name}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={handleAutoProspect} disabled={autoProspecting}
+              className="btn-ghost"
+              style={{ opacity: autoProspecting ? 0.6 : 1, fontSize: 12 }}>
+              {autoProspecting ? (
+                <><div style={{ width: 12, height: 12, border: "2px solid var(--border-strong)", borderTopColor: "var(--text-primary)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Auto-Prospecting…</>
+              ) : (
+                <><Zap size={13} /> Auto-Prospect Lead</>
+              )}
+            </button>
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setIsActionMenuOpen(!isActionMenuOpen)} className="btn-primary" style={{ fontSize: 12 }}>
+                Actions <ChevronDown size={13} style={{ transform: isActionMenuOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+              </button>
+              {isActionMenuOpen && (
+                <div style={{
+                  position: "absolute", right: 0, top: "calc(100% + 8px)", width: 220,
+                  background: "var(--bg-surface)", border: "1px solid var(--border)",
+                  borderRadius: 12, overflow: "hidden", zIndex: 50,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                }}>
+                  {[
+                    { label: "Run AI Website Analysis", icon: Sparkles, onClick: () => { setIsActionMenuOpen(false); handleAnalyze(); }, disabled: analyzing },
+                    { label: "Generate AI Outreach Email", icon: Bot, onClick: () => { setIsActionMenuOpen(false); handleGenerateOutreach(); }, disabled: generating },
+                  ].map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button key={item.label} onClick={item.onClick} disabled={item.disabled} style={{
+                        width: "100%", padding: "11px 16px", background: "transparent",
+                        border: "none", borderBottom: "1px solid var(--border)",
+                        display: "flex", alignItems: "center", gap: 8,
+                        fontSize: 12, fontWeight: 600, color: "var(--text-secondary)",
+                        cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+                        transition: "all 0.12s", opacity: item.disabled ? 0.5 : 1,
+                      }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
+                      >
+                        <Icon size={13} /> {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Storyteller Lead Journey Stepper */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100/90">
-        <div className="flex items-center justify-between text-xs font-semibold relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-purple-500 to-gray-200 -z-10 -translate-y-1/2 rounded-full"></div>
-          
-          <div className="flex flex-col items-center gap-2 bg-white px-4">
-            <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-100 ring-4 ring-emerald-50 font-bold"><Check size={16} /></div>
-            <span className="text-gray-900 font-extrabold tracking-tight">1. Discovered</span>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 bg-white px-4">
-            <div className={`w-8 h-8 rounded-full ${insights ? 'bg-emerald-500 text-white shadow-md ring-4 ring-emerald-50' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-bold`}>
-              {insights ? <Check size={16} /> : '2'}
+      {/* ── Journey stepper ── */}
+      <div style={{
+        background: "var(--bg-surface)", border: "1px solid var(--border)",
+        borderRadius: 14, padding: "24px 32px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Track line */}
+          <div style={{
+            position: "absolute", top: "50%", left: 0, right: 0, height: 2,
+            transform: "translateY(-50%)",
+            background: `linear-gradient(to right, var(--green) 0%, var(--green) 40%, var(--border) 40%)`,
+            borderRadius: 2, zIndex: 0,
+          }} />
+          {[
+            { num: 1, label: "Discovered",  done: true,       active: false },
+            { num: 2, label: "Analyzed",    done: !!insights, active: false },
+            { num: 3, label: "Draft Ready", done: false,      active: !!company.draft_email },
+            { num: 4, label: "Sent",        done: false,      active: false },
+            { num: 5, label: "Won",         done: false,      active: false },
+          ].map((step, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 1, background: "var(--bg-surface)", padding: "0 12px" }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: step.done ? "var(--green)" : step.active ? "#111827" : "var(--bg-elevated)",
+                border: step.done ? "none" : step.active ? "2px solid #111827" : "2px solid var(--border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: step.done || step.active ? "#fff" : "var(--text-muted)",
+                fontWeight: 800, fontSize: 13,
+                boxShadow: step.done ? "0 0 0 4px var(--green-dim)" : step.active ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
+                transition: "all 0.2s",
+              }}>
+                {step.done ? <Check size={16} /> : step.num}
+              </div>
+              <span style={{
+                fontSize: 11, fontWeight: step.done || step.active ? 700 : 500,
+                color: step.done ? "var(--green-text)" : step.active ? "var(--text-primary)" : "var(--text-muted)",
+                whiteSpace: "nowrap",
+              }}>
+                {step.num}. {step.label}
+              </span>
             </div>
-            <span className={insights ? 'text-gray-900 font-extrabold tracking-tight' : 'text-gray-400 font-medium'}>2. Analyzed</span>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 bg-white px-4">
-            <div className={`w-8 h-8 rounded-full ${company.draft_email ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 ring-4 ring-purple-50 animate-pulse' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-bold`}>
-              3
-            </div>
-            <span className={company.draft_email ? 'text-purple-700 font-extrabold tracking-tight' : 'text-gray-400 font-medium'}>3. Draft Ready</span>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 bg-white px-4">
-            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold border border-gray-200">4</div>
-            <span className="text-gray-400 font-medium">4. Sent</span>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 bg-white px-4">
-            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold border border-gray-200">5</div>
-            <span className="text-gray-400 font-medium">5. Won</span>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Clustered Tab Navigation */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-100 px-6 py-3 bg-gray-50/50 flex gap-8 text-xs font-semibold">
-          <button 
-            onClick={() => setActiveTab("insights")}
-            className={`pb-3 -mb-3 flex items-center gap-2 transition-colors ${activeTab === 'insights' ? 'text-purple-700 border-b-2 border-purple-600 font-bold' : 'text-gray-500 hover:text-gray-900'}`}
-          >
-            <Zap size={16} /> Sales Intelligence & Strategy
-          </button>
-          <button 
-            onClick={() => setActiveTab("contacts")}
-            className={`pb-3 -mb-3 flex items-center gap-2 transition-colors ${activeTab === 'contacts' ? 'text-purple-700 border-b-2 border-purple-600 font-bold' : 'text-gray-500 hover:text-gray-900'}`}
-          >
-            <Users size={16} /> Decision Makers ({company.contacts?.length || 1})
-          </button>
-          <button 
-            onClick={() => setActiveTab("timeline")}
-            className={`pb-3 -mb-3 flex items-center gap-2 transition-colors ${activeTab === 'timeline' ? 'text-purple-700 border-b-2 border-purple-600 font-bold' : 'text-gray-500 hover:text-gray-900'}`}
-          >
-            <Activity size={16} /> Unified Timeline
-          </button>
-          <button 
-            onClick={() => setActiveTab("history")}
-            className={`pb-3 -mb-3 flex items-center gap-2 transition-colors ${activeTab === 'history' ? 'text-purple-700 border-b-2 border-purple-600 font-bold' : 'text-gray-500 hover:text-gray-900'}`}
-          >
-            <History size={16} /> Workflow Telemetry ({workflowHistory.length})
-          </button>
+      {/* ── Tabbed content ── */}
+      <div style={{
+        background: "var(--bg-surface)", border: "1px solid var(--border)",
+        borderRadius: 16, overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      }}>
+        {/* Tab bar */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 2,
+          padding: "0 24px",
+          borderBottom: "1px solid var(--border)",
+          background: "var(--bg-elevated)",
+          overflowX: "auto",
+        }}>
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "14px 16px", marginBottom: -1,
+                background: "none", border: "none",
+                borderBottom: isActive ? "2px solid #111827" : "2px solid transparent",
+                color: isActive ? "var(--text-primary)" : "var(--text-muted)",
+                fontWeight: isActive ? 700 : 500,
+                fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+                whiteSpace: "nowrap", transition: "all 0.12s",
+              }}
+                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
+                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+              >
+                <Icon size={14} /> {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Tab 1: Sales Intelligence */}
+        {/* ── Tab 1: Sales Intelligence ── */}
         {activeTab === 'insights' && (
-          <div className="p-6">
+          <div style={{ padding: "32px 28px" }}>
             {insights ? (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Opportunity Score Card */}
-                <div className="p-6 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 text-white rounded-2xl shadow-lg shadow-purple-100 flex flex-col justify-between relative overflow-hidden group">
-                  <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform"></div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-extrabold uppercase tracking-widest text-purple-200">AI Deal Valuation</span>
-                      <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 px-2.5 py-0.5 rounded-full">
+              <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+
+                {/* Row 1: Score + Problems side by side */}
+                <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 20 }}>
+
+                  {/* Score card */}
+                  <div style={{
+                    background: "#111827",
+                    borderRadius: 16, padding: "28px",
+                    color: "#fff",
+                    position: "relative", overflow: "hidden",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                  }}>
+                    {/* Glow orb */}
+                    <div style={{ position: "absolute", top: -40, right: -40, width: 140, height: 140, borderRadius: "50%", background: "rgba(255,255,255,0.05)", filter: "blur(24px)" }} />
+
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#94a3b8" }}>
+                        AI Deal Valuation
+                      </span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20,
+                        background: "rgba(34,197,94,0.15)", color: "#4ade80",
+                        border: "1px solid rgba(34,197,94,0.25)",
+                      }}>
                         High Priority
                       </span>
                     </div>
-                    <div className="flex items-baseline gap-3 mt-4">
-                      <span className="text-5xl font-black tracking-tight">
-                        {insights.opportunity_score || 92}
-                      </span>
-                      <span className="text-xs text-purple-200 font-semibold">/ 100 Opportunity</span>
+
+                    {/* Big score */}
+                    <div style={{ marginBottom: 24 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                        <span style={{ fontSize: 64, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, color: "#fff" }}>
+                          {score}
+                        </span>
+                        <span style={{ fontSize: 14, color: "#64748b", fontWeight: 500 }}>/100</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: "#64748b", marginTop: 4, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                        Opportunity Score
+                      </p>
+                    </div>
+
+                    {/* Score bar */}
+                    <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 4, height: 4, marginBottom: 24 }}>
+                      <div style={{ width: `${score}%`, background: score >= 75 ? "#22c55e" : score >= 50 ? "#eab308" : "#ef4444", height: 4, borderRadius: 4, transition: "width 0.5s" }} />
+                    </div>
+
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 20 }}>
+                      <p style={{ fontSize: 10, color: "#64748b", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+                        Estimated Solution Value
+                      </p>
+                      <p style={{ fontSize: 36, fontWeight: 900, color: "#22c55e", letterSpacing: "-0.03em" }}>
+                        ${totalValue.toLocaleString()}
+                      </p>
                     </div>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-white/15">
-                    <p className="text-[11px] text-purple-200 font-semibold uppercase tracking-wider">Estimated Solution Value</p>
-                    <span className="text-3xl font-black tracking-tight">
-                      ${insights.recommended_solutions?.reduce((acc: number, curr: any) => acc + (curr.estimated_value || 0), 0).toLocaleString() || "3,500"}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Operational Gaps & Solutions */}
-                <div className="space-y-4">
+                  {/* Operational problems */}
                   <div>
-                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Inferred Operational Problems</h4>
-                    <div className="space-y-2">
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                      <AlertTriangle size={15} style={{ color: "var(--red)" }} />
+                      <h4 style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.02em", textTransform: "uppercase" }}>
+                        Inferred Operational Problems
+                      </h4>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                       {insights.inferred_problems?.map((prob: any, i: number) => (
-                        <div key={i} className="p-3 bg-red-50/50 border border-red-100 rounded-lg text-xs flex items-start gap-2">
-                          <span className="text-red-500 font-bold">•</span>
-                          <span className="text-gray-900 font-medium">{prob.problem || prob}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Recommended Solution Package</h4>
-                    <div className="space-y-2">
-                      {insights.recommended_solutions?.map((sol: any, i: number) => (
-                        <div key={i} className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex justify-between items-center text-xs">
-                          <span className="font-medium text-gray-900">{sol.solution || sol}</span>
-                          <span className="font-semibold text-green-700 bg-green-100 px-2.5 py-0.5 rounded-full shrink-0">
-                            ${sol.estimated_value?.toLocaleString() || "1,500"}
+                        <div key={i} style={{
+                          padding: "14px 16px",
+                          background: "var(--red-dim)", border: "1px solid var(--red-border)",
+                          borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 10,
+                        }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--red)", flexShrink: 0, marginTop: 4 }} />
+                          <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500, lineHeight: 1.5 }}>
+                            {prob.problem || prob}
                           </span>
                         </div>
                       ))}
@@ -393,52 +435,122 @@ export default function CompanyDetails() {
                   </div>
                 </div>
 
-                {/* AI Sales Coach Advice */}
+                {/* Row 2: Recommended solutions */}
                 <div>
-                  <h4 className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Briefcase size={14} /> AI Sales Coach Strategy
-                  </h4>
-                  <div className="bg-gradient-to-br from-purple-50 via-indigo-50/70 to-purple-100/60 p-5 rounded-2xl border border-purple-200/80 text-xs text-purple-950 leading-relaxed space-y-4 shadow-2xs">
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 bg-purple-600 text-white text-[10px] font-extrabold uppercase rounded-md tracking-wider">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                    <Package size={15} style={{ color: "var(--blue)" }} />
+                    <h4 style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.02em", textTransform: "uppercase" }}>
+                      Recommended Solution Package
+                    </h4>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+                    {insights.recommended_solutions?.map((sol: any, i: number) => (
+                      <div key={i} style={{
+                        padding: "16px 20px",
+                        background: "var(--bg-surface)", border: "1px solid var(--border)",
+                        borderRadius: 12,
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                        transition: "border-color 0.12s, box-shadow 0.12s",
+                      }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 3 }}>
+                            {sol.solution || sol}
+                          </p>
+                          {sol.module && <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{sol.module}</p>}
+                        </div>
+                        <span style={{
+                          fontSize: 13, fontWeight: 800, flexShrink: 0,
+                          padding: "4px 12px", borderRadius: 8,
+                          background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)",
+                        }}>
+                          ${sol.estimated_value?.toLocaleString() || "1,500"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Row 3: AI Sales coach */}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                    <MessageSquare size={15} style={{ color: "var(--blue)" }} />
+                    <h4 style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.02em", textTransform: "uppercase" }}>
+                      AI Sales Coach Strategy
+                    </h4>
+                  </div>
+                  <div style={{
+                    background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                    borderRadius: 14, padding: "24px",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                      <span style={{
+                        fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 6,
+                        background: "#111827", color: "#fff", letterSpacing: "0.05em", textTransform: "uppercase",
+                      }}>
                         Tailored Pitch
                       </span>
-                      <span className="text-[11px] font-semibold text-purple-700">Digital Transformation</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--blue-text)" }}>Digital Transformation</span>
                     </div>
-                    <p className="font-medium italic leading-relaxed text-gray-900 bg-white/70 backdrop-blur-xs p-3 rounded-xl border border-purple-100/60">
+
+                    <blockquote style={{
+                      fontSize: 14, color: "var(--text-primary)", lineHeight: 1.8,
+                      fontStyle: "italic", fontWeight: 400,
+                      padding: "16px 20px",
+                      background: "var(--bg-surface)", border: "1px solid var(--border)",
+                      borderLeft: "4px solid #111827",
+                      borderRadius: "0 10px 10px 0",
+                      margin: "0 0 20px",
+                    }}>
                       "{insights.sales_coach_advice || "Website lacks online admissions & payment portal. High priority for AI digital transformation package."}"
-                    </p>
-                    <button 
+                    </blockquote>
+
+                    <button
                       onClick={handleGenerateOutreach}
                       disabled={generating}
-                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-purple-200 inline-flex items-center justify-center gap-2"
+                      className="btn-primary"
+                      style={{ opacity: generating ? 0.6 : 1, width: "100%", justifyContent: "center", padding: "12px 20px", fontSize: 12 }}
                     >
-                      <Sparkles size={14} /> Generate Outreach for Strategy
+                      {generating ? (
+                        <><div style={{ width: 13, height: 13, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Generating…</>
+                      ) : (
+                        <><Sparkles size={13} /> Generate Outreach for Strategy</>
+                      )}
                     </button>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-10 px-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border border-purple-100">
-                <div className="w-12 h-12 bg-white text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                  <Zap size={24} className="fill-current" />
+              /* Empty state */
+              <div style={{
+                textAlign: "center", padding: "60px 24px",
+                background: "var(--bg-elevated)", border: "2px dashed var(--border)",
+                borderRadius: 16,
+              }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: 14,
+                  background: "#111827",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  margin: "0 auto 20px",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                }}>
+                  <Zap size={24} color="#fff" />
                 </div>
-                <h4 className="text-base font-bold text-gray-900 mb-1">AI Sales Intelligence Ready</h4>
-                <p className="text-xs text-gray-600 max-w-md mx-auto mb-4">Scrape website content, infer operational bottlenecks, and generate bespoke AI solution packages.</p>
-                <button 
-                  onClick={handleAnalyze}
-                  disabled={analyzing}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2.5 rounded-xl text-xs transition-colors shadow-md inline-flex items-center gap-2"
-                >
+                <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
+                  AI Sales Intelligence Ready
+                </h4>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", maxWidth: 380, margin: "0 auto 24px", lineHeight: 1.7 }}>
+                  Scrape website content, infer operational bottlenecks, and generate a bespoke AI solution package for this company.
+                </p>
+                <button onClick={handleAnalyze} disabled={analyzing} className="btn-primary"
+                  style={{ opacity: analyzing ? 0.6 : 1, padding: "12px 28px", fontSize: 13 }}>
                   {analyzing ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      Analyzing Website...
-                    </>
+                    <><div style={{ width: 13, height: 13, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Analyzing Website…</>
                   ) : (
-                    <>
-                      <Sparkles size={15} /> Run AI Analysis Now
-                    </>
+                    <><Sparkles size={14} /> Run AI Analysis Now</>
                   )}
                 </button>
               </div>
@@ -446,49 +558,73 @@ export default function CompanyDetails() {
           </div>
         )}
 
-        {/* Tab 2: Contacts */}
+        {/* ── Tab 2: Decision Makers ── */}
         {activeTab === 'contacts' && (
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-900">Decision Maker Contacts</h3>
-              <button className="text-xs text-blue-600 font-semibold hover:underline">+ Add Contact</button>
+          <div style={{ padding: "32px 28px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Decision Maker Contacts</h3>
+              <button className="btn-ghost" style={{ fontSize: 11 }}>+ Add Contact</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-4">
-                <div className="w-10 h-10 bg-purple-100 text-purple-700 font-bold rounded-full flex items-center justify-center shrink-0">
-                  JD
-                </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+              <div style={{
+                padding: "18px 20px", background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                borderRadius: 12, display: "flex", alignItems: "center", gap: 14,
+              }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%", background: "#111827",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0,
+                }}>JD</div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">John Doe</p>
-                  <p className="text-xs text-gray-500">Decision Maker / Owner</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>John Doe</p>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Decision Maker / Owner</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab 3: Timeline */}
+        {/* ── Tab 3: Timeline ── */}
         {activeTab === 'timeline' && (
-          <div className="p-6">
+          <div style={{ padding: "32px 28px" }}>
             <TimelineWidget entityType="company" entityId={id!} />
           </div>
         )}
 
-        {/* Tab 4: Workflow Telemetry History */}
+        {/* ── Tab 4: Workflow Telemetry ── */}
         {activeTab === 'history' && (
-          <div className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-gray-900">Autonomous Workflow Telemetry</h3>
+          <div style={{ padding: "32px 28px" }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>Autonomous Workflow Telemetry</h3>
             {workflowHistory.length > 0 ? (
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {workflowHistory.map((job) => (
-                  <div key={job.id} className="border-l-4 border-purple-500 pl-4 py-2 bg-gray-50/60 rounded-r-xl">
-                    <div className="flex items-center justify-between text-xs font-semibold text-gray-900 mb-2">
-                      <span>Auto-Prospect Workflow ({job.status})</span>
-                      <span className="text-gray-400 font-normal">{new Date(job.started_at).toLocaleString()}</span>
+                  <div key={job.id} style={{
+                    borderLeft: "3px solid var(--blue-border)", paddingLeft: 16,
+                    background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                    borderRadius: "0 10px 10px 0", padding: "14px 16px",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>
+                        Auto-Prospect Workflow
+                        <span style={{
+                          marginLeft: 8, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                          background: job.status === "completed" ? "var(--green-dim)" : job.status === "failed" ? "var(--red-dim)" : "var(--amber-dim)",
+                          color: job.status === "completed" ? "var(--green-text)" : job.status === "failed" ? "var(--red-text)" : "var(--amber-text)",
+                          border: `1px solid ${job.status === "completed" ? "var(--green-border)" : job.status === "failed" ? "var(--red-border)" : "var(--amber-border)"}`,
+                        }}>
+                          {job.status}
+                        </span>
+                      </span>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                        {new Date(job.started_at).toLocaleString()}
+                      </span>
                     </div>
-                    <ul className="space-y-1 font-mono text-xs">
+                    <ul style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       {job.logs?.map((log: string, i: number) => (
-                        <li key={i} className={log.toLowerCase().includes('error') ? 'text-red-600' : 'text-green-700'}>
+                        <li key={i} style={{
+                          fontSize: 11, fontFamily: "monospace", fontWeight: 500,
+                          color: log.toLowerCase().includes('error') ? "var(--red-text)" : "var(--green-text)",
+                        }}>
                           › {log}
                         </li>
                       ))}
@@ -497,14 +633,13 @@ export default function CompanyDetails() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-500">No background workflow logs recorded yet.</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)" }}>No background workflow logs recorded yet.</p>
             )}
           </div>
         )}
       </div>
 
-      {/* Email Preview Modal */}
-      <PreviewEmailModal 
+      <PreviewEmailModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         email={{
