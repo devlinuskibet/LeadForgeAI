@@ -12,51 +12,51 @@ export default function Settings() {
 
       <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex overflow-hidden">
         {/* Settings Sidebar */}
-        <div className="w-64 border-r border-gray-100 bg-gray-50/50 p-4">
+        <div className="w-64 border-r border-gray-100 bg-gray-50/40 p-4">
           <nav className="space-y-1">
             <button 
               onClick={() => setActiveTab("organization")}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'organization' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'organization' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
             >
-              <Building2 size={18} /> Organization
+              <Building2 size={16} /> Organization
             </button>
             <button 
               onClick={() => setActiveTab("roles")}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'roles' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'roles' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
             >
-              <Users size={18} /> Users & Roles
+              <Users size={16} /> Users & Roles
             </button>
             <button 
               onClick={() => setActiveTab("integrations")}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'integrations' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'integrations' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
             >
-              <Puzzle size={18} /> Integrations
+              <Puzzle size={16} /> Integrations
             </button>
             <button 
               onClick={() => setActiveTab("features")}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'features' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'features' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
             >
-              <ToggleLeft size={18} /> Feature Flags
+              <ToggleLeft size={16} /> Feature Flags
             </button>
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">AI Platform</p>
+            <div className="pt-4 mt-4 border-t border-gray-200/80">
+              <p className="px-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">AI Platform</p>
               <button 
                 onClick={() => setActiveTab("ai_settings")}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'ai_settings' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'ai_settings' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
               >
-                AI Settings
+                AI Settings & Prompts
               </button>
               <button 
                 onClick={() => setActiveTab("ai_playground")}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'ai_playground' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'ai_playground' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
               >
                 AI Playground
               </button>
               <button 
                 onClick={() => setActiveTab("ai_usage")}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === 'ai_usage' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'ai_usage' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
               >
-                AI Usage & Cost
+                AI Usage & Cost Telemetry
               </button>
             </div>
           </nav>
