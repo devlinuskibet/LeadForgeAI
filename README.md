@@ -1,17 +1,15 @@
-# LeadForgeAI
+# LeadForgeAI 🚀
 
-LeadForgeAI is an enterprise-grade AI-powered B2B prospecting, company discovery, and automated email outreach orchestration platform.
+LeadForgeAI is an enterprise-grade, autonomous AI-powered B2B prospecting, company discovery, and automated email outreach orchestration platform.
 
 ## Key Features
 
-- **Automated Prospecting & Discovery**: Discover target companies and key decision-maker contacts with enrichment data.
-- **AI Outreach Copilot**: Generates personalized email templates and discovery insights backed by LLMs.
-- **CSV Data Export**: Export company and contact datasets seamlessly via dedicated REST endpoints.
-- **Bulk Data Import**: High-performance batch endpoints for contact and company creation.
+- **Google Places Autonomous Discovery**: Discover local businesses with location data, rating criteria, and automatic website analysis.
+- **AI Sales Coach Strategy**: Inferred operational bottlenecks, custom solution package recommendations, and one-click outreach email drafting.
+- **Storyteller Lead Journey**: Visual step-by-step pipeline tracking (`Discovered` → `Analyzed` → `Draft Ready` → `Sent` → `Won`).
+- **Deals & Revenue Intelligence**: Weighted deal opportunity valuation, win rate metrics, and AI proposal package generator.
+- **Glassmorphic Modern UI**: Glassmorphic search bars, filter chips, dark telemetry terminal, and vibrant gradient statistics cards.
 - **Security & Observability**: Real-time service uptime checks, IP-based rate limiting, security headers, and structured audit logging.
-- **Dynamic Template Engine**: Email placeholder variable rendering with fallback defaults.
-- **Email Delivery Event Webhooks**: Ingest real-time delivery, open, reply, and bounce events with live timeline updates.
-- **Frontend UI Architecture**: Modern React + TypeScript application with reusable components (`LoadingSpinner`, `ErrorBoundary`, `NotificationToast`, `ExportDataModal`) and custom hooks (`useFetch`, `useLocalStorage`).
 
 ## Backend Architecture
 
