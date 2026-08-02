@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, XCircle, TrendingUp, Sparkles, Plus, FileText, CheckCircle2, ChevronRight } from "lucide-react";
+import { DollarSign, Trophy, XCircle, TrendingUp, Sparkles, FileText, CheckCircle2 } from "lucide-react";
 
 interface Deal {
   id: string;
@@ -22,7 +22,6 @@ interface DealMetrics {
 export default function Deals() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [metrics, setMetrics] = useState<DealMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // Proposal Modal State
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
@@ -39,8 +38,6 @@ export default function Deals() {
       if (resMetrics.ok) setMetrics(await resMetrics.json());
     } catch (e) {
       console.error("Failed to fetch deals", e);
-    } finally {
-      setLoading(false);
     }
   };
 
