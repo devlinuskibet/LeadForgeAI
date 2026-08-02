@@ -1,6 +1,49 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CheckSquare, ArrowRight, Briefcase, Mail, Building2 } from "lucide-react";
+import { TrendingUp, Mail, Send, Eye, ArrowRight, Zap, Briefcase } from "lucide-react";
+
+function StatCard({ label, value, sub, accent, icon: Icon }: { label: string; value: string; sub: string; accent: string; icon: any }) {
+  return (
+    <div style={{
+      background: "var(--bg-surface)",
+      border: "1px solid var(--border)",
+      borderRadius: 14,
+      padding: "20px 22px",
+      display: "flex", flexDirection: "column", gap: 12,
+      boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      transition: "border-color 0.15s, box-shadow 0.15s",
+      cursor: "default",
+    }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.05)";
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span className="label-caps">{label}</span>
+        <div style={{
+          width: 32, height: 32, borderRadius: 8,
+          background: `${accent}15`,
+          border: `1px solid ${accent}35`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: accent,
+        }}>
+          <Icon size={14} />
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+          {value}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, fontWeight: 500 }}>{sub}</div>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [briefing, setBriefing] = useState<any>(null);
@@ -10,10 +53,7 @@ export default function Dashboard() {
     const fetchBriefing = async () => {
       try {
         const res = await fetch("http://localhost:8000/api/dashboard/daily-briefing");
-        if (res.ok) {
-          const data = await res.json();
-          setBriefing(data);
-        }
+        if (res.ok) setBriefing(await res.json());
       } catch (e) {
         console.error(e);
       } finally {
@@ -23,166 +63,216 @@ export default function Dashboard() {
     fetchBriefing();
   }, []);
 
-  if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading your Daily Briefing...</div>;
-  }
+  const openRate = briefing?.emails_sent > 0
+    ? Math.round((briefing.emails_opened / briefing.emails_sent) * 100)
+    : 0;
+  const openRateAccent = openRate >= 30 ? "var(--green)" : openRate >= 15 ? "var(--amber)" : "var(--red)";
 
   return (
-    <div className="grid gap-6 max-w-7xl mx-auto w-full pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+    <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Good Morning, Linus</h1>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full border border-green-200 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
-              Live Sync Active
-            </span>
-          </div>
-          <p className="text-xs text-gray-500 font-medium mt-1">Here is your autonomous sales pipeline summary for today.</p>
-        </div>
-      </div>
-
-      {/* Vibrant Gradient Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl shadow-lg shadow-indigo-100 text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden group">
-          <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-200">Pipeline Value</span>
-            <div className="w-10 h-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center">
-              <Briefcase size={20} className="text-white" />
-            </div>
-          </div>
-          <p className="text-3xl font-black mt-4 tracking-tight">${briefing?.pipeline_value?.toLocaleString() || "0"}</p>
-          <span className="text-[11px] font-medium text-indigo-200 mt-2 block">Weighted deal opportunities</span>
-        </div>
-
-        <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-2xl shadow-lg shadow-blue-100 text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden group">
-          <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-blue-100">Drafts Ready</span>
-            <div className="w-10 h-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center">
-              <Mail size={20} className="text-white" />
-            </div>
-          </div>
-          <p className="text-3xl font-black mt-4 tracking-tight">{briefing?.drafts_ready || 0}</p>
-          <span className="text-[11px] font-medium text-blue-100 mt-2 block">AI generated outreach ready</span>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-6 rounded-2xl shadow-lg shadow-purple-100 text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden group">
-          <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-100">Emails Sent</span>
-            <div className="w-10 h-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center">
-              <ArrowRight size={20} className="text-white" />
-            </div>
-          </div>
-          <p className="text-3xl font-black mt-4 tracking-tight">{briefing?.emails_sent || 0}</p>
-          <span className="text-[11px] font-medium text-purple-100 mt-2 block">Outreach messages delivered</span>
-        </div>
-
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg shadow-emerald-100 text-white transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden group">
-          <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform"></div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-100">Open Rate</span>
-            <div className="w-10 h-10 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center">
-              <CheckSquare size={20} className="text-white" />
-            </div>
-          </div>
-          <p className="text-3xl font-black mt-4 tracking-tight">
-            {briefing?.emails_sent > 0 
-              ? `${Math.round((briefing?.emails_opened / briefing?.emails_sent) * 100)}%` 
-              : "0%"}
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+            Good morning, Linus 👋
+          </h2>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>
+            Your autonomous sales pipeline summary for today.
           </p>
-          <span className="text-[11px] font-medium text-emerald-100 mt-2 block">Recipient engagement rate</span>
         </div>
+        <Link to="/discovery" className="btn-primary" style={{ flexShrink: 0, marginTop: 2 }}>
+          <Zap size={13} /> Run Discovery
+        </Link>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900 tracking-tight">Today's Priority Accounts</h2>
-            <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
-              Ranked by Deal Opportunity
+
+      {/* Stat cards */}
+      {loading ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} style={{
+              height: 110, borderRadius: 14,
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border)",
+              animation: "pulse-dot 1.5s infinite",
+            }} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+          <StatCard label="Pipeline Value" value={`$${briefing?.pipeline_value?.toLocaleString() ?? "0"}`} sub="Weighted deal opportunities" accent="var(--green)" icon={TrendingUp} />
+          <StatCard label="Drafts Ready"   value={String(briefing?.drafts_ready ?? 0)}                     sub="AI outreach ready to send"  accent="var(--blue)"  icon={Mail} />
+          <StatCard label="Emails Sent"    value={String(briefing?.emails_sent ?? 0)}                      sub="Outreach delivered"         accent="var(--text-muted)" icon={Send} />
+          <StatCard label="Open Rate"      value={`${openRate}%`}                                          sub="Recipient engagement"       accent={openRateAccent} icon={Eye} />
+        </div>
+      )}
+
+      {/* Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 18 }}>
+
+        {/* Priority accounts */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+              Today's Priority Accounts
+            </h3>
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: "var(--text-muted)",
+              background: "var(--bg-elevated)", border: "1px solid var(--border)",
+              borderRadius: 20, padding: "3px 10px", letterSpacing: "0.05em", textTransform: "uppercase",
+            }}>
+              Ranked by opportunity
             </span>
           </div>
-          
-          {briefing?.top_priorities?.length === 0 ? (
-            <div className="bg-white p-10 text-center rounded-2xl border border-gray-100 shadow-sm text-gray-500 space-y-3">
-              <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto">
-                <Briefcase size={24} />
+
+          {loading ? (
+            <div style={{ height: 120, borderRadius: 14, background: "var(--bg-elevated)", border: "1px solid var(--border)" }} />
+          ) : briefing?.top_priorities?.length === 0 ? (
+            <div style={{
+              background: "var(--bg-surface)", border: "1px solid var(--border)",
+              borderRadius: 14, padding: "40px 24px", textAlign: "center",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)",
+              }}>
+                <Briefcase size={18} />
               </div>
-              <p className="text-sm font-semibold text-gray-900">Your priority queue is clear</p>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">Run Prospect Discovery to find high-value local businesses looking for AI solutions.</p>
-              <Link to="/discovery" className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors">
-                Launch Prospect Discovery
-              </Link>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)" }}>Priority queue is clear</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
+                  Run Prospect Discovery to find high-value leads.
+                </p>
+              </div>
+              <Link to="/discovery" className="btn-primary" style={{ marginTop: 4 }}>Launch Discovery</Link>
             </div>
           ) : (
             briefing?.top_priorities?.map((priority: any, index: number) => (
-              <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                  <div>
-                    <div className="flex items-center gap-2.5 mb-1.5">
-                      <h3 className="text-lg font-bold text-gray-900">{priority.company_name}</h3>
-                      <span className="px-2.5 py-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[11px] font-bold rounded-full shadow-2xs">
-                        Priority {priority.priority_score || 95}
+              <div key={index} style={{
+                background: "var(--bg-surface)", border: "1px solid var(--border)",
+                borderRadius: 14, padding: "18px 20px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                transition: "border-color 0.12s, box-shadow 0.12s",
+              }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)";
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <h4 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{priority.company_name}</h4>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, padding: "2px 8px",
+                        background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                        borderRadius: 20, color: "var(--text-muted)", letterSpacing: "0.04em",
+                      }}>
+                        Score {priority.priority_score ?? 95}
                       </span>
                     </div>
-                    <p className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-md inline-block border border-emerald-100">
-                      Estimated Deal: ${priority.estimated_value?.toLocaleString() || "3,500"}
-                    </p>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: "3px 8px",
+                      background: "var(--green-dim)", color: "var(--green-text)",
+                      border: "1px solid var(--green-border)", borderRadius: 6, display: "inline-block",
+                    }}>
+                      Est. ${priority.estimated_value?.toLocaleString() ?? "3,500"}
+                    </span>
                   </div>
-                  <Link 
-                    to={`/companies/${priority.company_id}`}
-                    className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-xs shrink-0"
-                  >
-                    Review & Send <ArrowRight size={14} />
+                  <Link to={`/companies/${priority.company_id}`} className="btn-primary" style={{ flexShrink: 0, fontSize: 11 }}>
+                    Review & Send <ArrowRight size={12} />
                   </Link>
                 </div>
-                
-                <div className="bg-gradient-to-r from-purple-50/80 to-indigo-50/40 border-l-4 border-purple-600 p-4 rounded-r-xl">
-                  <p className="text-xs font-bold text-purple-900 uppercase tracking-wider mb-1">AI Recommendation Context</p>
-                  <p className="text-xs text-purple-950 font-medium leading-relaxed">
-                    {priority.sales_coach_advice || priority.why_today || "High deal potential identified. Automated booking and customer payment portal recommended."}
+                <div style={{
+                  background: "var(--bg-elevated)", borderLeft: "3px solid var(--border-strong)",
+                  borderRadius: "0 6px 6px 0", padding: "10px 14px",
+                }}>
+                  <p className="label-caps" style={{ marginBottom: 5 }}>AI Context</p>
+                  <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, fontWeight: 400 }}>
+                    {priority.sales_coach_advice || priority.why_today ||
+                      "High deal potential identified. Automated booking and customer payment portal recommended."}
                   </p>
                 </div>
               </div>
             ))
           )}
         </div>
-        
-        {/* Action Center */}
-        <div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-6 space-y-4">
-            <h2 className="text-base font-bold text-gray-900 tracking-tight">Action Center</h2>
-            <div className="space-y-2.5">
-              <Link to="/companies" className="w-full flex items-center justify-between p-3.5 border border-gray-100 hover:border-purple-200 hover:bg-purple-50/50 rounded-xl text-left transition-all group">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Mail size={16} />
-                  </div>
-                  <div>
-                    <span className="font-semibold text-xs text-gray-900 block">Outreach Drafts</span>
-                    <span className="text-[11px] text-gray-500">Ready for review</span>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">{briefing?.drafts_ready || 0}</span>
-              </Link>
 
-              <Link to="/discovery" className="w-full flex items-center justify-between p-3.5 border border-gray-100 hover:border-purple-200 hover:bg-purple-50/50 rounded-xl text-left transition-all group">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Building2 size={16} />
+        {/* Quick actions */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Quick Actions</h3>
+          <div style={{
+            background: "var(--bg-surface)", border: "1px solid var(--border)",
+            borderRadius: 14, overflow: "hidden",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}>
+            {[
+              { to: "/companies", icon: Mail,      label: "Outreach Drafts",    sub: "Ready for review",     badge: briefing?.drafts_ready ?? 0, badgeColor: "var(--green-text)", badgeBg: "var(--green-dim)", badgeBorder: "var(--green-border)" },
+              { to: "/discovery", icon: Zap,       label: "Prospect Discovery", sub: "Search Google Places",  badge: "Active",                    badgeColor: "var(--blue-text)",  badgeBg: "var(--blue-dim)",  badgeBorder: "var(--blue-border)" },
+              { to: "/deals",     icon: TrendingUp, label: "Deals Pipeline",     sub: "Track & close",        badge: null,                        badgeColor: null,                badgeBg: null,               badgeBorder: null },
+            ].map((item, i, arr) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "13px 15px", textDecoration: "none",
+                    borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none",
+                    transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 7,
+                      background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "var(--text-muted)",
+                    }}>
+                      <Icon size={13} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{item.label}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>{item.sub}</div>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-semibold text-xs text-gray-900 block">Prospect Discovery</span>
-                    <span className="text-[11px] text-gray-500">Search Google Places</span>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full">New</span>
-              </Link>
-            </div>
+                  {item.badge !== null && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20,
+                      background: item.badgeBg!, color: item.badgeColor!, border: `1px solid ${item.badgeBorder}`,
+                    }}>
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
+
+          {!loading && (
+            <div style={{
+              background: "var(--green-dim)", border: "1px solid var(--green-border)",
+              borderRadius: 12, padding: "14px 16px",
+            }}>
+              <p className="label-caps" style={{ color: "var(--green-text)", marginBottom: 8 }}>AI Briefing</p>
+              <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                {briefing?.top_priorities?.length > 0
+                  ? `${briefing.top_priorities.length} high-priority accounts need attention. ${briefing.drafts_ready ?? 0} outreach drafts ready to send.`
+                  : "No priority accounts yet. Run Prospect Discovery to populate your pipeline."
+                }
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
