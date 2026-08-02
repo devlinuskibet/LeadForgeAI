@@ -1,5 +1,6 @@
 import uuid
 import json
+import time
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from models.orchestration_job import OrchestrationJob
@@ -16,7 +17,8 @@ class SupervisorService:
         self.db = db
 
     def run_auto_prospect(self, job_id: str):
-        job = self.db.query(OrchestrationJob).filter(OrchestrationJob.id == job_id).first()
+        job_uuid = uuid.UUID(str(job_id)) if not isinstance(job_id, uuid.UUID) else job_id
+        job = self.db.query(OrchestrationJob).filter(OrchestrationJob.id == job_uuid).first()
         if not job:
             return
 
@@ -183,16 +185,14 @@ class SupervisorService:
             self.db.commit()
 
     def run_discovery(self, job_id: str):
-        job = self.db.query(OrchestrationJob).filter(OrchestrationJob.id == job_id).first()
+        job_uuid = uuid.UUID(str(job_id)) if not isinstance(job_id, uuid.UUID) else job_id
+        job = self.db.query(OrchestrationJob).filter(OrchestrationJob.id == job_uuid).first()
         if not job:
             return
 
-        import time
-        from datetime import datetime, timezone
-        import json
-        import uuid
+
+        # Lazy imports to avoid circular dependency (workers.tasks -> supervisor_service)
         from services.discovery_service import DiscoveryService
-        from models.company import CompanyStatus, Company
         from workers.tasks import run_auto_prospect_task
 
         start_time = time.time()
