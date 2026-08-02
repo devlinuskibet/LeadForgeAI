@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, ExternalLink } from 'lucide-react';
 
 interface PreviewEmailModalProps {

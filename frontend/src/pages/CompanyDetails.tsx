@@ -19,8 +19,8 @@ export default function CompanyDetails() {
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
   
   // Email states
-  const [emailSubject] = useState("");
-  const [emailBody] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const [jobId, setJobId] = useState<string | null>(null);
