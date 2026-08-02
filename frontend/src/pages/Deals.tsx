@@ -204,52 +204,60 @@ export default function Deals() {
 
       {/* AI Proposal Modal */}
       {selectedCompanyId && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 space-y-6 shadow-xl overflow-y-auto max-h-[85vh]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl overflow-y-auto max-h-[85vh] border border-gray-100">
             <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="text-purple-600" size={20} />
-                <h3 className="text-lg font-bold text-gray-900">AI-Generated Solution Proposal</h3>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-gray-900 tracking-tight">AI Solution Proposal Package</h3>
+                  <span className="text-[11px] font-semibold text-purple-600">Generated from scraped website intelligence</span>
+                </div>
               </div>
-              <button onClick={() => { setSelectedCompanyId(null); setProposal(null); }} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => { setSelectedCompanyId(null); setProposal(null); }} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors">
                 <XCircle size={20} />
               </button>
             </div>
 
             {loadingProposal ? (
-              <div className="py-12 text-center text-gray-500">
-                <div className="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-3"></div>
-                Analyzing website data and generating proposal package...
+              <div className="py-16 text-center text-gray-500 space-y-3">
+                <div className="animate-spin w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full mx-auto"></div>
+                <p className="text-xs font-bold text-gray-900">Synthesizing Proposal Package...</p>
+                <p className="text-xs text-gray-500">Analyzing operational gaps, ROI metrics, and module scopes.</p>
               </div>
             ) : proposal ? (
               <div className="space-y-5">
-                <div>
-                  <h4 className="text-xl font-bold text-gray-900">{proposal.title}</h4>
-                  <p className="text-sm text-gray-600 mt-2">{proposal.executive_summary}</p>
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50/50 p-4 rounded-xl border border-purple-100/80">
+                  <h4 className="text-lg font-black text-gray-900">{proposal.title}</h4>
+                  <p className="text-xs text-gray-700 font-medium leading-relaxed mt-2">{proposal.executive_summary}</p>
                 </div>
 
                 <div>
-                  <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Scope Modules & Pricing</h5>
+                  <h5 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Scope Modules & Investment</h5>
                   <div className="space-y-2">
                     {proposal.scope_items.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                      <div key={idx} className="flex justify-between items-center p-3.5 bg-gray-50/70 rounded-xl border border-gray-100">
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{item.module}</p>
-                          <span className="text-xs text-purple-600 font-medium">Confidence: {item.confidence}</span>
+                          <p className="text-xs font-bold text-gray-900">{item.module}</p>
+                          <span className="text-[11px] text-purple-600 font-semibold">AI Confidence: {item.confidence}</span>
                         </div>
-                        <span className="text-sm font-bold text-gray-900">${item.estimated_price?.toLocaleString()}</span>
+                        <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+                          ${item.estimated_price?.toLocaleString()}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl border border-purple-100">
-                  <span className="text-sm font-bold text-purple-900">Total Project Package Value</span>
-                  <span className="text-2xl font-extrabold text-purple-900">${proposal.total_estimated_value?.toLocaleString()} USD</span>
+                <div className="flex justify-between items-center p-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-purple-100">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-purple-200">Total Solution Value</span>
+                  <span className="text-2xl font-black tracking-tight">${proposal.total_estimated_value?.toLocaleString()} USD</span>
                 </div>
               </div>
             ) : (
-              <div className="py-8 text-center text-gray-500">Failed to load proposal outline.</div>
+              <div className="py-12 text-center text-gray-500 text-xs font-semibold">Failed to load proposal outline.</div>
             )}
           </div>
         </div>
