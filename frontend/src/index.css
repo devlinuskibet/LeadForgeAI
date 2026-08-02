@@ -1,1 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+
+/* ═══════════════════════════════════════════════
+   LIGHT THEME (default)
+   ═══════════════════════════════════════════════ */
+:root {
+  color-scheme: light;
+
+  --bg-base:        #f8f9fc;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #f1f3f8;
+  --bg-hover:       #f4f5f9;
+
+  --border:         #e5e7ef;
+  --border-strong:  #d1d5e0;
+
+  --text-primary:   #111827;
+  --text-secondary: #4b5563;
+  --text-muted:     #9ca3af;
+  --text-placeholder: #bec3cf;
+
+  /* Glass effect */
+  --glass-bg:       rgba(255,255,255,0.82);
+  --glass-bg-hover: rgba(255,255,255,0.95);
+  --glass-border:   rgba(0,0,0,0.07);
+  --glass-shadow:   0 2px 16px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.8) inset;
+
+  /* Sidebar */
+  --sidebar-bg:     #ffffff;
+  --sidebar-border: #eceef5;
+  --sidebar-nav-active-bg: #111827;
+  --sidebar-nav-active-color: #ffffff;
+  --sidebar-nav-color: #6b7280;
+  --sidebar-nav-hover-bg: #f3f4f8;
+
+  /* Header */
+  --header-bg:      rgba(255,255,255,0.88);
+
+  /* Input */
+  --input-bg:       #ffffff;
+  --input-border:   #e5e7ef;
+  --input-focus-border: #111827;
+
+  /* Semantic colors — same in both themes */
+  --green:          #16a34a;
+  --green-dim:      #f0fdf4;
+  --green-border:   #bbf7d0;
+  --green-text:     #15803d;
+
+  --amber:          #d97706;
+  --amber-dim:      #fffbeb;
+  --amber-border:   #fde68a;
+  --amber-text:     #b45309;
+
+  --red:            #dc2626;
+  --red-dim:        #fef2f2;
+  --red-border:     #fecaca;
+  --red-text:       #b91c1c;
+
+  --blue:           #2563eb;
+  --blue-dim:       #eff6ff;
+  --blue-border:    #bfdbfe;
+  --blue-text:      #1d4ed8;
+
+  /* Dot pulse */
+  --live-dot:       #16a34a;
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(0,0,0,0.12);
+  --scrollbar-thumb-hover: rgba(0,0,0,0.22);
+
+  /* Table row hover */
+  --table-hover:    #f9fafb;
+
+  /* Code / terminal */
+  --terminal-bg:    #0f172a;
+}
+
+/* ═══════════════════════════════════════════════
+   DARK THEME
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-base:        #0a0b0d;
+  --bg-surface:     #111318;
+  --bg-elevated:    #181b22;
+  --bg-hover:       rgba(255,255,255,0.04);
+
+  --border:         rgba(255,255,255,0.08);
+  --border-strong:  rgba(255,255,255,0.14);
+
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #475569;
+  --text-placeholder: #334155;
+
+  --glass-bg:       rgba(255,255,255,0.04);
+  --glass-bg-hover: rgba(255,255,255,0.07);
+  --glass-border:   rgba(255,255,255,0.08);
+  --glass-shadow:   0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
+
+  --sidebar-bg:     rgba(255,255,255,0.03);
+  --sidebar-border: rgba(255,255,255,0.07);
+  --sidebar-nav-active-bg: rgba(255,255,255,0.10);
+  --sidebar-nav-active-color: #f1f5f9;
+  --sidebar-nav-color: #64748b;
+  --sidebar-nav-hover-bg: rgba(255,255,255,0.04);
+
+  --header-bg:      rgba(255,255,255,0.02);
+
+  --input-bg:       rgba(255,255,255,0.04);
+  --input-border:   rgba(255,255,255,0.08);
+  --input-focus-border: rgba(255,255,255,0.3);
+
+  --green:          #22c55e;
+  --green-dim:      rgba(34,197,94,0.10);
+  --green-border:   rgba(34,197,94,0.22);
+  --green-text:     #22c55e;
+
+  --amber:          #eab308;
+  --amber-dim:      rgba(234,179,8,0.10);
+  --amber-border:   rgba(234,179,8,0.22);
+  --amber-text:     #eab308;
+
+  --red:            #ef4444;
+  --red-dim:        rgba(239,68,68,0.10);
+  --red-border:     rgba(239,68,68,0.22);
+  --red-text:       #ef4444;
+
+  --blue:           #3b82f6;
+  --blue-dim:       rgba(59,130,246,0.10);
+  --blue-border:    rgba(59,130,246,0.22);
+  --blue-text:      #3b82f6;
+
+  --live-dot:       #22c55e;
+  --scrollbar-thumb: rgba(255,255,255,0.08);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.16);
+  --table-hover:    rgba(255,255,255,0.02);
+  --terminal-bg:    #080a0e;
+}
+
+/* ═══════════════════════════════════════════════
+   BASE RESET
+   ═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s, color 0.2s;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+::selection { background: #111827; color: #fff; }
+[data-theme="dark"] ::selection { background: rgba(255,255,255,0.15); }
+
+/* ═══════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.label-caps {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Semantic badges */
+.badge-green { background: var(--green-dim); color: var(--green-text); border: 1px solid var(--green-border); }
+.badge-amber { background: var(--amber-dim); color: var(--amber-text); border: 1px solid var(--amber-border); }
+.badge-red   { background: var(--red-dim);   color: var(--red-text);   border: 1px solid var(--red-border); }
+.badge-blue  { background: var(--blue-dim);  color: var(--blue-text);  border: 1px solid var(--blue-border); }
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #111827; color: #fff;
+  border: none; border-radius: 9px;
+  padding: 9px 16px; font-size: 12px; font-weight: 700;
+  font-family: inherit; cursor: pointer; letter-spacing: 0.01em;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+[data-theme="dark"] .btn-primary { background: #fff; color: #0a0b0d; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-surface); color: var(--text-secondary);
+  border: 1px solid var(--border); border-radius: 9px;
+  padding: 9px 16px; font-size: 12px; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-strong); }
+
+.btn-danger {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--red-dim); color: var(--red-text);
+  border: 1px solid var(--red-border); border-radius: 9px;
+  padding: 9px 16px; font-size: 12px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.15s;
+}
+
+/* Inputs */
+.glass-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+  border-radius: 9px; padding: 9px 13px;
+  font-size: 12px; font-family: inherit;
+  outline: none; width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.glass-input::placeholder { color: var(--text-placeholder); }
+.glass-input:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
+}
+[data-theme="dark"] .glass-input:focus {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+}
+
+/* Dot animations */
+.dot-pulse { width: 7px; height: 7px; border-radius: 50%; animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.85); } }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Subtle noise texture on light bg */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse 90% 60% at 10% 0%, rgba(59,130,246,0.03) 0%, transparent 60%),
+              radial-gradient(ellipse 70% 50% at 90% 100%, rgba(22,163,74,0.025) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+[data-theme="dark"] body::before {
+  background: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(59,130,246,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 40% at 80% 90%, rgba(34,197,94,0.03) 0%, transparent 60%);
+}
+#root { position: relative; z-index: 1; }
