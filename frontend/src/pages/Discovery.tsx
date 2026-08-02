@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Radar, Search, Activity, CheckCircle, AlertCircle, MapPin, Star, Globe, ArrowRight, Building2, Briefcase, Database } from 'lucide-react';
+import { Radar, Search, Activity, CheckCircle, MapPin, Star, Globe, ArrowRight, Briefcase, Database } from 'lucide-react';
 
 export function Discovery() {
   const [searchParams, setSearchParams] = useState({
