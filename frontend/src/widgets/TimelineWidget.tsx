@@ -55,13 +55,13 @@ export default function TimelineWidget({
   const getIcon = (type: string, title: string) => {
     if (type === "email") {
       if (title.includes("Opened")) return <Eye size={16} className="text-blue-500" />;
-      if (title.includes("Replied")) return <Reply size={16} className="text-purple-500" />;
+      if (title.includes("Replied")) return <Reply size={16} className="text-blue-400" />;
       if (title.includes("Delivered")) return <CheckCircle2 size={16} className="text-green-500" />;
       return <Mail size={16} className="text-blue-500" />;
     }
     switch (type) {
       case "note": return <Edit3 size={16} className="text-yellow-500" />;
-      case "deal": return <Briefcase size={16} className="text-purple-500" />;
+      case "deal": return <Briefcase size={16} className="text-blue-400" />;
       case "call": return <Phone size={16} className="text-green-500" />;
       default: return <MessageSquare size={16} className="text-gray-500" />;
     }

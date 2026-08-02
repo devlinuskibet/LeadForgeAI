@@ -3,44 +3,88 @@ import { Bell } from "lucide-react";
 
 export default function NotificationsButton() {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const notifications = [
     { id: 1, text: "John Doe opened your email", time: "5m ago", unread: true },
-    { id: 2, text: "New lead assigned to you: TechCorp", time: "1h ago", unread: true },
-    { id: 3, text: "Acme Corp meeting in 30 minutes", time: "2h ago", unread: false }
+    { id: 2, text: "New lead assigned: TechCorp", time: "1h ago", unread: true },
+    { id: 3, text: "Acme Corp meeting in 30 minutes", time: "2h ago", unread: false },
   ];
-  
+
   const unreadCount = notifications.filter(n => n.unread).length;
 
   return (
-    <div className="relative">
-      <button 
+    <div style={{ position: "relative" }}>
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-500 hover:text-purple-600 relative rounded-xl hover:bg-purple-50/60 transition-all group"
+        style={{
+          position: "relative",
+          width: 34, height: 34, borderRadius: 9,
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: "#64748b",
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+          (e.currentTarget as HTMLElement).style.color = "#94a3b8";
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+          (e.currentTarget as HTMLElement).style.color = "#64748b";
+        }}
       >
-        <Bell size={20} className="group-hover:scale-110 transition-transform" />
+        <Bell size={14} />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-600"></span>
-          </span>
+          <span style={{
+            position: "absolute", top: 6, right: 6,
+            width: 6, height: 6, borderRadius: "50%",
+            background: "#22c55e", border: "1.5px solid #0a0b0d",
+          }} />
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100/90 overflow-hidden z-50 animate-in fade-in duration-150">
-          <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-xs text-gray-900 tracking-tight">System Telemetry & Alerts</h3>
-              <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full">{unreadCount} New</span>
+        <div style={{
+          position: "absolute", right: 0, top: "calc(100% + 10px)",
+          width: 300,
+          background: "#111318",
+          border: "1px solid rgba(255,255,255,0.12)",
+          borderRadius: 14,
+          overflow: "hidden",
+          zIndex: 50,
+          boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
+        }}>
+          <div style={{
+            padding: "12px 16px",
+            borderBottom: "1px solid rgba(255,255,255,0.07)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#f1f5f9" }}>Alerts</span>
+              {unreadCount > 0 && (
+                <span style={{
+                  fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 20,
+                  background: "var(--green-dim)", color: "var(--green)", border: "1px solid var(--green-border)",
+                }}>
+                  {unreadCount} new
+                </span>
+              )}
             </div>
-            <button className="text-[11px] text-purple-600 font-bold hover:underline">Mark all read</button>
+            <button style={{ fontSize: 10, fontWeight: 600, color: "#475569", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+              Mark all read
+            </button>
           </div>
-          <div className="max-h-96 overflow-y-auto divide-y divide-gray-50">
+          <div style={{ maxHeight: 280, overflowY: "auto" }}>
             {notifications.map(n => (
-              <div key={n.id} className={`p-3.5 hover:bg-purple-50/30 transition-colors ${n.unread ? 'bg-purple-50/20' : ''}`}>
-                <p className="text-xs font-semibold text-gray-900">{n.text}</p>
-                <p className="text-[10px] text-gray-400 font-medium mt-1">{n.time}</p>
+              <div key={n.id} style={{
+                padding: "12px 16px",
+                borderBottom: "1px solid rgba(255,255,255,0.04)",
+                background: n.unread ? "rgba(34,197,94,0.04)" : "transparent",
+                transition: "background 0.1s",
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{n.text}</p>
+                <p style={{ fontSize: 10, color: "#475569", marginTop: 3 }}>{n.time}</p>
               </div>
             ))}
           </div>
