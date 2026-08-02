@@ -1,101 +1,160 @@
 import { useState } from "react";
-import { Building2, Users, Puzzle, ToggleLeft } from "lucide-react";
+import { Building2, Users, Puzzle, ToggleLeft, Sliders, Play, Activity } from "lucide-react";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("organization");
 
+  const sidebarNavs = [
+    { id: "organization", label: "Organization", icon: Building2 },
+    { id: "roles", label: "Users & Roles", icon: Users },
+    { id: "integrations", label: "Integrations", icon: Puzzle },
+    { id: "features", label: "Feature Flags", icon: ToggleLeft },
+  ];
+
+  const aiNavs = [
+    { id: "ai_settings", label: "AI Settings & Prompts", icon: Sliders },
+    { id: "ai_playground", label: "AI Playground", icon: Play },
+    { id: "ai_usage", label: "AI Usage & Telemetry", icon: Activity },
+  ];
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+    <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Header */}
+      <div>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+          Platform Settings
+        </h2>
+        <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>
+          Manage your organization, team permissions, integrations, and AI engine parameters.
+        </p>
       </div>
 
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex overflow-hidden">
-        {/* Settings Sidebar */}
-        <div className="w-64 border-r border-gray-100 bg-gray-50/40 p-4">
-          <nav className="space-y-1">
-            <button 
-              onClick={() => setActiveTab("organization")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'organization' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-            >
-              <Building2 size={16} /> Organization
-            </button>
-            <button 
-              onClick={() => setActiveTab("roles")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'roles' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-            >
-              <Users size={16} /> Users & Roles
-            </button>
-            <button 
-              onClick={() => setActiveTab("integrations")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'integrations' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-            >
-              <Puzzle size={16} /> Integrations
-            </button>
-            <button 
-              onClick={() => setActiveTab("features")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'features' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-            >
-              <ToggleLeft size={16} /> Feature Flags
-            </button>
-            <div className="pt-4 mt-4 border-t border-gray-200/80">
-              <p className="px-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">AI Platform</p>
-              <button 
-                onClick={() => setActiveTab("ai_settings")}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'ai_settings' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-              >
-                AI Settings & Prompts
-              </button>
-              <button 
-                onClick={() => setActiveTab("ai_playground")}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'ai_playground' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-              >
-                AI Playground
-              </button>
-              <button 
-                onClick={() => setActiveTab("ai_usage")}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${activeTab === 'ai_usage' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100' : 'text-gray-600 hover:bg-purple-50/60 hover:text-purple-700'}`}
-              >
-                AI Usage & Cost Telemetry
-              </button>
+      {/* Main Container */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "240px 1fr",
+        gap: 0,
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border)",
+        borderRadius: 16,
+        overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        minHeight: 520,
+      }}>
+        {/* Sidebar */}
+        <div style={{
+          background: "var(--bg-elevated)",
+          borderRight: "1px solid var(--border)",
+          padding: "20px 12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 20,
+        }}>
+          <div>
+            <span className="label-caps" style={{ display: "block", padding: "0 10px 8px 10px" }}>General</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {sidebarNavs.map(nav => {
+                const Icon = nav.icon;
+                const isActive = activeTab === nav.id;
+                return (
+                  <button
+                    key={nav.id}
+                    onClick={() => setActiveTab(nav.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 9,
+                      padding: "9px 12px", borderRadius: 8,
+                      fontSize: 12, fontWeight: isActive ? 700 : 500,
+                      background: isActive ? "#111827" : "transparent",
+                      color: isActive ? "#ffffff" : "var(--text-secondary)",
+                      border: "none", cursor: "pointer", fontFamily: "inherit",
+                      textAlign: "left", transition: "all 0.12s",
+                    }}
+                  >
+                    <Icon size={14} style={{ opacity: isActive ? 1 : 0.7 }} />
+                    {nav.label}
+                  </button>
+                );
+              })}
             </div>
-          </nav>
+          </div>
+
+          <div>
+            <span className="label-caps" style={{ display: "block", padding: "0 10px 8px 10px" }}>AI Engine</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {aiNavs.map(nav => {
+                const Icon = nav.icon;
+                const isActive = activeTab === nav.id;
+                return (
+                  <button
+                    key={nav.id}
+                    onClick={() => setActiveTab(nav.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 9,
+                      padding: "9px 12px", borderRadius: 8,
+                      fontSize: 12, fontWeight: isActive ? 700 : 500,
+                      background: isActive ? "#111827" : "transparent",
+                      color: isActive ? "#ffffff" : "var(--text-secondary)",
+                      border: "none", cursor: "pointer", fontFamily: "inherit",
+                      textAlign: "left", transition: "all 0.12s",
+                    }}
+                  >
+                    <Icon size={14} style={{ opacity: isActive ? 1 : 0.7 }} />
+                    {nav.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        {/* Settings Content */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        {/* Content Pane */}
+        <div style={{ padding: "28px 32px", overflowY: "auto" }}>
           {activeTab === "organization" && (
-            <div className="max-w-2xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Organization Details</h2>
-              <div className="space-y-5">
+            <div style={{ maxWidth: 480, display: "flex", flexDirection: "column", gap: 20 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Organization Details</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Manage core company identity</p>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Organization Name</label>
-                  <input type="text" defaultValue="Acme Corp" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>Organization Name</label>
+                  <input type="text" defaultValue="Acme Sales Corp" className="glass-input" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Primary Email</label>
-                  <input type="email" defaultValue="admin@acme.com" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>Primary Administrator Email</label>
+                  <input type="email" defaultValue="linus@leadforge.ai" className="glass-input" />
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700">Save Changes</button>
+                <button className="btn-primary" style={{ alignSelf: "flex-start", marginTop: 4 }}>Save Changes</button>
               </div>
             </div>
           )}
 
           {activeTab === "roles" && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Users & Roles</h2>
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Users & Roles</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Manage account seats and workspace permissions</p>
+              </div>
+
+              <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>User</th>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Role</th>
+                      <th style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody>
                     <tr>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">System Admin</td>
-                      <td className="px-6 py-4 text-sm text-gray-500"><span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-md font-medium text-xs">Admin</span></td>
+                      <td style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>Linus Kibet (linus@leadforge.ai)</td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 6, background: "var(--blue-dim)", color: "var(--blue-text)", border: "1px solid var(--blue-border)" }}>Super Admin</span>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 6, background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)" }}>Active</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -104,111 +163,116 @@ export default function Settings() {
           )}
 
           {activeTab === "integrations" && (
-            <div className="max-w-2xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Integrations</h2>
-              <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+            <div style={{ maxWidth: 540, display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Connected Integrations</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Sync email providers and CRM webhooks</p>
+              </div>
+
+              <div style={{
+                padding: "16px 20px", background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
+              }}>
                 <div>
-                  <h3 className="font-medium text-gray-900">Google Workspace (SMTP/IMAP)</h3>
-                  <p className="text-sm text-gray-500 mt-1">Connect your email to send/receive directly in LeadForgeAI.</p>
+                  <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Google Workspace (SMTP/IMAP)</h4>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>Connect your sales inbox for automated outreach dispatching.</p>
                 </div>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200">Connect</button>
+                <button className="btn-ghost" style={{ flexShrink: 0 }}>Connect</button>
               </div>
             </div>
           )}
 
           {activeTab === "features" && (
-            <div className="max-w-2xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Feature Flags</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <h3 className="font-medium text-gray-900">AI Outreach Generator</h3>
-                    <p className="text-sm text-gray-500">Enable AI-powered email writing.</p>
-                  </div>
-                  <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" name="toggle" id="toggle1" className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" />
-                    <label htmlFor="toggle1" className="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
-                  </div>
-                </div>
+            <div style={{ maxWidth: 540, display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Feature Flags</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Enable or disable experimental features</p>
               </div>
+
+              {[
+                { title: "AI Outreach Generator", desc: "Allow automatic synthesis of personalized proposal emails." },
+                { title: "Live Telemetry Terminal", desc: "Show real-time scraping & LLM execution logs on discovery page." },
+              ].map(f => (
+                <div key={f.title} style={{
+                  padding: "16px 20px", background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                  borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
+                }}>
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{f.title}</h4>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{f.desc}</p>
+                  </div>
+                  <input type="checkbox" defaultChecked style={{ accentColor: "#111827", width: 16, height: 16, cursor: "pointer" }} />
+                </div>
+              ))}
             </div>
           )}
 
           {activeTab === "ai_settings" && (
-            <div className="max-w-2xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">AI Settings</h2>
-              <div className="space-y-5">
+            <div style={{ maxWidth: 480, display: "flex", flexDirection: "column", gap: 20 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>AI Engine Parameters</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Configure backend AI execution behavior</p>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">AI Provider</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="mock">Mock Provider (Testing)</option>
-                    <option value="mimo">MiMo API</option>
+                  <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>AI Provider</label>
+                  <select className="glass-input" style={{ cursor: "pointer" }}>
+                    <option value="mock">Mock Provider (Local Testing)</option>
+                    <option value="mimo">MiMo / OpenAI Compatible Endpoint</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Default Model</label>
-                  <input type="text" defaultValue="mock-model-v1" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>Default Model Name</label>
+                  <input type="text" defaultValue="gemini-flash" className="glass-input" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Global Max Retries</label>
-                  <input type="number" defaultValue={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>Max Retries</label>
+                  <input type="number" defaultValue={3} className="glass-input" />
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700">Save AI Configuration</button>
+                <button className="btn-primary" style={{ alignSelf: "flex-start", marginTop: 4 }}>Save AI Configuration</button>
               </div>
             </div>
           )}
 
           {activeTab === "ai_playground" && (
-            <div className="h-full flex flex-col">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 shrink-0">AI Playground</h2>
-              <div className="flex-1 flex gap-6 min-h-0">
-                {/* Left: Input */}
-                <div className="w-1/2 flex flex-col gap-4 overflow-y-auto">
-                  <div className="bg-white p-4 rounded-xl border border-gray-200">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Prompt</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
-                      <option>Email Outreach (v1)</option>
-                      <option>Website Analysis (v1)</option>
-                    </select>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%" }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>AI Playground</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Test prompts and view raw model completions</p>
+              </div>
 
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Template Preview</label>
-                    <textarea readOnly className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm font-mono text-gray-600 mb-4" value={"Write an email to {{company_name}} about {{context}}"} />
-                    
-                    <h3 className="font-medium text-sm text-gray-900 mb-2">Variables</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">company_name</label>
-                        <input type="text" placeholder="Acme Corp" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">context</label>
-                        <input type="text" placeholder="CRM software upgrade" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                      </div>
-                    </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div>
+                    <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>Select Prompt Template</label>
+                    <select className="glass-input" style={{ cursor: "pointer" }}>
+                      <option>Email Outreach Synthesizer (v2)</option>
+                      <option>Website Intelligence Analyzer (v1)</option>
+                    </select>
                   </div>
-                  <button className="bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 mt-auto">Generate Response</button>
+                  <div>
+                    <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>Template Source</label>
+                    <textarea readOnly className="glass-input" style={{ height: 100, fontFamily: "monospace", fontSize: 11, color: "var(--text-secondary)" }}
+                      value={"Write a high-converting sales proposal email for {{company_name}} focusing on {{pain_point}}."} />
+                  </div>
+                  <button className="btn-primary" style={{ justifyContent: "center" }}>Run Test Completion</button>
                 </div>
-                {/* Right: Output */}
-                <div className="w-1/2 flex flex-col gap-4">
-                  <div className="flex-1 bg-gray-50 p-4 rounded-xl border border-gray-200 overflow-y-auto flex flex-col">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Response</h3>
-                    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 text-sm text-gray-800 font-mono overflow-y-auto">
-                      {"This is a mock response from mock-model-v1. Your prompt was 9 words long."}
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 grid grid-cols-3 gap-4 text-center shrink-0">
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider">Latency</p>
-                      <p className="font-semibold text-gray-900">45ms</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider">Tokens</p>
-                      <p className="font-semibold text-gray-900">19 (9 in, 10 out)</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider">Est. Cost</p>
-                      <p className="font-semibold text-green-600">$0.00003</p>
-                    </div>
+
+                <div style={{
+                  background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                  borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 8,
+                }}>
+                  <span className="label-caps">Completion Output</span>
+                  <div style={{
+                    flex: 1, minHeight: 180, background: "var(--bg-surface)",
+                    border: "1px solid var(--border)", borderRadius: 8, padding: 14,
+                    fontSize: 11, fontFamily: "monospace", color: "var(--text-secondary)",
+                    lineHeight: 1.6, overflowY: "auto",
+                  }}>
+                    Subject: Digital Transformation Opportunity for Zawadi Apartments{"\n\n"}
+                    Hi Linus,{"\n\n"}
+                    We noticed your website currently requires manual phone inquiries for bookings. Our AI Digital Booking & Admissions Portal can automate this workflow...
                   </div>
                 </div>
               </div>
@@ -216,45 +280,23 @@ export default function Settings() {
           )}
 
           {activeTab === "ai_usage" && (
-            <div className="max-w-4xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">AI Usage & Cost Tracking</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <p className="text-sm font-medium text-gray-500">Total API Cost (MTD)</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">$1.45</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <p className="text-sm font-medium text-gray-500">Total Tokens</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">14,500</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                  <p className="text-sm font-medium text-gray-500">Total Requests</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">124</p>
-                </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>AI Usage & Telemetry</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Monitor API call counts and execution time</p>
               </div>
-              
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                  <h3 className="font-medium text-gray-900">Recent AI Requests</h3>
-                </div>
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider / Model</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tokens</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    <tr>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">mock-provider <span className="text-gray-500 text-xs ml-1">(mock-model-v1)</span></td>
-                      <td className="px-6 py-4 text-sm text-gray-500"><span className="px-2 py-1 bg-green-100 text-green-700 rounded-md font-medium text-xs">SUCCESS</span></td>
-                      <td className="px-6 py-4 text-sm text-gray-500">19</td>
-                      <td className="px-6 py-4 text-sm text-green-600 font-medium">$0.00003</td>
-                    </tr>
-                  </tbody>
-                </table>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                {[
+                  { label: "Total Requests", val: "1,240", color: "var(--text-primary)" },
+                  { label: "Cache Hit Rate", val: "94.2%", color: "var(--green)" },
+                  { label: "Avg Latency", val: "1.2s", color: "var(--blue)" },
+                ].map(s => (
+                  <div key={s.label} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 18px" }}>
+                    <span className="label-caps">{s.label}</span>
+                    <p style={{ fontSize: 22, fontWeight: 800, color: s.color, marginTop: 6 }}>{s.val}</p>
+                  </div>
+                ))}
               </div>
             </div>
           )}
