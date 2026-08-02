@@ -1,97 +1,302 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Settings, LogOut, Radar, DollarSign, Sparkles } from "lucide-react";
-import NotificationsButton from "../widgets/NotificationsButton";
+import { LayoutDashboard, Users, Settings, LogOut, Radar, DollarSign, Sparkles, Bell, Sun, Moon } from "lucide-react";
+import { useState, useEffect } from "react";
+
+function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    return (localStorage.getItem("lf-theme") as "light" | "dark") || "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("lf-theme", theme);
+  }, [theme]);
+
+  const toggle = () => setTheme(t => (t === "light" ? "dark" : "light"));
+  return { theme, toggle };
+}
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const { theme, toggle } = useTheme();
 
   const navItems = [
-    { label: "Dashboard", path: "/", icon: LayoutDashboard },
-    { label: "Companies & Leads", path: "/companies", icon: Users },
-    { label: "Prospect Discovery", path: "/discovery", icon: Radar },
-    { label: "Deals & Revenue", path: "/deals", icon: DollarSign },
-    { label: "AI Management", path: "/settings", icon: Settings },
+    { label: "Overview",            path: "/",          icon: LayoutDashboard },
+    { label: "Companies & Leads",   path: "/companies", icon: Users },
+    { label: "Prospect Discovery",  path: "/discovery", icon: Radar },
+    { label: "Deals & Revenue",     path: "/deals",     icon: DollarSign },
+    { label: "AI Management",       path: "/settings",  icon: Settings },
   ];
 
+  const pageTitle: Record<string, string> = {
+    "/":           "Pipeline Overview",
+    "/companies":  "Companies & Leads",
+    "/discovery":  "Prospect Discovery",
+    "/deals":      "Deals & Revenue",
+    "/settings":   "AI Management",
+  };
+
+  const currentTitle = Object.entries(pageTitle)
+    .reverse()
+    .find(([p]) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p))?.[1] ?? "LeadForge";
+
   return (
-    <div className="flex h-screen bg-slate-50/60 text-gray-900 font-sans antialiased">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-100 flex flex-col shadow-xs z-20">
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100/80">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-black shadow-md shadow-purple-200">
-              <Sparkles size={20} />
+    <div style={{
+      display: "flex",
+      height: "100vh",
+      overflow: "hidden",
+      background: "var(--bg-base)",
+    }}>
+      {/* ── Sidebar ── */}
+      <aside style={{
+        width: 228,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        background: "var(--sidebar-bg)",
+        borderRight: "1px solid var(--sidebar-border)",
+        zIndex: 20,
+      }}>
+        {/* Logo */}
+        <div style={{
+          height: 60,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 18px",
+          borderBottom: "1px solid var(--sidebar-border)",
+          gap: 10,
+        }}>
+          <div style={{
+            width: 30, height: 30,
+            borderRadius: 8,
+            background: "#111827",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <Sparkles size={14} color="#fff" />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em", lineHeight: 1 }}>
+              LeadForge<span style={{ color: "var(--text-muted)", fontWeight: 400 }}>AI</span>
             </div>
-            <div>
-              <span className="text-base font-black text-gray-900 tracking-tight block leading-none">LeadForge<span className="text-purple-600">AI</span></span>
-              <span className="text-[10px] text-gray-400 font-bold tracking-wider uppercase block mt-0.5">Autonomous Sales</span>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>
+              Sales Engine
             </div>
-          </Link>
+          </div>
         </div>
 
-        <nav className="flex-1 px-3.5 py-6 space-y-1.5 overflow-y-auto">
-          {navItems.map((item) => {
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "14px 10px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+          {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+            const isActive = item.path === "/"
+              ? location.pathname === "/"
+              : location.pathname.startsWith(item.path);
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all group ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-100"
-                    : "text-gray-600 hover:bg-purple-50/70 hover:text-purple-700"
-                }`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 9,
+                  padding: "8px 11px",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: isActive ? 700 : 500,
+                  textDecoration: "none",
+                  color: isActive ? "var(--sidebar-nav-active-color)" : "var(--sidebar-nav-color)",
+                  background: isActive ? "var(--sidebar-nav-active-bg)" : "transparent",
+                  transition: "all 0.12s",
+                  letterSpacing: "0.01em",
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.background = "var(--sidebar-nav-hover-bg)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = "var(--sidebar-nav-color)";
+                  }
+                }}
               >
-                <Icon size={18} className={isActive ? "text-white" : "text-gray-400 group-hover:text-purple-600 transition-colors"} />
-                <span>{item.label}</span>
+                <Icon size={14} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
+                {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* User Footer Card */}
-        <div className="p-4 border-t border-gray-100 space-y-2 bg-gray-50/40">
-          <div className="flex items-center gap-3 px-2 py-1.5">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-xs shrink-0">
+        {/* User footer */}
+        <div style={{
+          padding: "12px 10px",
+          borderTop: "1px solid var(--sidebar-border)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 11px" }}>
+            <div style={{
+              width: 28, height: 28,
+              borderRadius: "50%",
+              background: "#111827",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 10, fontWeight: 800, color: "#fff",
+              flexShrink: 0,
+            }}>
               L
             </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-bold text-gray-900 truncate">Linus Kibet</p>
-              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded-md">Admin</span>
+            <div style={{ overflow: "hidden" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                Linus Kibet
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
+                Administrator
+              </div>
             </div>
           </div>
-          <button className="flex items-center gap-2.5 w-full px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors">
-            <LogOut size={16} /> Log Out
+
+          <button
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              width: "100%", padding: "8px 11px",
+              background: "transparent", border: "none",
+              borderRadius: 8, cursor: "pointer",
+              fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
+              transition: "all 0.12s", fontFamily: "inherit",
+              textAlign: "left",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.color = "var(--red-text)";
+              (e.currentTarget as HTMLElement).style.background = "var(--red-dim)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
+          >
+            <LogOut size={13} /> Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Glassmorphic Navbar */}
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 z-10">
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-extrabold text-gray-900 tracking-tight">
-              {location.pathname === "/" ? "Pipeline Overview" :
-               location.pathname.startsWith("/companies") ? "Accounts & Lead Management" :
-               location.pathname.startsWith("/discovery") ? "Autonomous Prospect Discovery" :
-               location.pathname.startsWith("/deals") ? "Deals & Revenue Intelligence" :
-               "AI System Settings"}
+      {/* ── Main content ── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+        {/* Header */}
+        <header style={{
+          height: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 24px",
+          background: "var(--header-bg)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderBottom: "1px solid var(--border)",
+          flexShrink: 0,
+          zIndex: 10,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h1 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+              {currentTitle}
             </h1>
+            {/* LIVE pill */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 5,
+              padding: "3px 9px",
+              background: "var(--green-dim)",
+              border: "1px solid var(--green-border)",
+              borderRadius: 20,
+            }}>
+              <div className="dot-pulse" style={{ background: "var(--live-dot)" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--green-text)", letterSpacing: "0.05em" }}>LIVE</span>
+            </div>
           </div>
-          <div className="flex items-center gap-5">
-            <NotificationsButton />
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-xs cursor-pointer hover:opacity-90 transition-opacity">
-                LK
-              </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+
+            {/* Theme toggle */}
+            <button
+              onClick={toggle}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              style={{
+                width: 34, height: 34,
+                borderRadius: 8,
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", color: "var(--text-secondary)",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+              }}
+            >
+              {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
+            </button>
+
+            {/* Notification bell */}
+            <button
+              style={{
+                position: "relative",
+                width: 34, height: 34,
+                borderRadius: 8,
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", color: "var(--text-secondary)",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border-strong)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+              }}
+            >
+              <Bell size={14} />
+              <span style={{
+                position: "absolute", top: 7, right: 7,
+                width: 5, height: 5,
+                background: "var(--green)",
+                borderRadius: "50%",
+                border: "1.5px solid var(--bg-surface)",
+              }} />
+            </button>
+
+            {/* Avatar */}
+            <div style={{
+              width: 32, height: 32,
+              borderRadius: "50%",
+              background: "#111827",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 800, color: "#fff",
+              cursor: "pointer",
+            }}>
+              LK
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-8 bg-slate-50/40">
+        {/* Page content */}
+        <main style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "28px 28px 40px",
+          background: "var(--bg-base)",
+        }}>
           <Outlet />
         </main>
       </div>
