@@ -1,248 +1,267 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, X } from "lucide-react";
 
 interface Company {
-  id: string;
-  name: string;
-  website: string | null;
-  status: string;
-  location?: string | null;
-  address?: string | null;
+  id: string; name: string; website: string | null; status: string;
+  location?: string | null; address?: string | null;
+  opportunity_score?: number | null; estimated_value?: number | null;
+}
+
+function ScoreDot({ score }: { score: number }) {
+  const color = score >= 80 ? "var(--green)" : score >= 50 ? "var(--amber)" : "var(--red)";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0 }} />
+      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{score}</span>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { bg: string; color: string; border: string; label: string }> = {
+    ACTIVE:   { bg: "var(--green-dim)", color: "var(--green-text)", border: "var(--green-border)", label: "Active" },
+    PAUSED:   { bg: "var(--amber-dim)", color: "var(--amber-text)", border: "var(--amber-border)", label: "Paused" },
+    ARCHIVED: { bg: "var(--bg-elevated)", color: "var(--text-muted)", border: "var(--border)", label: "Archived" },
+  };
+  const s = map[status] ?? map.ARCHIVED;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20,
+      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
+      letterSpacing: "0.04em", textTransform: "uppercase",
+    }}>
+      {s.label}
+    </span>
+  );
 }
 
 export default function CompaniesList() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "high" | "active">("all");
   const [loading, setLoading] = useState(true);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [bulkData, setBulkData] = useState("");
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    const fetchCompanies = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/api/companies/");
-        if (response.ok) {
-          const data = await response.json();
-          setCompanies(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch companies:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchCompanies();
+    fetch("http://localhost:8000/api/companies/")
+      .then(r => r.ok ? r.json() : [])
+      .then(setCompanies)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const handleBulkImport = async () => {
+    setImporting(true);
     try {
-      setImporting(true);
-      
-      // Basic CSV parser
-      const lines = bulkData.split("\n").filter(l => l.trim() !== "");
-      const items = lines.map(line => {
-        const parts = line.split(",");
-        return { name: parts[0]?.trim(), website: parts[1]?.trim() || "" };
+      const items = bulkData.split("\n").filter(l => l.trim()).map(l => {
+        const [name, website] = l.split(",");
+        return { name: name?.trim(), website: website?.trim() || "" };
       });
-
       const res = await fetch("http://localhost:8000/api/prospecting/bulk-import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(items)
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(items),
       });
-      
-      if (res.ok) {
-        setShowBulkImport(false);
-        setBulkData("");
-        // In a real app, refresh the table here
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setImporting(false);
-    }
+      if (res.ok) { setShowBulkImport(false); setBulkData(""); }
+    } catch (e) { console.error(e); }
+    finally { setImporting(false); }
   };
 
+  const filtered = companies.filter(c => {
+    const s = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.website || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const f = activeFilter === "all" ? true : activeFilter === "high" ? (c.opportunity_score ?? 0) >= 80 : c.status === "ACTIVE";
+    return s && f;
+  });
+
   return (
-    <div className="flex flex-col min-h-full space-y-6 max-w-7xl mx-auto w-full pb-10">
+    <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Accounts & Lead Directory</h1>
-            <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-full border border-purple-100 shadow-2xs">
-              {companies.length} Total Prospects
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+              Companies & Leads
+            </h2>
+            <span style={{
+              fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 20,
+              background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-muted)",
+            }}>
+              {companies.length} total
             </span>
           </div>
-          <p className="text-xs text-gray-500 font-medium mt-1">Manage, filter, and execute AI outreach across discovered business leads.</p>
+          <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>
+            Manage, filter, and execute AI outreach across discovered business leads.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setShowBulkImport(true)}
-            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-all"
-          >
-            <Plus size={16} />
-            Bulk Import
-          </button>
-        </div>
+        <button onClick={() => setShowBulkImport(true)} className="btn-primary">
+          <Plus size={13} /> Bulk Import
+        </button>
       </div>
 
-      {/* Glassmorphic Search & Filter Bar */}
-      <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative max-w-md w-full">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-            <Search size={16} />
-          </div>
+      {/* Search + filter */}
+      <div style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border)",
+        borderRadius: 12, padding: "12px 16px",
+        display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      }}>
+        <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
+          <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
           <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50/60 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-xs font-medium transition-all"
-            placeholder="Search by company name or domain..."
+            type="text" value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="glass-input" style={{ paddingLeft: 32, fontSize: 12 }}
+            placeholder="Search by name or domain…"
           />
         </div>
-        <div className="flex items-center gap-2 self-start md:self-auto overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          <span className="text-xs font-semibold text-gray-400 mr-1 shrink-0">Filter:</span>
-          <button className="px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg border border-purple-100 hover:bg-purple-100 transition-colors shrink-0">
-            All Leads
-          </button>
-          <button className="px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-semibold rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors shrink-0">
-            High Priority (90+)
-          </button>
-          <button className="px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-semibold rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors shrink-0">
-            Active
-          </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span className="label-caps" style={{ marginRight: 4 }}>Filter</span>
+          {(["all", "high", "active"] as const).map(f => (
+            <button key={f} onClick={() => setActiveFilter(f)} style={{
+              padding: "6px 12px", borderRadius: 7, fontSize: 11, fontWeight: 700,
+              cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s",
+              background: activeFilter === f ? "#111827" : "var(--bg-elevated)",
+              color: activeFilter === f ? "#fff" : "var(--text-secondary)",
+              border: activeFilter === f ? "1px solid #111827" : "1px solid var(--border)",
+            }}>
+              {f === "all" ? "All Leads" : f === "high" ? "High Priority" : "Active"}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white shadow-sm border border-gray-100 rounded-xl flex-1 overflow-hidden flex flex-col">
-        <div className="overflow-x-auto flex-1">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Company Name
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Website
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Location
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Opportunity
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Value
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
+      <div style={{
+        background: "var(--bg-surface)", border: "1px solid var(--border)",
+        borderRadius: 14, overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+      }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid var(--border)" }}>
+              {["Company", "Website", "Location", "Score", "Est. Value", "Status", ""].map((h, i) => (
+                <th key={i} style={{
+                  padding: "10px 18px", textAlign: "left",
+                  fontSize: 10, fontWeight: 700, color: "var(--text-muted)",
+                  letterSpacing: "0.08em", textTransform: "uppercase",
+                  background: "var(--bg-elevated)",
+                }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={7} style={{ padding: "48px 18px", textAlign: "center", color: "var(--text-muted)", fontSize: 12 }}>Loading companies…</td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={7} style={{ padding: "48px 18px", textAlign: "center", color: "var(--text-muted)", fontSize: 12 }}>No companies found.</td></tr>
+            ) : filtered.map((company, idx) => (
+              <tr key={company.id}
+                style={{ borderBottom: idx < filtered.length - 1 ? "1px solid var(--border)" : "none", transition: "background 0.1s" }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--table-hover)"}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+              >
+                <td style={{ padding: "13px 18px" }}>
+                  <Link to={`/companies/${company.id}`} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 7, background: "#111827",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 12, fontWeight: 800, color: "#fff", flexShrink: 0,
+                    }}>
+                      {company.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{company.name}</span>
+                  </Link>
+                </td>
+                <td style={{ padding: "13px 18px" }}>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>{company.website || "—"}</span>
+                </td>
+                <td style={{ padding: "13px 18px" }}>
+                  <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                    {company.location || company.address || "—"}
+                  </span>
+                </td>
+                <td style={{ padding: "13px 18px" }}>
+                  <ScoreDot score={company.opportunity_score ?? 90} />
+                </td>
+                <td style={{ padding: "13px 18px" }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
+                    background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)",
+                  }}>
+                    ${company.estimated_value?.toLocaleString() ?? "3,500"}
+                  </span>
+                </td>
+                <td style={{ padding: "13px 18px" }}>
+                  <StatusBadge status={company.status} />
+                </td>
+                <td style={{ padding: "13px 18px", textAlign: "right" }}>
+                  <Link to={`/companies/${company.id}`} style={{
+                    fontSize: 11, fontWeight: 700, padding: "6px 12px", borderRadius: 7,
+                    background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                    color: "var(--text-secondary)", textDecoration: "none", transition: "all 0.12s", display: "inline-block",
+                  }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.background = "#111827";
+                      (e.currentTarget as HTMLElement).style.color = "#fff";
+                      (e.currentTarget as HTMLElement).style.borderColor = "#111827";
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.background = "var(--bg-elevated)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                    }}
+                  >
+                    View →
+                  </Link>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    Loading companies...
-                  </td>
-                </tr>
-              ) : companies.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.website || '').toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    No companies found.
-                  </td>
-                </tr>
-              ) : (
-                companies
-                  .filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.website || '').toLowerCase().includes(searchTerm.toLowerCase()))
-                  .map((company) => (
-                  <tr key={company.id} className="hover:bg-purple-50/40 transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link to={`/companies/${company.id}`} className="text-xs font-bold text-gray-900 group-hover:text-purple-600 transition-colors flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-purple-100/70 text-purple-700 font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                          {company.name.charAt(0)}
-                        </div>
-                        <span>{company.name}</span>
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-xs text-gray-600 font-medium">{company.website || "N/A"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-xs text-gray-600 font-medium">{company.location || company.address || "Location unavailable"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-xs font-bold flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${
-                          (company as any).opportunity_score >= 80 ? 'bg-emerald-500 shadow-xs' :
-                          (company as any).opportunity_score >= 50 ? 'bg-amber-500 shadow-xs' :
-                          'bg-red-400'
-                        }`}></span>
-                        <span className="text-gray-900">{(company as any).opportunity_score || 90}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block border border-emerald-100">
-                        ${(company as any).estimated_value?.toLocaleString() || "3,500"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full border ${
-                        company.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-                        company.status === 'PAUSED' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
-                        'bg-gray-100 text-gray-700 border-gray-200'
-                      }`}>
-                        {company.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
-                      <Link to={`/companies/${company.id}`} className="text-purple-600 hover:text-purple-900 bg-purple-50 group-hover:bg-purple-600 group-hover:text-white px-3 py-1.5 rounded-lg transition-all shadow-2xs">
-                        View Lead →
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Bulk Import Modal */}
+      {/* Bulk import modal */}
       {showBulkImport && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full">
-            <h2 className="text-xl font-bold mb-4">Bulk Import Prospects</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Paste CSV data below. Format: <code>Company Name, Website URL</code>
-            </p>
-            <textarea
-              className="w-full h-48 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-purple-500 mb-4"
-              placeholder="ABC School, abcschool.edu&#10;XYZ Hotel, xyzhotel.com"
-              value={bulkData}
-              onChange={(e) => setBulkData(e.target.value)}
-            />
-            <div className="flex justify-end gap-3">
-              <button 
-                onClick={() => setShowBulkImport(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-              >
-                Cancel
+        <div style={{
+          position: "fixed", inset: 0,
+          background: "rgba(0,0,0,0.35)",
+          backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50,
+        }}>
+          <div style={{
+            background: "var(--bg-surface)", border: "1px solid var(--border)",
+            borderRadius: 16, padding: 28, maxWidth: 480, width: "90%",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.15)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Bulk Import</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>
+                  One per line — <code style={{ fontFamily: "monospace", color: "var(--text-secondary)" }}>Company Name, Website</code>
+                </p>
+              </div>
+              <button onClick={() => setShowBulkImport(false)} style={{
+                background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                borderRadius: 7, padding: 7, cursor: "pointer", color: "var(--text-muted)",
+              }}>
+                <X size={14} />
               </button>
-              <button 
-                onClick={handleBulkImport}
-                disabled={importing || !bulkData.trim()}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg disabled:opacity-50"
-              >
-                {importing ? "Importing & Analyzing..." : "Start Auto-Prospecting"}
+            </div>
+            <textarea
+              className="glass-input"
+              style={{ height: 160, resize: "vertical", fontFamily: "monospace", fontSize: 12 }}
+              placeholder={"ABC School, abcschool.edu\nXYZ Hotel, xyzhotel.com"}
+              value={bulkData}
+              onChange={e => setBulkData(e.target.value)}
+            />
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
+              <button onClick={() => setShowBulkImport(false)} className="btn-ghost">Cancel</button>
+              <button onClick={handleBulkImport} disabled={importing || !bulkData.trim()} className="btn-primary"
+                style={{ opacity: importing || !bulkData.trim() ? 0.5 : 1 }}>
+                {importing ? "Importing…" : "Start Auto-Prospecting"}
               </button>
             </div>
           </div>
