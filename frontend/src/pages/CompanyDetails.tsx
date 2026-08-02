@@ -19,11 +19,9 @@ export default function CompanyDetails() {
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
   
   // Email states
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailBody, setEmailBody] = useState("");
+  const [emailSubject] = useState("");
+  const [emailBody] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
@@ -157,50 +155,6 @@ export default function CompanyDetails() {
       console.error(e);
     } finally {
       setAnalyzing(false);
-    }
-  };
-
-  const handleSaveDraft = async () => {
-    if (!company?.draft_email) return;
-    setIsSavingDraft(true);
-    try {
-      const res = await fetch(`http://localhost:8000/api/emails/${company.draft_email.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: emailSubject, body: emailBody })
-      });
-      if (!res.ok) throw new Error("Failed to save draft");
-      fetchCompanyData(); // refresh to get updated data
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsSavingDraft(false);
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (!company?.draft_email) return;
-    setIsSending(true);
-    try {
-      // First save any pending edits
-      await fetch(`http://localhost:8000/api/emails/${company.draft_email.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: emailSubject, body: emailBody })
-      });
-
-      const res = await fetch(`http://localhost:8000/api/emails/${company.draft_email.id}/send`, {
-        method: "POST"
-      });
-      if (!res.ok) throw new Error("Failed to send email");
-      
-      setIsPreviewOpen(false);
-      fetchCompanyData(); // refresh
-      fetchWorkflowHistory(); // refresh timeline
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsSending(false);
     }
   };
 
