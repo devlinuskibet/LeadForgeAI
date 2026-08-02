@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CheckSquare, ArrowRight, DollarSign, Briefcase, Mail, AlertCircle, Building2 } from "lucide-react";
+import { CheckSquare, ArrowRight, Briefcase, Mail, Building2 } from "lucide-react";
 
 export default function Dashboard() {
   const [briefing, setBriefing] = useState<any>(null);
@@ -149,6 +149,8 @@ export default function Dashboard() {
               </div>
             ))
           )}
+        </div>
+        
         {/* Action Center */}
         <div>
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-6 space-y-4">
