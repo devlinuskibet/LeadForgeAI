@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, Plus, MoreHorizontal, Circle } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 
 interface Company {
   id: string;
