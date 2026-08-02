@@ -16,11 +16,28 @@ except Exception:
     engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
 
 # Auto-migrate new schema columns if missing
+# Note: SQLite does not support "IF NOT EXISTS" in ALTER TABLE — handle gracefully per column
+_auto_migrate_columns = [
+    ("companies", "location", "VARCHAR"),
+    ("companies", "address", "VARCHAR"),
+]
+
 try:
-    from sqlalchemy import text
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS location VARCHAR;"))
-        conn.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS address VARCHAR;"))
+    from sqlalchemy import text, inspect
+
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        for table_name, col_name, col_type in _auto_migrate_columns:
+            try:
+                existing_tables = inspector.get_table_names()
+                if table_name not in existing_tables:
+                    continue
+                existing_cols = [c["name"] for c in inspector.get_columns(table_name)]
+                if col_name not in existing_cols:
+                    conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+            except Exception as col_err:
+                print(f"Auto-migration note ({table_name}.{col_name}): {col_err}")
 except Exception as e:
     print(f"Auto-migration note: {e}")
 
