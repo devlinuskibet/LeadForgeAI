@@ -11,6 +11,7 @@ from services.ai_service import AIService
 from services.context_builder import ContextBuilder
 from services.scraping_service import ScrapingService
 from workers.tasks import run_auto_prospect_task
+from datetime import datetime, timezone
 import uuid
 import json
 
