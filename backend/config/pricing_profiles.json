@@ -1,0 +1,45 @@
+{
+  "default_profile": "kenya_kes",
+  "profiles": {
+    "kenya_kes": {
+      "name": "Kenya Market Profile (KES)",
+      "currency_code": "KES",
+      "currency_symbol": "KES ",
+      "currency_position": "prefix",
+      "location_tiers": {
+        "tier_1_keywords": ["nairobi", "westlands", "kilimani", "upper hill", "cbd", "gigiri", "karen", "lavington", "nyali", "mombasa cbd"],
+        "tier_1_multiplier": 1.5,
+        "tier_2_keywords": ["nakuru", "eldoret", "kisumu", "thika", "kiambu", "naivasha", "ruiru", "machakos"],
+        "tier_2_multiplier": 1.1,
+        "tier_3_default_multiplier": 0.85
+      },
+      "category_base_rates": {
+        "high_value_keywords": ["hospital", "clinic", "law", "advocate", "legal", "real estate", "property", "engineering", "consulting", "architect", "financial"],
+        "high_value_base_kes": 150000,
+        "mid_tier_keywords": ["school", "college", "academy", "auto", "car", "logistics", "transport", "accounting", "hotel", "resort"],
+        "mid_tier_base_kes": 85000,
+        "local_trade_default_base_kes": 35000
+      },
+      "service_packages": [
+        {
+          "id": "whatsapp_intake",
+          "name": "WhatsApp Lead Capture & Intake Suite",
+          "base_price_kes": 35000,
+          "condition": "missing_website_or_mobile"
+        },
+        {
+          "id": "crm_copilot",
+          "name": "Instant CRM & Email Copilot",
+          "base_price_kes": 45000,
+          "condition": "always"
+        },
+        {
+          "id": "google_reputation",
+          "name": "Google Review & Reputation Booster",
+          "base_price_kes": 25000,
+          "condition": "low_reviews_or_rating"
+        }
+      ]
+    }
+  }
+}

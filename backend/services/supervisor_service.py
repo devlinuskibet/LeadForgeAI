@@ -76,9 +76,15 @@ class SupervisorService:
                 )
                 response_json = json.loads(response_text)
                 
-                import random
-                opp_score = response_json.get("opportunity_score") or random.randint(72, 95)
-                val_amount = response_json.get("estimated_value") or random.choice([15000, 22000, 35000, 48000])
+                from services.valuation_service import ValuationService
+                val_engine = ValuationService()
+                val_res = val_engine.calculate_valuation(
+                    business_type=company.name,
+                    location=company.location or company.address or "Kenya",
+                    has_website=bool(company.website),
+                    rating=company.rating or 4.2,
+                    review_count=company.review_count or 40
+                )
 
                 analysis = self.db.query(CompanyAnalysis).filter(CompanyAnalysis.company_id == company.id).first()
                 if not analysis:
@@ -86,20 +92,13 @@ class SupervisorService:
                     self.db.add(analysis)
                 
                 analysis.raw_scraped_text = website_text
-                analysis.inferred_problems = response_json.get("inferred_problems", [
-                    "Outdated online intake system",
-                    "Missing automated SMS/Email lead response",
-                    "Unoptimized mobile user experience"
-                ])
-                analysis.recommended_solutions = response_json.get("recommended_solutions", [
-                    {"name": "Autonomous Lead Intake Suite", "price": "$4,500"},
-                    {"name": "Instant CRM & Email Copilot", "price": "$7,200"}
-                ])
-                analysis.opportunity_score = opp_score
-                analysis.priority_score = min(99, opp_score + random.randint(1, 4))
-                analysis.estimated_value = val_amount
-                analysis.sales_coach_advice = "High priority account. Pitch automated lead capture and CRM pipeline synchronization."
-                analysis.why_today = "Competitors in the region have adopted AI intake automation."
+                analysis.inferred_problems = val_res["inferred_problems"]
+                analysis.recommended_solutions = val_res["recommended_solutions"]
+                analysis.opportunity_score = val_res["opportunity_score"]
+                analysis.priority_score = val_res["priority_score"]
+                analysis.estimated_value = val_res["estimated_value_kes"]
+                analysis.sales_coach_advice = val_res["sales_coach_advice"]
+                analysis.why_today = val_res["why_today"]
                 analysis.status = "completed"
                 
                 logs = list(job.logs) if job.logs else []

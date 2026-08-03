@@ -8,6 +8,7 @@ import {
 import { PreviewEmailModal } from '../components/PreviewEmailModal';
 import TimelineWidget from "../widgets/TimelineWidget";
 import { API_BASE_URL } from "../config/api";
+import { formatCurrency } from "../utils/currency";
 
 export default function CompanyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -406,7 +407,7 @@ export default function CompanyDetails() {
                         Estimated Solution Value
                       </p>
                       <p style={{ fontSize: 36, fontWeight: 900, color: "#22c55e", letterSpacing: "-0.03em" }}>
-                        ${totalValue.toLocaleString()}
+                        {formatCurrency(totalValue)}
                       </p>
                     </div>
                   </div>

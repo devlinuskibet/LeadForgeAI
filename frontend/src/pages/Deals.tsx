@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
+import { formatCurrency } from "../utils/currency";
 
 interface Deal { id: string; name: string; amount: number; status: "OPEN" | "WON" | "LOST"; company_id: string; company_name: string; }
 interface DealMetrics { total_open_value: number; total_won_value: number; total_lost_value: number; total_deals_count: number; win_rate_percentage: number; }
@@ -46,7 +47,7 @@ function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, type }: any) {
           color: isWon ? "var(--green-text)" : isLost ? "var(--text-muted)" : "var(--blue-text)",
           border: `1px solid ${isWon ? "var(--green-border)" : isLost ? "var(--border)" : "var(--blue-border)"}`,
         }}>
-          ${deal.amount.toLocaleString()}
+          {formatCurrency(deal.amount)}
         </span>
       </div>
       <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{deal.company_name}</p>
@@ -163,8 +164,8 @@ export default function Deals() {
 
       {/* Metrics */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
-        <MetricCard label="Pipeline Value" value={`$${metrics?.total_open_value?.toLocaleString() ?? "0"}`} accent="var(--blue)"  icon={DollarSign} />
-        <MetricCard label="Won Revenue"    value={`$${metrics?.total_won_value?.toLocaleString() ?? "0"}`}  accent="var(--green)" icon={Trophy} />
+        <MetricCard label="Pipeline Value" value={formatCurrency(metrics?.total_open_value)} accent="var(--blue)"  icon={DollarSign} />
+        <MetricCard label="Won Revenue"    value={formatCurrency(metrics?.total_won_value)}  accent="var(--green)" icon={Trophy} />
         <MetricCard label="Win Rate"       value={`${wr}%`}                                                  accent={wrColor}      icon={TrendingUp} />
         <MetricCard label="Total Deals"    value={String(metrics?.total_deals_count ?? 0)}                   accent="var(--text-muted)" icon={FileText} />
       </div>

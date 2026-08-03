@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Radar, Search, CheckCircle, MapPin, Star, Globe, ArrowRight, Briefcase } from 'lucide-react';
 
 import { API_BASE_URL } from '../config/api';
+import { formatCurrency } from '../utils/currency';
 
 export function Discovery() {
   const [searchParams, setSearchParams] = useState({ business_type: '', location: '', max_results: 10, min_rating: 4.0, has_website: true });
@@ -270,7 +271,7 @@ export function Discovery() {
               {[
                 { label: "Businesses Found",    value: summary.businesses_found,                           color: "var(--text-primary)" },
                 { label: "Websites Analyzed",   value: summary.websites_found,                             color: "var(--blue)"         },
-                { label: "Potential Revenue",   value: `$${summary.potential_revenue?.toLocaleString()}`,  color: "var(--green)"        },
+                { label: "Potential Revenue",   value: formatCurrency(summary.potential_revenue),          color: "var(--green)"        },
                 { label: "Ready for Outreach",  value: summary.ready_for_outreach,                         color: "var(--green)"        },
               ].map(s => (
                 <div key={s.label} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
@@ -298,7 +299,7 @@ export function Discovery() {
                 <p className="label-caps" style={{ marginBottom: 12 }}>Averages & Estimates</p>
                 {[
                   { label: "Avg Opportunity Score", value: `${summary.average_opportunity_score}/100` },
-                  { label: "Avg Deal Size",          value: `$${summary.average_deal_size?.toLocaleString()}` },
+                  { label: "Avg Deal Size",          value: formatCurrency(summary.average_deal_size) },
                   { label: "Est. Outreach Time",     value: `~${Math.ceil(summary.estimated_outreach_time_mins)} mins` },
                 ].map(row => (
                   <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Mail, Send, Eye, ArrowRight, Zap, Briefcase } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
+import { formatCurrency } from "../utils/currency";
 
 function StatCard({ label, value, sub, accent, icon: Icon }: { label: string; value: string; sub: string; accent: string; icon: any }) {
   return (
@@ -101,7 +102,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-          <StatCard label="Pipeline Value" value={`$${briefing?.pipeline_value?.toLocaleString() ?? "0"}`} sub="Weighted deal opportunities" accent="var(--green)" icon={TrendingUp} />
+          <StatCard label="Pipeline Value" value={formatCurrency(briefing?.pipeline_value)} sub="Weighted deal opportunities" accent="var(--green)" icon={TrendingUp} />
           <StatCard label="Drafts Ready"   value={String(briefing?.drafts_ready ?? 0)}                     sub="AI outreach ready to send"  accent="var(--blue)"  icon={Mail} />
           <StatCard label="Emails Sent"    value={String(briefing?.emails_sent ?? 0)}                      sub="Outreach delivered"         accent="var(--text-muted)" icon={Send} />
           <StatCard label="Open Rate"      value={`${openRate}%`}                                          sub="Recipient engagement"       accent={openRateAccent} icon={Eye} />
@@ -184,7 +185,7 @@ export default function Dashboard() {
                       background: "var(--green-dim)", color: "var(--green-text)",
                       border: "1px solid var(--green-border)", borderRadius: 6, display: "inline-block",
                     }}>
-                      Est. ${priority.estimated_value?.toLocaleString() ?? "3,500"}
+                      {formatCurrency(priority.estimated_value)}
                     </span>
                   </div>
                   <Link to={`/companies/${priority.company_id}`} className="btn-primary" style={{ flexShrink: 0, fontSize: 11 }}>

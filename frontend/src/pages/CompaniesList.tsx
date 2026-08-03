@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, Plus, X } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
+import { formatCurrency } from "../utils/currency";
 
 interface Company {
   id: string; name: string; website: string | null; status: string;
@@ -193,7 +194,7 @@ export default function CompaniesList() {
                     fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 6,
                     background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)",
                   }}>
-                    ${company.estimated_value?.toLocaleString() ?? "3,500"}
+                    {formatCurrency(company.estimated_value)}
                   </span>
                 </td>
                 <td style={{ padding: "13px 18px" }}>
