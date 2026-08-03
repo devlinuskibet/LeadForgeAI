@@ -29,10 +29,11 @@
 - **3-Paragraph Personalized Email Prompting**: Generates tailored outreach incorporating prospect name, location, inferred operational bottlenecks, and KES package pricing.
 - **Company Dossier & Online Reputation Tab**: Displays Google review star rating (e.g. 4.6 ★), workforce size estimates (50–250 employees), and public sentiment summary.
 
-### 4. ✉️ Full Interactive Email Copilot & Editor (`PreviewEmailModal.tsx`)
-- **Editable Email Attributes**: Full freedom to edit Recipient (`To`), Subject Line, and Email Body.
-- **URL Auto-Cleaner**: Automatically converts website URLs (e.g. `http://tenwekhospital.org`) into valid email addresses (`contact@tenwekhospital.org`).
-- **Live Delivery Engine**: Supports **Save Draft** and live **Send Email Now** integration via SendGrid or SMTP (`/api/emails/{id}/send`).
+### 4. ✉️ Full Interactive Email Copilot & Live Dispatcher (`PreviewEmailModal.tsx` & `SendGridEmailProvider`)
+- **Editable Email Attributes**: Full freedom to edit Recipient (`To`), Sender Email (`From`), Subject Line, and Email Body.
+- **URL Auto-Cleaner & Copilot Sanitizer**: Automatically converts website URLs (e.g. `http://tenwekhospital.org`) into valid email addresses (`contact@tenwekhospital.org`) and converts legacy default senders to `leadforge1.ai@gmail.com`.
+- **Live Delivery & Retry Engine**: Dispatches live emails via SendGrid (`POST /api/emails/{id}/send`). Safely supports retrying failed/sending drafts.
+- **Dynamic Journey Stepper**: Automatically advances company stage to **`4. Sent`** upon successful email delivery, advancing the UI progress bar and logging timeline events.
 
 ### 5. 💾 Database Persistence & Azure App Service Binding
 - **Persistent Storage Path**: Configured SQLite to mount at `/home/leadforge.db` in Azure App Service so discovered leads, company analyses, and email drafts persist across container reboots and page refreshes.
