@@ -25,11 +25,8 @@ def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
         
-    org = db.query(Organization).first()
-    if not org:
-        org = Organization(id=uuid.uuid4(), name="Default Org")
-        db.add(org)
-        db.commit()
+    from utils.org import get_default_org
+    org = get_default_org(db)
     org_id = org.id
 
     # 2. Get/Auto-provision prompt for 'email_outreach'
@@ -123,11 +120,8 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    org = db.query(Organization).first()
-    if not org:
-        org = Organization(id=uuid.uuid4(), name="Default Org")
-        db.add(org)
-        db.commit()
+    from utils.org import get_default_org
+    org = get_default_org(db)
     org_id = org.id
 
     # 1. Scrape Website
