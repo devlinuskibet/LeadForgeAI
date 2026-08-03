@@ -60,6 +60,13 @@ try:
                     conn.commit()
             except Exception as col_err:
                 print(f"Auto-migration note ({table_name}.{col_name}): {col_err}")
+
+        try:
+            if "email_messages" in inspector.get_table_names():
+                conn.execute(text("UPDATE email_messages SET sender = 'leadforge1.ai@gmail.com' WHERE sender LIKE '%copilot@leadforge%' OR sender LIKE '%noreply@leadforge%'"))
+                conn.commit()
+        except Exception as update_err:
+            print(f"Sender update note: {update_err}")
 except Exception as e:
                 print(f"Auto-migration note: {e}")
 

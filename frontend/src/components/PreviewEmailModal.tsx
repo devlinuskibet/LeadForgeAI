@@ -17,6 +17,7 @@ interface PreviewEmailModalProps {
 
 export function PreviewEmailModal({ isOpen, onClose, email, onSuccess }: PreviewEmailModalProps) {
   const [recipient, setRecipient] = useState('');
+  const [sender, setSender] = useState('leadforge1.ai@gmail.com');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
@@ -36,6 +37,14 @@ export function PreviewEmailModal({ isOpen, onClose, email, onSuccess }: Preview
         }
       }
       setRecipient(rawRecipient);
+
+      // Clean legacy copilot sender address
+      let rawSender = email.sender || 'leadforge1.ai@gmail.com';
+      if (rawSender.includes('copilot@leadforge') || rawSender.includes('noreply@leadforge')) {
+        rawSender = 'leadforge1.ai@gmail.com';
+      }
+      setSender(rawSender);
+
       setSubject(email.subject || '');
       setBody(email.body || '');
       setSentSuccess(false);
@@ -136,9 +145,9 @@ export function PreviewEmailModal({ isOpen, onClose, email, onSuccess }: Preview
                 className="glass-input" placeholder="prospect@company.com" disabled={sending || sentSuccess} />
             </div>
             <div>
-              <label className="label-caps" style={{ display: 'block', marginBottom: 6 }}>From (Sender)</label>
-              <input type="text" value={email.sender || 'leadforge1.ai@gmail.com'} disabled
-                className="glass-input" style={{ opacity: 0.7 }} />
+              <label className="label-caps" style={{ display: 'block', marginBottom: 6 }}>From (Sender Email)</label>
+              <input type="text" value={sender} onChange={e => setSender(e.target.value)}
+                className="glass-input" placeholder="leadforge1.ai@gmail.com" disabled={sending || sentSuccess} />
             </div>
           </div>
 
