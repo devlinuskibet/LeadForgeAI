@@ -59,7 +59,7 @@ class MockDiscoveryProvider(DiscoveryProviderInterface):
 class GooglePlacesProvider(DiscoveryProviderInterface):
     def __init__(self):
         from core.config import settings
-        self.api_key = settings.GOOGLE_PLACES_API_KEY
+        self.api_key = settings.GOOGLE_PLACES_API_KEY or os.environ.get("GOOGLE_PLACES_API_KEY")
         
     def search_businesses(self, business_type: str, location: str, max_results: int = 10, min_rating: float = 0.0, has_website: bool = False) -> List[Dict[str, Any]]:
         if not self.api_key:

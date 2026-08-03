@@ -6,7 +6,9 @@ from services.discovery_provider import MockDiscoveryProvider, GooglePlacesProvi
 
 class DiscoveryService:
     def __init__(self, use_mock: bool = False):
-        if use_mock or not os.environ.get("GOOGLE_PLACES_API_KEY"):
+        from core.config import settings
+        api_key = settings.GOOGLE_PLACES_API_KEY or os.environ.get("GOOGLE_PLACES_API_KEY")
+        if use_mock or not api_key:
             self.provider: DiscoveryProviderInterface = MockDiscoveryProvider()
         else:
             self.provider: DiscoveryProviderInterface = GooglePlacesProvider()
