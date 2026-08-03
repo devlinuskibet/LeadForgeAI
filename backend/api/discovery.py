@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from pydantic import BaseModel
 import uuid
 import json
 
-from core.database import get_db
+from core.database import get_db, SessionLocal
 from models.user import User
 from models.organization import Organization
 from models.orchestration_job import OrchestrationJob
 from models.company import Company
 from models.company_analysis import CompanyAnalysis
 from utils.org import get_default_org
-from workers.tasks import run_discovery_task
 
 router = APIRouter(prefix="/discovery", tags=["discovery"])
 
@@ -23,10 +22,24 @@ class DiscoveryRequest(BaseModel):
     min_rating: float = 0.0
     has_website: bool = False
 
-@router.post("/start")
-def start_discovery(request: DiscoveryRequest, db: Session = Depends(get_db)):
+def run_discovery_in_background(job_id_str: str):
     """
-    Kicks off an autonomous discovery agent using structured search.
+    Background worker function for discovery search execution.
+    """
+    bg_db = SessionLocal()
+    try:
+        from services.supervisor_service import SupervisorService
+        supervisor = SupervisorService(bg_db)
+        supervisor.run_discovery(job_id_str)
+    except Exception as err:
+        print(f"Background discovery execution note: {err}")
+    finally:
+        bg_db.close()
+
+@router.post("/start")
+def start_discovery(request: DiscoveryRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+    Kicks off an autonomous discovery agent using structured search asynchronously.
     """
     org = get_default_org(db)
     
@@ -43,13 +56,8 @@ def start_discovery(request: DiscoveryRequest, db: Session = Depends(get_db)):
     db.add(job)
     db.commit()
     
-    # Try to launch via Celery, fallback to direct execution if Celery worker is offline
-    try:
-        run_discovery_task.delay(str(job.id))
-    except Exception:
-        from services.supervisor_service import SupervisorService
-        supervisor = SupervisorService(db)
-        supervisor.run_discovery(str(job.id))
+    # Schedule background execution so HTTP POST returns immediately with HTTP 200 OK
+    background_tasks.add_task(run_discovery_in_background, str(job.id))
     
     return {"message": "Discovery agent launched", "job_id": str(job.id)}
 
