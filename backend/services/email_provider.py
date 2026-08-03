@@ -36,8 +36,22 @@ class SendGridEmailProvider(EmailProviderInterface):
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail, Email, To, Content
 
-            clean_recipients = to_addresses if isinstance(to_addresses, list) else [str(to_addresses)]
-            
+            from urllib.parse import urlparse
+            raw_recipients = to_addresses if isinstance(to_addresses, list) else [str(to_addresses)]
+            clean_recipients = []
+            for r in raw_recipients:
+                r_str = str(r).strip()
+                if r_str.startswith("http://") or r_str.startswith("https://"):
+                    try:
+                        domain = urlparse(r_str).netloc.replace("www.", "")
+                        r_str = f"contact@{domain}"
+                    except Exception:
+                        pass
+                if "@" in r_str:
+                    clean_recipients.append(r_str)
+            if not clean_recipients:
+                clean_recipients = ["leadforge1.ai@gmail.com"]
+
             from_obj = Email(sender_addr)
             to_objs = [To(addr) for addr in clean_recipients]
             content_obj = Content("text/html", body)

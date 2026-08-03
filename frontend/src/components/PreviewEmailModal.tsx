@@ -68,7 +68,7 @@ export function PreviewEmailModal({ isOpen, onClose, email, onSuccess }: Preview
         await fetch(`${API_BASE_URL}/api/emails/${email.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject, body })
+          body: JSON.stringify({ recipient, sender, subject, body })
         }).catch(() => {});
 
         // 2. Dispatch real email live via SendGrid

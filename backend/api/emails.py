@@ -13,6 +13,8 @@ router = APIRouter(prefix="/emails", tags=["Emails"])
 class EmailUpdate(BaseModel):
     subject: str
     body: str
+    recipient: Optional[str] = None
+    sender: Optional[str] = None
 
 @router.get("/{entity_type}/{entity_id}")
 def get_emails_for_entity(entity_type: str, entity_id: UUID, db: Session = Depends(get_db)):
@@ -47,6 +49,10 @@ def update_email_draft(email_id: UUID, update: EmailUpdate, db: Session = Depend
         
     email.subject = update.subject
     email.body = update.body
+    if update.recipient:
+        email.recipients = [update.recipient]
+    if update.sender:
+        email.sender = update.sender
     from models.email_message import EmailStatus
     email.status = EmailStatus.DRAFT
     db.commit()
