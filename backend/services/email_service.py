@@ -42,6 +42,12 @@ class EmailService:
             email.sent_by_user_id = user_id
             email.sent_at = datetime.now(timezone.utc)
             
+            # Advance target company pipeline stage to "Sent"
+            if email.entity_type == "company" and email.entity_id:
+                from services.crm_service import CRMService
+                crm = CRMService(self.db)
+                crm.advance_pipeline_stage(email.entity_id, "Sent")
+            
             # 4. Log detailed Activity timeline entry
             activity_desc = f"Subject:\n{email.subject}\n\nSent by:\n{'System/Copilot' if not user_id else 'User'}\n\nTime:\n{email.sent_at.strftime('%I:%M %p')}"
             

@@ -283,51 +283,67 @@ export default function CompanyDetails() {
         </div>
       </div>
 
-      {/* ── Journey stepper ── */}
-      <div style={{
-        background: "var(--bg-surface)", border: "1px solid var(--border)",
-        borderRadius: 14, padding: "24px 32px",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-      }}>
-        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          {/* Track line */}
+      {/* ── Dynamic Journey Stepper ── */}
+      {(() => {
+        const currentStage = (company.pipeline_stage || "Analyzed").toLowerCase();
+        const emailState = (company.draft_email?.status || "").toUpperCase();
+        
+        const isSentStage = currentStage === "sent" || currentStage === "engaged" || currentStage === "scheduled" || currentStage === "won" || emailState === "SENT" || emailState === "DELIVERED";
+        const isDraftStage = currentStage === "draft ready" || !!company.draft_email || isSentStage;
+        const isAnalyzedStage = currentStage === "analyzed" || !!insights || isDraftStage;
+        const isWonStage = currentStage === "won";
+
+        const progressPercent = isWonStage ? 100 : isSentStage ? 75 : isDraftStage ? 50 : isAnalyzedStage ? 25 : 10;
+
+        const journeySteps = [
+          { num: 1, label: "Discovered",  done: true, active: false },
+          { num: 2, label: "Analyzed",    done: isAnalyzedStage && (isDraftStage || isSentStage), active: currentStage === "analyzed" && !isDraftStage },
+          { num: 3, label: "Draft Ready", done: isDraftStage && isSentStage, active: currentStage === "draft ready" && !isSentStage },
+          { num: 4, label: "Sent",        done: isSentStage && isWonStage, active: isSentStage && !isWonStage },
+          { num: 5, label: "Won",         done: isWonStage, active: isWonStage },
+        ];
+
+        return (
           <div style={{
-            position: "absolute", top: "50%", left: 0, right: 0, height: 2,
-            transform: "translateY(-50%)",
-            background: `linear-gradient(to right, var(--green) 0%, var(--green) 40%, var(--border) 40%)`,
-            borderRadius: 2, zIndex: 0,
-          }} />
-          {[
-            { num: 1, label: "Discovered",  done: true,       active: false },
-            { num: 2, label: "Analyzed",    done: !!insights, active: false },
-            { num: 3, label: "Draft Ready", done: false,      active: !!company.draft_email },
-            { num: 4, label: "Sent",        done: false,      active: false },
-            { num: 5, label: "Won",         done: false,      active: false },
-          ].map((step, i) => (
-            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 1, background: "var(--bg-surface)", padding: "0 12px" }}>
+            background: "var(--bg-surface)", border: "1px solid var(--border)",
+            borderRadius: 14, padding: "24px 32px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              {/* Dynamic Track line */}
               <div style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: step.done ? "var(--green)" : step.active ? "#111827" : "var(--bg-elevated)",
-                border: step.done ? "none" : step.active ? "2px solid #111827" : "2px solid var(--border)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: step.done || step.active ? "#fff" : "var(--text-muted)",
-                fontWeight: 800, fontSize: 13,
-                boxShadow: step.done ? "0 0 0 4px var(--green-dim)" : step.active ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
-                transition: "all 0.2s",
-              }}>
-                {step.done ? <Check size={16} /> : step.num}
-              </div>
-              <span style={{
-                fontSize: 11, fontWeight: step.done || step.active ? 700 : 500,
-                color: step.done ? "var(--green-text)" : step.active ? "var(--text-primary)" : "var(--text-muted)",
-                whiteSpace: "nowrap",
-              }}>
-                {step.num}. {step.label}
-              </span>
+                position: "absolute", top: "50%", left: 0, right: 0, height: 2,
+                transform: "translateY(-50%)",
+                background: `linear-gradient(to right, var(--green) 0%, var(--green) ${progressPercent}%, var(--border) ${progressPercent}%)`,
+                borderRadius: 2, zIndex: 0,
+              }} />
+              {journeySteps.map((step, i) => (
+                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 1, background: "var(--bg-surface)", padding: "0 12px" }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: step.done ? "var(--green)" : step.active ? "#111827" : "var(--bg-elevated)",
+                    border: step.done ? "none" : step.active ? "2px solid #111827" : "2px solid var(--border)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: step.done || step.active ? "#fff" : "var(--text-muted)",
+                    fontWeight: 800, fontSize: 13,
+                    boxShadow: step.done ? "0 0 0 4px var(--green-dim)" : step.active ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
+                    transition: "all 0.2s",
+                  }}>
+                    {step.done ? <Check size={16} /> : step.num}
+                  </div>
+                  <span style={{
+                    fontSize: 11, fontWeight: step.done || step.active ? 700 : 500,
+                    color: step.done ? "var(--green-text)" : step.active ? "var(--text-primary)" : "var(--text-muted)",
+                    whiteSpace: "nowrap",
+                  }}>
+                    {step.num}. {step.label}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        );
+      })()}
 
       {/* ── Tabbed content ── */}
       <div style={{
