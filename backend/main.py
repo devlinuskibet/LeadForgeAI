@@ -12,15 +12,18 @@ app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
+# Security & Rate Limiting Middlewares
+app.add_middleware(RateLimiterMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS Middleware (must be outermost middleware to process preflight OPTIONS requests)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(RateLimiterMiddleware)
 
 @app.get("/")
 def read_root():
