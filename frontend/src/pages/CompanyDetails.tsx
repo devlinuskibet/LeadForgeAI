@@ -729,11 +729,13 @@ export default function CompanyDetails() {
       <PreviewEmailModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
+        onSuccess={() => fetchCompanyData()}
         email={{
-          subject: emailSubject || (company?.draft_email?.subject || "Outreach Email"),
+          id: company?.draft_email?.id,
+          subject: emailSubject || (company?.draft_email?.subject || `Digital Intake & Growth Opportunity for ${company?.name}`),
           body: emailBody || (company?.draft_email?.body || "Outreach content..."),
           recipients: [company?.website || "contact@example.com"],
-          sender: "copilot@leadforge.ai"
+          sender: company?.draft_email?.sender || "leadforge1.ai@gmail.com"
         }}
       />
     </div>

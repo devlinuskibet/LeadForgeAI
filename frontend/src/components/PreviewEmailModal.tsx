@@ -63,19 +63,23 @@ export function PreviewEmailModal({ isOpen, onClose, email, onSuccess }: Preview
     setErrorMsg(null);
 
     try {
-      // 1. If email has id, call POST /api/emails/{id}/send
       if (email.id) {
-        const res = await fetch(`${API_BASE_URL}/api/emails/${email.id}/send`, {
-          method: 'POST',
+        // 1. Save user edits to draft
+        await fetch(`${API_BASE_URL}/api/emails/${email.id}`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ recipient, subject, body })
+          body: JSON.stringify({ subject, body })
+        }).catch(() => {});
+
+        // 2. Dispatch real email live via SendGrid
+        const res = await fetch(`${API_BASE_URL}/api/emails/${email.id}/send`, {
+          method: 'POST'
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
           throw new Error(d.detail || 'Failed to deliver email');
         }
       } else {
-        // Fallback simulate send
         await new Promise(r => setTimeout(r, 1200));
       }
 
