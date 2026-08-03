@@ -2,7 +2,21 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .config import settings
 
+import os
+
 db_url = settings.DATABASE_URL
+
+# Force persistent directory on Azure App Service (/home is persistent SMB volume across restarts)
+if os.path.exists("/home") and ("sqlite" in db_url or "postgresql" in db_url):
+    # Fall back to persistent SQLite if postgresql is local/unreachable
+    if "postgresql" in db_url:
+        try:
+            test_engine = create_engine(db_url)
+            with test_engine.connect() as conn: pass
+        except Exception:
+            db_url = "sqlite:////home/leadforge.db"
+    else:
+        db_url = "sqlite:////home/leadforge.db"
 
 try:
     if "sqlite" in db_url:
@@ -12,7 +26,6 @@ try:
     with engine.connect() as conn:
         pass
 except Exception:
-    import os
     persistent_dir = "/home" if os.path.exists("/home") else "."
     sqlite_url = f"sqlite:///{persistent_dir}/leadforge.db"
     engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
