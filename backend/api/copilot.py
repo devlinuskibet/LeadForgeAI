@@ -88,6 +88,7 @@ def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
     ).first()
 
     if not draft_email:
+        sender_addr = getattr(settings, "DEFAULT_SENDER_EMAIL", None) or os.environ.get("DEFAULT_SENDER_EMAIL", "leadforge1.ai@gmail.com")
         draft_email = EmailMessage(
             id=uuid.uuid4(),
             organization_id=org_id,
@@ -95,7 +96,7 @@ def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
             entity_id=company_id,
             subject=subject_line,
             body=generated_text,
-            sender="copilot@leadforge.ai",
+            sender=sender_addr,
             recipients=[company.website or "contact@example.com"],
             status=EmailStatus.DRAFT
         )

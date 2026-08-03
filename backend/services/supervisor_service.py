@@ -196,7 +196,7 @@ class SupervisorService:
                     organization_id=org_id
                 )
 
-                draft_subject = f"Digital Intake & Growth Opportunity for {company.name}"
+                sender_addr = getattr(settings, "DEFAULT_SENDER_EMAIL", None) or os.environ.get("DEFAULT_SENDER_EMAIL", "leadforge1.ai@gmail.com")
                 draft_email = EmailMessage(
                     organization_id=org_id,
                     entity_type="company",
@@ -205,7 +205,7 @@ class SupervisorService:
                     body=draft_text,
                     original_ai_subject=draft_subject,
                     original_ai_body=draft_text,
-                    sender="copilot@leadforge.ai",
+                    sender=sender_addr,
                     recipients=[company.website or "unknown@example.com"],
                     status="DRAFT"
                 )

@@ -137,7 +137,7 @@ export function PreviewEmailModal({ isOpen, onClose, email, onSuccess }: Preview
             </div>
             <div>
               <label className="label-caps" style={{ display: 'block', marginBottom: 6 }}>From (Sender)</label>
-              <input type="text" value={email.sender || 'copilot@leadforge.ai'} disabled
+              <input type="text" value={email.sender || 'leadforge1.ai@gmail.com'} disabled
                 className="glass-input" style={{ opacity: 0.7 }} />
             </div>
           </div>
