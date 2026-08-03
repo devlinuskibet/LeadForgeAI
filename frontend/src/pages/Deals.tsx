@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X } from "lucide-react";
 
+import { API_BASE_URL } from "../config/api";
+
 interface Deal { id: string; name: string; amount: number; status: "OPEN" | "WON" | "LOST"; company_id: string; company_name: string; }
 interface DealMetrics { total_open_value: number; total_won_value: number; total_lost_value: number; total_deals_count: number; win_rate_percentage: number; }
 
@@ -124,8 +126,8 @@ export default function Deals() {
   const fetchDeals = async () => {
     try {
       const [r1, r2] = await Promise.all([
-        fetch("http://localhost:8000/api/deals/"),
-        fetch("http://localhost:8000/api/deals/metrics"),
+        fetch(`${API_BASE_URL}/api/deals/`),
+        fetch(`${API_BASE_URL}/api/deals/metrics`),
       ]);
       if (r1.ok) setDeals(await r1.json());
       if (r2.ok) setMetrics(await r2.json());
@@ -135,14 +137,14 @@ export default function Deals() {
   useEffect(() => { fetchDeals(); }, []);
 
   const updateStatus = async (id: string, s: "OPEN" | "WON" | "LOST") => {
-    await fetch(`http://localhost:8000/api/deals/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: s }) });
+    await fetch(`${API_BASE_URL}/api/deals/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: s }) });
     fetchDeals();
   };
 
   const generateProposal = async (companyId: string) => {
     setSelectedCompanyId(companyId); setLoadingProposal(true);
     try {
-      const r = await fetch(`http://localhost:8000/api/deals/company/${companyId}/generate-proposal`, { method: "POST" });
+      const r = await fetch(`${API_BASE_URL}/api/deals/company/${companyId}/generate-proposal`, { method: "POST" });
       if (r.ok) setProposal(await r.json());
     } catch (e) { console.error(e); }
     finally { setLoadingProposal(false); }

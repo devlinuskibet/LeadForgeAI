@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PreviewEmailModal } from '../components/PreviewEmailModal';
 import TimelineWidget from "../widgets/TimelineWidget";
+import { API_BASE_URL } from "../config/api";
 
 export default function CompanyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +31,7 @@ export default function CompanyDetails() {
 
   const fetchCompanyData = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/companies/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/companies/${id}`);
       if (res.ok) {
         const data = await res.json();
         setCompany(data);
@@ -46,7 +47,7 @@ export default function CompanyDetails() {
 
   const fetchWorkflowHistory = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/jobs`);
+      const res = await fetch(`${API_BASE_URL}/api/copilot/company/${id}/jobs`);
       if (res.ok) setWorkflowHistory(await res.json());
     } catch (e) { console.error(e); }
   };
@@ -58,7 +59,7 @@ export default function CompanyDetails() {
     if (jobId && jobStatus !== "completed" && jobStatus !== "failed") {
       interval = setInterval(async () => {
         try {
-          const res = await fetch(`http://localhost:8000/api/copilot/job/${jobId}`);
+          const res = await fetch(`${API_BASE_URL}/api/copilot/job/${jobId}`);
           if (res.ok) {
             const data = await res.json();
             setJobStatus(data.status);
@@ -77,7 +78,7 @@ export default function CompanyDetails() {
   const handleAutoProspect = async () => {
     try {
       setAutoProspecting(true); setJobStatus("pending");
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/auto-prospect`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/copilot/company/${id}/auto-prospect`, { method: 'POST' });
       const data = await res.json();
       setJobId(data.job_id || "mock-job-id");
     } catch (e) { console.error(e); setAutoProspecting(false); }
@@ -86,7 +87,7 @@ export default function CompanyDetails() {
   const handleGenerateOutreach = async () => {
     try {
       setGenerating(true);
-      await fetch(`http://localhost:8000/api/copilot/company/${id}/generate-outreach`, { method: 'POST' });
+      await fetch(`${API_BASE_URL}/api/copilot/company/${id}/generate-outreach`, { method: 'POST' });
       await new Promise(r => setTimeout(r, 1500));
       fetchCompanyData(); setActiveTab("emails");
     } catch (e) { console.error(e); }
@@ -96,7 +97,7 @@ export default function CompanyDetails() {
   const handleAnalyze = async () => {
     try {
       setAnalyzing(true);
-      const res = await fetch(`http://localhost:8000/api/copilot/company/${id}/analyze`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/copilot/company/${id}/analyze`, { method: 'POST' });
       if (res.ok) fetchCompanyData();
     } catch (e) { console.error(e); }
     finally { setAnalyzing(false); }

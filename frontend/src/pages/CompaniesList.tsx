@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, Plus, X } from "lucide-react";
 
+import { API_BASE_URL } from "../config/api";
+
 interface Company {
   id: string; name: string; website: string | null; status: string;
   location?: string | null; address?: string | null;
@@ -46,7 +48,7 @@ export default function CompaniesList() {
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/companies/")
+    fetch(`${API_BASE_URL}/api/companies/`)
       .then(r => r.ok ? r.json() : [])
       .then(setCompanies)
       .catch(console.error)
@@ -60,7 +62,7 @@ export default function CompaniesList() {
         const [name, website] = l.split(",");
         return { name: name?.trim(), website: website?.trim() || "" };
       });
-      const res = await fetch("http://localhost:8000/api/prospecting/bulk-import", {
+      const res = await fetch(`${API_BASE_URL}/api/prospecting/bulk-import`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(items),
       });
       if (res.ok) { setShowBulkImport(false); setBulkData(""); }

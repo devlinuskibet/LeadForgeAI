@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Mail, Send, Eye, ArrowRight, Zap, Briefcase } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 
 function StatCard({ label, value, sub, accent, icon: Icon }: { label: string; value: string; sub: string; accent: string; icon: any }) {
   return (
@@ -52,7 +53,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchBriefing = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/dashboard/daily-briefing");
+        const res = await fetch(`${API_BASE_URL}/api/dashboard/daily-briefing`);
         if (res.ok) setBriefing(await res.json());
       } catch (e) {
         console.error(e);

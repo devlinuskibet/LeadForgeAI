@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Mail, Edit3, Briefcase, Phone, MessageSquare, Eye, Reply, CheckCircle2 } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 
 interface TimelineEvent {
   id: string;
@@ -10,25 +11,24 @@ interface TimelineEvent {
   user: string;
 }
 
+interface TimelineWidgetProps {
+  entityType?: string;
+  entityId?: string;
+  refreshTrigger?: number;
+}
+
 export default function TimelineWidget({ 
-  companyId, 
   entityType = "company", 
   entityId, 
   refreshTrigger 
-}: { 
-  companyId?: string; 
-  entityType?: string; 
-  entityId?: string; 
-  refreshTrigger?: number 
-}) {
-  const targetId = companyId || entityId;
+}: TimelineWidgetProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
 
   useEffect(() => {
     const fetchActivities = async () => {
-      if (!targetId) return;
+      if (!entityId) return;
       try {
-        const res = await fetch(`http://localhost:8000/api/activities/entity/${entityType}/${targetId}`);
+        const res = await fetch(`${API_BASE_URL}/api/activities/entity/${entityType}/${entityId}`);
         if (res.ok) {
           const data = await res.json();
           // Map DB Activity to TimelineEvent
@@ -47,10 +47,10 @@ export default function TimelineWidget({
         console.error(e);
       }
     };
-    if (companyId) {
+    if (entityId) {
       fetchActivities();
     }
-  }, [companyId, refreshTrigger]);
+  }, [entityId, refreshTrigger]);
 
   const getIcon = (type: string, title: string) => {
     if (type === "email") {

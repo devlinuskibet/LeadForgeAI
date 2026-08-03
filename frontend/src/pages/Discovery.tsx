@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Radar, Search, CheckCircle, MapPin, Star, Globe, ArrowRight, Briefcase } from 'lucide-react';
 
+import { API_BASE_URL } from '../config/api';
+
 export function Discovery() {
   const [searchParams, setSearchParams] = useState({ business_type: '', location: '', max_results: 10, min_rating: 4.0, has_website: true });
   const [jobId, setJobId] = useState<string | null>(null);
@@ -13,7 +15,7 @@ export function Discovery() {
 
   const fetchStats = async () => {
     try {
-      const r = await fetch('http://localhost:8000/api/discovery/stats');
+      const r = await fetch(`${API_BASE_URL}/api/discovery/stats`);
       if (r.ok) setApiStats(await r.json());
     } catch (e) { console.error(e); }
   };
@@ -25,7 +27,7 @@ export function Discovery() {
     if (!searchParams.business_type || !searchParams.location) return;
     setJobStatus('starting'); setLogs([]); setSummary(null);
     try {
-      const r = await fetch('http://localhost:8000/api/discovery/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(searchParams) });
+      const r = await fetch(`${API_BASE_URL}/api/discovery/start`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(searchParams) });
       const d = await r.json();
       setJobId(d.job_id); setJobStatus('in_progress');
     } catch {
@@ -39,12 +41,12 @@ export function Discovery() {
     if (jobStatus === 'completed' && summary) return;
     const interval = setInterval(async () => {
       try {
-        const r = await fetch(`http://localhost:8000/api/discovery/job/${jobId}`);
+        const r = await fetch(`${API_BASE_URL}/api/discovery/job/${jobId}`);
         const d = await r.json();
         setJobStatus(d.status);
         if (d.logs) setLogs(d.logs);
         if (d.status === 'completed' && !summary) {
-          const sr = await fetch(`http://localhost:8000/api/discovery/job/${jobId}/summary`);
+          const sr = await fetch(`${API_BASE_URL}/api/discovery/job/${jobId}/summary`);
           if (sr.ok) { setSummary(await sr.json()); fetchStats(); }
         }
       } catch (e) { console.error(e); }
