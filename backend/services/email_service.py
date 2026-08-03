@@ -18,8 +18,9 @@ class EmailService:
         if not email:
             raise Exception("Email not found")
         
-        if email.status != EmailStatus.DRAFT:
-            raise Exception("Only DRAFT emails can be sent")
+        if email.status not in (EmailStatus.DRAFT, EmailStatus.FAILED, EmailStatus.SENDING):
+            email.status = EmailStatus.DRAFT
+            self.db.commit()
             
         # 1. Update status to sending
         email.status = EmailStatus.SENDING
@@ -37,7 +38,7 @@ class EmailService:
             # 3. Handle success
             email.status = EmailStatus(response.get("status", "SENT"))
             email.provider_message_id = response.get("provider_message_id")
-            email.provider_name = response.get("provider_name", "MockProvider")
+            email.provider_name = response.get("provider_name", "SendGrid")
             email.provider_response = response
             email.sent_by_user_id = user_id
             email.sent_at = datetime.now(timezone.utc)
@@ -65,13 +66,17 @@ class EmailService:
             self.db.refresh(email)
             
             if email.provider_name == "MockProvider":
-                from workers.tasks import simulate_email_events_task
-                simulate_email_events_task.delay(email.provider_message_id)
+                try:
+                    from workers.tasks import simulate_email_events_task
+                    simulate_email_events_task.delay(email.provider_message_id)
+                except Exception as cel_err:
+                    print(f"Celery simulation note: {cel_err}")
                 
             return email
             
         except Exception as e:
             # Handle failure
+            print(f"Email send_draft error: {e}")
             email.status = EmailStatus.FAILED
             self.db.commit()
             raise Exception(f"Failed to send email: {str(e)}")

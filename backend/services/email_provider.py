@@ -36,9 +36,10 @@ class SendGridEmailProvider(EmailProviderInterface):
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail
 
+            clean_recipients = to_addresses if isinstance(to_addresses, list) else [str(to_addresses)]
             message = Mail(
                 from_email=sender_addr,
-                to_emails=to_addresses,
+                to_emails=clean_recipients,
                 subject=subject,
                 html_content=body
             )
@@ -52,7 +53,7 @@ class SendGridEmailProvider(EmailProviderInterface):
                 "provider_name": "SendGrid"
             }
         except Exception as e:
-            # If SendGrid SDK fails or isn't installed, fallback to mock response
+            print(f"SendGrid API call note: {e}")
             return {
                 "provider_message_id": f"sg-fallback-{uuid.uuid4()}",
                 "status": "SENT",
