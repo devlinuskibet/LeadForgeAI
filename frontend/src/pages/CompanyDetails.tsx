@@ -335,10 +335,10 @@ export default function CompanyDetails() {
         borderRadius: 16, overflow: "hidden",
         boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
       }}>
-        {/* Tab bar */}
+        {/* Segmented Tab bar */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 2,
-          padding: "0 24px",
+          display: "flex", alignItems: "center", gap: 6,
+          padding: "10px 16px",
           borderBottom: "1px solid var(--border)",
           background: "var(--bg-elevated)",
           overflowX: "auto",
@@ -348,19 +348,22 @@ export default function CompanyDetails() {
             const isActive = activeTab === tab.id;
             return (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "14px 16px", marginBottom: -1,
-                background: "none", border: "none",
-                borderBottom: isActive ? "2px solid #111827" : "2px solid transparent",
-                color: isActive ? "var(--text-primary)" : "var(--text-muted)",
-                fontWeight: isActive ? 700 : 500,
-                fontSize: 12, cursor: "pointer", fontFamily: "inherit",
-                whiteSpace: "nowrap", transition: "all 0.12s",
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "9px 16px",
+                background: isActive ? "var(--bg-surface)" : "transparent",
+                border: isActive ? "1px solid var(--border-strong)" : "1px solid transparent",
+                borderRadius: 9,
+                color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                fontWeight: isActive ? 800 : 600,
+                fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+                whiteSpace: "nowrap", transition: "all 0.15s",
+                boxShadow: isActive ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
               }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
-                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; } }}
+                onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; } }}
               >
-                <Icon size={14} /> {tab.label}
+                <Icon size={15} style={{ color: isActive ? "var(--text-primary)" : "var(--text-muted)" }} />
+                <span>{tab.label}</span>
               </button>
             );
           })}
