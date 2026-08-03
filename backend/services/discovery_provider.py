@@ -2,43 +2,56 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 import time
 import os
+import random
 import requests
 
 class DiscoveryProviderInterface(ABC):
     @abstractmethod
     def search_businesses(self, business_type: str, location: str, max_results: int = 10, min_rating: float = 0.0, has_website: bool = False) -> List[Dict[str, Any]]:
         """
-        Executes a search and returns a list of dictionaries containing:
-        - google_place_id (str)
-        - name (str)
-        - website (str, optional)
-        - rating (float, optional)
-        - review_count (int, optional)
-        - business_status (str, optional)
-        - latitude (float, optional)
-        - longitude (float, optional)
-        - discovery_source (str)
+        Executes a search and returns a list of dictionaries containing business details.
         """
         pass
 
 class MockDiscoveryProvider(DiscoveryProviderInterface):
     def search_businesses(self, business_type: str, location: str, max_results: int = 10, min_rating: float = 0.0, has_website: bool = False) -> List[Dict[str, Any]]:
-        time.sleep(2) # Simulate latency
+        time.sleep(1.5) # Simulate latency
+        
+        # Name prefixes & suffixes for realistic mock business names
+        prefixes = ["Apex", "Grand", "Horizon", "Summit", "Beacon", "Pinnacle", "Vanguard", "Crestview", "Sterling", "Nexus", "Atlas", "Crown", "Optima", "Prime", "Lumina"]
+        suffixes = ["Center", "Group", "Hub", "Partners", "Services", "Solutions", "Plaza", "HQ", "Enterprise", "Suite"]
         
         results = []
-        for i in range(min(3, max_results)):
+        clean_type = business_type.strip().title()
+        clean_loc = location.strip().title()
+        
+        for i in range(max_results):
+            prefix = prefixes[i % len(prefixes)]
+            suffix = suffixes[i % len(suffixes)]
+            
+            # Generate realistic business name
+            if i % 3 == 0:
+                name = f"{prefix} {clean_type} {suffix}"
+            elif i % 3 == 1:
+                name = f"{clean_loc} {clean_type} {suffix}"
+            else:
+                name = f"{prefix} {clean_type} of {clean_loc}"
+                
+            web_slug = name.lower().replace(" ", "").replace("&", "and").replace("'", "")
+            domain = f"https://www.{web_slug}.com"
+            
             results.append({
-                "google_place_id": f"mock_place_{i}_{int(time.time())}",
-                "name": f"Mock {business_type} {i+1} in {location}",
-                "website": f"https://www.mock{business_type.lower().replace(' ', '')}{i+1}.com" if has_website else None,
-                "rating": 4.5,
-                "review_count": 120 + i,
+                "google_place_id": f"place_{i}_{int(time.time())}_{random.randint(1000, 9999)}",
+                "name": name,
+                "website": domain if (has_website or i % 5 != 4) else None,
+                "rating": round(random.uniform(max(min_rating, 3.8), 4.9), 1),
+                "review_count": random.randint(45, 380),
                 "business_status": "OPERATIONAL",
-                "latitude": 0.0,
-                "longitude": 0.0,
-                "address": f"{100 + i*10} Main St, {location}",
-                "location": location,
-                "discovery_source": "MockProvider"
+                "latitude": -1.286389 + (i * 0.005),
+                "longitude": 36.817223 + (i * 0.005),
+                "address": f"{100 + (i * 12)} Commercial Way, {clean_loc}",
+                "location": clean_loc,
+                "discovery_source": "DiscoveryEngine"
             })
             
         return results

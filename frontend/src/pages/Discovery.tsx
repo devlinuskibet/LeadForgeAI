@@ -151,10 +151,26 @@ export function Discovery() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 14, paddingTop: 14, borderTop: "1px solid var(--border)", alignItems: "end" }}>
             <div>
               <label className="label-caps" style={{ display: "block", marginBottom: 7 }}>Max Results</label>
-              <select value={searchParams.max_results} onChange={e => setSearchParams({ ...searchParams, max_results: parseInt(e.target.value) })}
-                className="glass-input" disabled={isRunning} style={{ cursor: "pointer" }}>
-                {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n} results</option>)}
-              </select>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <input type="number" min={1} max={100} value={searchParams.max_results}
+                  onChange={e => setSearchParams({ ...searchParams, max_results: Math.max(1, parseInt(e.target.value) || 1) })}
+                  className="glass-input" style={{ width: 80 }} disabled={isRunning} />
+                <div style={{ display: "flex", gap: 4 }}>
+                  {[5, 10, 25, 50].map(num => (
+                    <button key={num} type="button" onClick={() => setSearchParams({ ...searchParams, max_results: num })}
+                      disabled={isRunning}
+                      style={{
+                        padding: "6px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700,
+                        background: searchParams.max_results === num ? "#111827" : "var(--bg-elevated)",
+                        color: searchParams.max_results === num ? "#fff" : "var(--text-secondary)",
+                        border: "1px solid var(--border)", cursor: "pointer", transition: "all 0.12s"
+                      }}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div>
               <label className="label-caps" style={{ display: "block", marginBottom: 7 }}>Min Rating</label>
