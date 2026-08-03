@@ -14,10 +14,10 @@ class AIService:
         self.provider: AIProviderInterface = self._get_provider()
 
     def _get_provider(self) -> AIProviderInterface:
-        if settings.GEMINI_API_KEY or ai_config.AI_PROVIDER == "gemini":
-            return GeminiProvider(api_key=settings.GEMINI_API_KEY or "")
-        if ai_config.AI_PROVIDER == "mock":
-            return MockProvider()
+        import os
+        api_key = settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY")
+        if api_key:
+            return GeminiProvider(api_key=api_key)
         return MockProvider()
 
     def _render_prompt(self, template: str, variables: dict) -> str:

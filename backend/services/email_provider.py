@@ -60,7 +60,9 @@ class SendGridEmailProvider(EmailProviderInterface):
             }
 
 def get_email_provider() -> EmailProviderInterface:
+    import os
     from core.config import settings
-    if settings.SENDGRID_API_KEY:
-        return SendGridEmailProvider(settings.SENDGRID_API_KEY)
+    api_key = settings.SENDGRID_API_KEY or os.environ.get("SENDGRID_API_KEY")
+    if api_key:
+        return SendGridEmailProvider(api_key)
     return MockEmailProvider()
