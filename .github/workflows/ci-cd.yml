@@ -125,3 +125,7 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+
+      - name: Trigger Azure App Service Auto-Redeploy Webhook
+        run: |
+          curl -X POST "https://\$leadforge-backend-api:TgZrdsd92tYt965swL2huizCblMLbYAlREK6iRbtjarwSdurRzQkCb7ehwqg@leadforge-backend-api-cnb0hge5cyfpgwc7.scm.uaenorth-01.azurewebsites.net/api/registry/webhook"
