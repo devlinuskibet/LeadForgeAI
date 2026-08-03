@@ -15,8 +15,15 @@ except Exception:
     sqlite_url = "sqlite:///./leadforge.db"
     engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
 
+# Ensure all SQLAlchemy ORM models are registered and create tables if missing
+try:
+    import models
+    from models.base import Base
+    Base.metadata.create_all(bind=engine)
+except Exception as table_err:
+    print(f"Database table creation note: {table_err}")
+
 # Auto-migrate new schema columns if missing
-# Note: SQLite does not support "IF NOT EXISTS" in ALTER TABLE — handle gracefully per column
 _auto_migrate_columns = [
     ("companies", "location", "VARCHAR"),
     ("companies", "address", "VARCHAR"),
@@ -39,7 +46,7 @@ try:
             except Exception as col_err:
                 print(f"Auto-migration note ({table_name}.{col_name}): {col_err}")
 except Exception as e:
-    print(f"Auto-migration note: {e}")
+                print(f"Auto-migration note: {e}")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
