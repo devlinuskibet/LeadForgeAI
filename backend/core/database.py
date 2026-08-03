@@ -12,7 +12,9 @@ try:
     with engine.connect() as conn:
         pass
 except Exception:
-    sqlite_url = "sqlite:///./leadforge.db"
+    import os
+    persistent_dir = "/home" if os.path.exists("/home") else "."
+    sqlite_url = f"sqlite:///{persistent_dir}/leadforge.db"
     engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
 
 # Ensure all SQLAlchemy ORM models are registered and create tables if missing
