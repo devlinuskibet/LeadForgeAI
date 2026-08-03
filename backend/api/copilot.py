@@ -198,24 +198,36 @@ def analyze_website(company_id: uuid.UUID, db: Session = Depends(get_db)):
         print(f"AI Execution Note: {str(e)}")
 
     # 4. Save to Database
+    from services.valuation_service import ValuationService
+    val_engine = ValuationService()
+    val_res = val_engine.calculate_valuation(
+        business_type=company.name,
+        location=company.location or company.address or "Kenya",
+        has_website=bool(company.website),
+        rating=company.rating or 4.2,
+        review_count=company.review_count or 40
+    )
+
     analysis = db.query(CompanyAnalysis).filter(CompanyAnalysis.company_id == company_id).first()
     if not analysis:
         analysis = CompanyAnalysis(
+            id=uuid.uuid4(),
             organization_id=org_id,
-            company_id=company_id,
+            company_id=company_id
         )
         db.add(analysis)
 
     analysis.raw_scraped_text = website_text
-    analysis.inferred_problems = inferred_problems
-    analysis.recommended_solutions = recommended_solutions
-    analysis.opportunity_score = opportunity_score
-    analysis.sales_coach_advice = sales_coach_advice
+    analysis.inferred_problems = val_res["inferred_problems"]
+    analysis.recommended_solutions = val_res["recommended_solutions"]
+    analysis.opportunity_score = val_res["opportunity_score"]
+    analysis.priority_score = val_res["priority_score"]
+    analysis.estimated_value = val_res["estimated_value_kes"]
+    analysis.sales_coach_advice = val_res["sales_coach_advice"]
+    analysis.why_today = val_res["why_today"]
     analysis.status = "completed"
-
-    # Also update company pipeline stage to Analyzed
+    
     company.pipeline_stage = "Analyzed"
-
     db.commit()
 
     return {

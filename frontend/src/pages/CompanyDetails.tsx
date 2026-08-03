@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  ArrowLeft, Building2, Globe, MapPin, Bot,
+  ArrowLeft, Building2, Globe, MapPin, Bot, Mail,
   Activity, Tag, Zap, Sparkles, Check, Star, ChevronDown,
   Users, History, AlertTriangle, Package, MessageSquare
 } from 'lucide-react';
@@ -218,31 +218,45 @@ export default function CompanyDetails() {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Dynamic Next Action Guidance */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={handleAutoProspect} disabled={autoProspecting}
-              className="btn-ghost"
-              style={{ opacity: autoProspecting ? 0.6 : 1, fontSize: 12 }}>
-              {autoProspecting ? (
-                <><div style={{ width: 12, height: 12, border: "2px solid var(--border-strong)", borderTopColor: "var(--text-primary)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Auto-Prospecting…</>
-              ) : (
-                <><Zap size={13} /> Auto-Prospect Lead</>
-              )}
-            </button>
+            {company?.draft_email || company?.pipeline_stage === "Draft Ready" ? (
+              <button onClick={() => setIsPreviewOpen(true)} className="btn-primary" style={{ fontSize: 12, background: "var(--green)", borderColor: "var(--green)", color: "#fff" }}>
+                <Mail size={13} /> Review & Send Outreach Email
+              </button>
+            ) : company.pipeline_stage === "Analyzed" ? (
+              <button onClick={handleGenerateOutreach} disabled={generating} className="btn-primary" style={{ fontSize: 12 }}>
+                {generating ? (
+                  <><div style={{ width: 12, height: 12, border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Generating Email…</>
+                ) : (
+                  <><Bot size={13} /> Generate AI Outreach Email</>
+                )}
+              </button>
+            ) : (
+              <button onClick={handleAnalyze} disabled={analyzing} className="btn-primary" style={{ fontSize: 12 }}>
+                {analyzing ? (
+                  <><div style={{ width: 12, height: 12, border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Analyzing Website…</>
+                ) : (
+                  <><Sparkles size={13} /> Run AI Website Analysis</>
+                )}
+              </button>
+            )}
+
             <div style={{ position: "relative" }}>
-              <button onClick={() => setIsActionMenuOpen(!isActionMenuOpen)} className="btn-primary" style={{ fontSize: 12 }}>
-                Actions <ChevronDown size={13} style={{ transform: isActionMenuOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+              <button onClick={() => setIsActionMenuOpen(!isActionMenuOpen)} className="btn-ghost" style={{ fontSize: 12 }}>
+                More Actions <ChevronDown size={13} style={{ transform: isActionMenuOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
               </button>
               {isActionMenuOpen && (
                 <div style={{
-                  position: "absolute", right: 0, top: "calc(100% + 8px)", width: 220,
+                  position: "absolute", right: 0, top: "calc(100% + 8px)", width: 230,
                   background: "var(--bg-surface)", border: "1px solid var(--border)",
                   borderRadius: 12, overflow: "hidden", zIndex: 50,
                   boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
                 }}>
                   {[
-                    { label: "Run AI Website Analysis", icon: Sparkles, onClick: () => { setIsActionMenuOpen(false); handleAnalyze(); }, disabled: analyzing },
-                    { label: "Generate AI Outreach Email", icon: Bot, onClick: () => { setIsActionMenuOpen(false); handleGenerateOutreach(); }, disabled: generating },
+                    { label: "Run Full Auto-Prospecting", icon: Zap, onClick: () => { setIsActionMenuOpen(false); handleAutoProspect(); }, disabled: autoProspecting },
+                    { label: "Re-run AI Website Analysis", icon: Sparkles, onClick: () => { setIsActionMenuOpen(false); handleAnalyze(); }, disabled: analyzing },
+                    { label: "Re-generate AI Outreach Email", icon: Bot, onClick: () => { setIsActionMenuOpen(false); handleGenerateOutreach(); }, disabled: generating },
                   ].map(item => {
                     const Icon = item.icon;
                     return (

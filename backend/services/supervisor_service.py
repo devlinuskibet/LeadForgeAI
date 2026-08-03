@@ -67,14 +67,36 @@ class SupervisorService:
                 self.db.add(analysis_version)
                 self.db.commit()
             
+            def clean_and_parse_json(text: str) -> dict:
+                if not text: return {}
+                t = text.strip()
+                if "```" in t:
+                    for part in t.split("```"):
+                        p = part.strip()
+                        if p.startswith("json"): p = p[4:].strip()
+                        if p.startswith("{") and p.endswith("}"):
+                            t = p; break
+                try: return json.loads(t)
+                except Exception:
+                    import re
+                    m = re.search(r'\{.*\}', text, re.DOTALL)
+                    if m:
+                        try: return json.loads(m.group(0))
+                        except Exception: pass
+                    return {}
+
             ai_service = AIService(self.db)
+            response_json = {}
             if analysis_version:
-                response_text = ai_service.execute_prompt(
-                    prompt_version=analysis_version,
-                    variables={"website_text": website_text},
-                    organization_id=org_id
-                )
-                response_json = json.loads(response_text)
+                try:
+                    response_text = ai_service.execute_prompt(
+                        prompt_version=analysis_version,
+                        variables={"website_text": website_text},
+                        organization_id=org_id
+                    )
+                    response_json = clean_and_parse_json(response_text)
+                except Exception as ex:
+                    print(f"Website analysis parsing warning: {ex}")
                 
                 from services.valuation_service import ValuationService
                 val_engine = ValuationService()
@@ -129,12 +151,26 @@ class SupervisorService:
 
             outreach_version = next((v for v in outreach_prompt.versions if v.is_active), None) if outreach_prompt.versions else None
             if not outreach_version:
+                rich_template = (
+                    "Write a highly personalized, compelling 3-paragraph B2B cold outreach email to {{company_name}} in {{company_location}}.\n\n"
+                    "Prospect Details:\n"
+                    "- Company: {{company_name}}\n"
+                    "- Location: {{company_location}}\n"
+                    "- Website: {{company_website}}\n"
+                    "- Key Challenges: {{inferred_problems}}\n"
+                    "- Tailored Solution: {{recommended_solutions}}\n\n"
+                    "Email Structure:\n"
+                    "1. Opening: Address {{company_name}} directly and reference their business operations in {{company_location}}.\n"
+                    "2. Pitch: Explain how {{recommended_solutions}} addresses {{inferred_problems}} to capture more leads and boost revenue.\n"
+                    "3. CTA: Request a brief 15-minute discovery call this week.\n\n"
+                    "Sign off professionally as 'Linus, LeadForgeAI Team'."
+                )
                 outreach_version = AIPromptVersion(
                     id=uuid.uuid4(),
                     prompt_id=outreach_prompt.id,
                     organization_id=org_id or uuid.uuid4(),
                     version_number=1,
-                    template="Draft a personalized outreach email for {{company_context}}.",
+                    template=rich_template,
                     model="gemini-1.5-flash",
                     temperature=0.7,
                     max_tokens=1000,
@@ -149,11 +185,18 @@ class SupervisorService:
                 
                 draft_text = ai_service.execute_prompt(
                     prompt_version=outreach_version,
-                    variables={"company_context": company_context},
+                    variables={
+                        "company_name": company.name,
+                        "company_location": company.location or company.address or "Kenya",
+                        "company_website": company.website or "N/A",
+                        "inferred_problems": ", ".join(val_res["inferred_problems"]),
+                        "recommended_solutions": val_res["recommended_solutions"][0]["name"] if val_res["recommended_solutions"] else "Lead Capture Automation",
+                        "company_context": company_context
+                    },
                     organization_id=org_id
                 )
 
-                draft_subject = "[AI Draft] Opportunity with " + company.name
+                draft_subject = f"Digital Intake & Growth Opportunity for {company.name}"
                 draft_email = EmailMessage(
                     organization_id=org_id,
                     entity_type="company",
