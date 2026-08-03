@@ -11,6 +11,7 @@ from models.organization import Organization
 from models.orchestration_job import OrchestrationJob
 from models.company import Company
 from models.company_analysis import CompanyAnalysis
+from utils.org import get_default_org
 from workers.tasks import run_discovery_task
 
 router = APIRouter(prefix="/discovery", tags=["discovery"])
@@ -27,7 +28,7 @@ def start_discovery(request: DiscoveryRequest, db: Session = Depends(get_db)):
     """
     Kicks off an autonomous discovery agent using structured search.
     """
-    org = db.query(Organization).first()
+    org = get_default_org(db)
     
     # Create the top-level orchestration job for tracking
     job = OrchestrationJob(
@@ -37,7 +38,7 @@ def start_discovery(request: DiscoveryRequest, db: Session = Depends(get_db)):
         entity_id=uuid.uuid4(), # Dummy UUID for discovery
         workflow_type="discovery",
         status="pending",
-        error_message=json.dumps(request.dict()) # Store structured query as JSON string temporarily
+        error_message=json.dumps(request.model_dump() if hasattr(request, "model_dump") else request.dict()) # Store structured query as JSON string
     )
     db.add(job)
     db.commit()
@@ -54,7 +55,7 @@ def start_discovery(request: DiscoveryRequest, db: Session = Depends(get_db)):
 
 @router.get("/job/{job_id}")
 def get_discovery_job(job_id: str, db: Session = Depends(get_db)):
-    org = db.query(Organization).first()
+    org = get_default_org(db)
     job = db.query(OrchestrationJob).filter(
         OrchestrationJob.id == job_id,
         OrchestrationJob.organization_id == org.id
@@ -72,7 +73,7 @@ def get_discovery_job(job_id: str, db: Session = Depends(get_db)):
 
 @router.get("/job/{job_id}/summary")
 def get_discovery_summary(job_id: str, db: Session = Depends(get_db)):
-    org = db.query(Organization).first()
+    org = get_default_org(db)
     job = db.query(OrchestrationJob).filter(
         OrchestrationJob.id == job_id,
         OrchestrationJob.organization_id == org.id
@@ -136,7 +137,7 @@ def get_discovery_stats():
             "cache_misses": misses,
             "average_time_seconds": avg_time
         }
-    except Exception as e:
+    except Exception:
         return {
             "requests_made": 0,
             "cache_hits": 0,
