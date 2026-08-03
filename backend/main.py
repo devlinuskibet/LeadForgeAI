@@ -1,12 +1,26 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from api import auth, companies, contacts, activities, notes, ai_management, copilot, prospecting, dashboard, discovery, emails, health, export, deals
 from core.errors import AppException, app_exception_handler, http_exception_handler, generic_exception_handler
 from core.middleware import SecurityHeadersMiddleware
 from core.rate_limiter import RateLimiterMiddleware
 
-app = FastAPI(title="LeadForgeAI API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure all database models are imported and tables are created on app startup
+    try:
+        import models
+        from models.base import Base
+        from core.database import engine
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Lifespan DB setup note: {e}")
+    yield
+
+app = FastAPI(title="LeadForgeAI API", version="0.1.0", lifespan=lifespan)
 
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
