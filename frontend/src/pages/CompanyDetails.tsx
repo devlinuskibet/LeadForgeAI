@@ -443,7 +443,7 @@ export default function CompanyDetails() {
                         }}>
                           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--red)", flexShrink: 0, marginTop: 4 }} />
                           <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500, lineHeight: 1.5 }}>
-                            {prob.problem || prob}
+                            {typeof prob === "string" ? prob : (prob.problem || prob.issue || "Operational optimization opportunity")}
                           </span>
                         </div>
                       ))}
@@ -474,7 +474,7 @@ export default function CompanyDetails() {
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 3 }}>
-                            {sol.solution || sol}
+                            {typeof sol === "string" ? sol : (sol.name || sol.solution || "Custom AI Solution")}
                           </p>
                           {sol.module && <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{sol.module}</p>}
                         </div>
@@ -483,7 +483,7 @@ export default function CompanyDetails() {
                           padding: "4px 12px", borderRadius: 8,
                           background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)",
                         }}>
-                          ${sol.estimated_value?.toLocaleString() || "1,500"}
+                          {typeof sol === "object" && sol.price ? sol.price : formatCurrency(typeof sol === "object" ? sol.estimated_value : 35000)}
                         </span>
                       </div>
                     ))}
