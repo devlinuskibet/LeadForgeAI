@@ -318,10 +318,8 @@ class SupervisorService:
                     parent_job_id=job.id # Link it!
                 )
                 self.db.add(analysis_job)
-                try:
-                    run_auto_prospect_task.delay(str(analysis_job.id))
-                except Exception:
-                    self.run_auto_prospect(str(analysis_job.id))
+                self.db.commit()
+                self.run_auto_prospect(str(analysis_job.id))
                     
             job.status = "completed"
             job.current_step = "done"
