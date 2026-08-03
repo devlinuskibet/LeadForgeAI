@@ -42,11 +42,13 @@ def update_email_draft(email_id: UUID, update: EmailUpdate, db: Session = Depend
     if not email:
         raise HTTPException(status_code=404, detail="Email not found")
         
-    if email.status.value != "DRAFT":
-        raise HTTPException(status_code=400, detail="Cannot edit an email that is no longer a draft")
+    if email.status.value not in ("DRAFT", "FAILED", "SENDING"):
+        raise HTTPException(status_code=400, detail="Cannot edit an email that is already delivered")
         
     email.subject = update.subject
     email.body = update.body
+    from models.email_message import EmailStatus
+    email.status = EmailStatus.DRAFT
     db.commit()
     db.refresh(email)
     

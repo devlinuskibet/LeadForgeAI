@@ -58,8 +58,7 @@ class EmailService:
                 entity_id=email.entity_id,
                 type="email",
                 title="Outreach Email Sent",
-                description=activity_desc,
-                created_by_id=user_id
+                description=activity_desc
             )
             self.db.add(activity)
             self.db.commit()

@@ -34,14 +34,19 @@ class SendGridEmailProvider(EmailProviderInterface):
         import uuid
         try:
             from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
+            from sendgrid.helpers.mail import Mail, Email, To, Content
 
             clean_recipients = to_addresses if isinstance(to_addresses, list) else [str(to_addresses)]
+            
+            from_obj = Email(sender_addr)
+            to_objs = [To(addr) for addr in clean_recipients]
+            content_obj = Content("text/html", body)
+
             message = Mail(
-                from_email=sender_addr,
-                to_emails=clean_recipients,
+                from_email=from_obj,
+                to_emails=to_objs,
                 subject=subject,
-                html_content=body
+                html_content=content_obj
             )
             sg = SendGridAPIClient(self.api_key)
             response = sg.send(message)
