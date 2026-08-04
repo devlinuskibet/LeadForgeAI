@@ -117,15 +117,6 @@ export default function CompanyDetails() {
     finally { setAnalyzing(false); }
   };
 
-  const tabs = [
-    { id: "emails",    label: `Emails & Sent History (${emailsList.length})`, icon: Mail },
-    { id: "insights",  label: "Sales Intelligence",         icon: Zap },
-    { id: "about",     label: "About & Online Reputation",  icon: Building2 },
-    { id: "contacts",  label: `Decision Makers (${company.contacts?.length || 1})`, icon: Users },
-    { id: "timeline",  label: "Unified Timeline",           icon: Activity },
-    { id: "history",   label: `Workflow Telemetry (${workflowHistory.length})`, icon: History },
-  ];
-
   if (loading || !company) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
@@ -136,6 +127,15 @@ export default function CompanyDetails() {
       </div>
     );
   }
+
+  const tabs = [
+    { id: "emails",    label: `Emails & Sent History (${emailsList.length})`, icon: Mail },
+    { id: "insights",  label: "Sales Intelligence",         icon: Zap },
+    { id: "about",     label: "About & Online Reputation",  icon: Building2 },
+    { id: "contacts",  label: `Decision Makers (${company?.contacts?.length || 1})`, icon: Users },
+    { id: "timeline",  label: "Unified Timeline",           icon: Activity },
+    { id: "history",   label: `Workflow Telemetry (${workflowHistory.length})`, icon: History },
+  ];
 
   const totalValue = insights?.recommended_solutions?.reduce((a: number, s: any) => a + (s.estimated_value || 0), 0) || 3500;
   const score = insights?.opportunity_score || 92;
