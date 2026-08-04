@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from main import app
-from services.email_provider import SendGridEmailProvider, get_email_provider, MockEmailProvider
+from services.email_provider import SendGridEmailProvider, get_email_provider, MockEmailProvider, SMTPEmailProvider
 
 client = TestClient(app)
 
@@ -16,7 +16,7 @@ def test_sendgrid_provider_fallback():
 
 def test_provider_factory_default():
     provider = get_email_provider()
-    assert isinstance(provider, (MockEmailProvider, SendGridEmailProvider))
+    assert isinstance(provider, (MockEmailProvider, SendGridEmailProvider, SMTPEmailProvider))
 
 def test_campaign_evaluator_celery_task():
     from workers.tasks import evaluate_campaign_followups_task

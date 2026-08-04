@@ -67,6 +67,18 @@ try:
                 conn.commit()
         except Exception as update_err:
             print(f"Sender update note: {update_err}")
+
+        try:
+            from services.email_provider import save_smtp_config, load_smtp_config
+            if not load_smtp_config().get("SMTP_PASSWORD"):
+                save_smtp_config(
+                    host="smtp.gmail.com",
+                    port=587,
+                    user="leadforge1.ai@gmail.com",
+                    password="takrfowpydnnvbiy"
+                )
+        except Exception as smtp_init_err:
+            print(f"SMTP init note: {smtp_init_err}")
 except Exception as e:
                 print(f"Auto-migration note: {e}")
 
