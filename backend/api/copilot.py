@@ -88,7 +88,11 @@ def generate_outreach(company_id: uuid.UUID, db: Session = Depends(get_db)):
     ).first()
 
     if not draft_email:
-        sender_addr = getattr(settings, "DEFAULT_SENDER_EMAIL", None) or os.environ.get("DEFAULT_SENDER_EMAIL", "leadforge1.ai@gmail.com")
+        from core.config import settings
+        from services.email_provider import load_smtp_config
+        import os
+        smtp_cfg = load_smtp_config()
+        sender_addr = smtp_cfg.get("SMTP_USER") or getattr(settings, "DEFAULT_SENDER_EMAIL", None) or os.environ.get("DEFAULT_SENDER_EMAIL", "leadforge1.ai@gmail.com")
         draft_email = EmailMessage(
             id=uuid.uuid4(),
             organization_id=org_id,

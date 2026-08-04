@@ -130,15 +130,14 @@ def get_discovery_summary(job_id: str, db: Session = Depends(get_db)):
 @router.get("/stats")
 def get_discovery_stats():
     import redis
+    from services.discovery_service import MEM_DISCOVERY_STATS
     try:
-        r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True, socket_connect_timeout=0.5)
         requests = int(r.get("discovery_stats:requests_made") or 0)
         hits = int(r.get("discovery_stats:cache_hits") or 0)
         misses = int(r.get("discovery_stats:cache_misses") or 0)
         total_time = float(r.get("discovery_stats:total_time") or 0)
-        
         avg_time = round(total_time / requests, 2) if requests > 0 else 0
-        
         return {
             "requests_made": requests,
             "cache_hits": hits,
@@ -146,9 +145,12 @@ def get_discovery_stats():
             "average_time_seconds": avg_time
         }
     except Exception:
+        req = MEM_DISCOVERY_STATS["requests_made"]
+        tot = MEM_DISCOVERY_STATS["total_time"]
+        avg = round(tot / req, 2) if req > 0 else 0.0
         return {
-            "requests_made": 0,
-            "cache_hits": 0,
-            "cache_misses": 0,
-            "average_time_seconds": 0
+            "requests_made": req,
+            "cache_hits": MEM_DISCOVERY_STATS["cache_hits"],
+            "cache_misses": MEM_DISCOVERY_STATS["cache_misses"],
+            "average_time_seconds": avg
         }
