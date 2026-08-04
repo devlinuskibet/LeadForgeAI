@@ -94,7 +94,7 @@ class SMTPTestPayload(BaseModel):
 
 @router.post("/test-smtp")
 def test_smtp_connection(payload: SMTPTestPayload):
-    from services.email_provider import SMTPEmailProvider
+    from services.email_provider import SMTPEmailProvider, save_smtp_config
     provider = SMTPEmailProvider(
         host=payload.host,
         port=payload.port,
@@ -108,6 +108,25 @@ def test_smtp_connection(payload: SMTPTestPayload):
             body="Congratulations! Your custom SMTP sales inbox is active and successfully delivering emails.",
             sender=payload.user
         )
+        save_smtp_config(
+            host=payload.host,
+            port=payload.port,
+            user=payload.user,
+            password=payload.password
+        )
         return {"status": "SUCCESS", "details": res}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/smtp-config")
+def get_smtp_status():
+    from services.email_provider import load_smtp_config
+    cfg = load_smtp_config()
+    if cfg.get("SMTP_USER") and cfg.get("SMTP_PASSWORD"):
+        return {
+            "connected": True,
+            "host": cfg.get("SMTP_HOST", "smtp.gmail.com"),
+            "port": cfg.get("SMTP_PORT", 587),
+            "user": cfg.get("SMTP_USER")
+        }
+    return {"connected": False}

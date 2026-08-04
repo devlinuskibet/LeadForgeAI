@@ -79,16 +79,44 @@ class SendGridEmailProvider(EmailProviderInterface):
                 "provider_name": "SendGrid (Fallback)"
             }
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import json
+import os
+
+SMTP_CONFIG_PATH = "/home/smtp_config.json" if os.path.exists("/home") else "smtp_config.json"
+
+def save_smtp_config(host: str, port: int, user: str, password: str, save_persist: bool = True):
+    clean_pass = (password or "").replace(" ", "").strip()
+    clean_user = (user or "").strip()
+    data = {
+        "SMTP_HOST": (host or "smtp.gmail.com").strip(),
+        "SMTP_PORT": int(port or 587),
+        "SMTP_USER": clean_user,
+        "SMTP_PASSWORD": clean_pass,
+        "SMTP_USE_TLS": True
+    }
+    if save_persist:
+        try:
+            with open(SMTP_CONFIG_PATH, "w") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            print(f"SMTP config save note: {e}")
+    return data
+
+def load_smtp_config():
+    if os.path.exists(SMTP_CONFIG_PATH):
+        try:
+            with open(SMTP_CONFIG_PATH, "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
 
 class SMTPEmailProvider(EmailProviderInterface):
     def __init__(self, host: str, port: int, user: str, password: str, use_tls: bool = True):
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
+        self.host = (host or "smtp.gmail.com").strip()
+        self.port = int(port or 587)
+        self.user = (user or "").strip()
+        self.password = (password or "").replace(" ", "").strip()
         self.use_tls = use_tls
 
     def send_email(self, to_addresses: List[str], subject: str, body: str, sender: str = None) -> Dict[str, Any]:
@@ -149,10 +177,11 @@ def get_email_provider() -> EmailProviderInterface:
     import os
     from core.config import settings
 
-    smtp_host = os.environ.get("SMTP_HOST") or settings.SMTP_HOST
-    smtp_user = os.environ.get("SMTP_USER") or settings.SMTP_USER
-    smtp_pass = os.environ.get("SMTP_PASSWORD") or settings.SMTP_PASSWORD
-    smtp_port = int(os.environ.get("SMTP_PORT") or settings.SMTP_PORT or 587)
+    smtp_cfg = load_smtp_config()
+    smtp_host = smtp_cfg.get("SMTP_HOST") or os.environ.get("SMTP_HOST") or settings.SMTP_HOST
+    smtp_user = smtp_cfg.get("SMTP_USER") or os.environ.get("SMTP_USER") or settings.SMTP_USER
+    smtp_pass = smtp_cfg.get("SMTP_PASSWORD") or os.environ.get("SMTP_PASSWORD") or settings.SMTP_PASSWORD
+    smtp_port = int(smtp_cfg.get("SMTP_PORT") or os.environ.get("SMTP_PORT") or settings.SMTP_PORT or 587)
 
     if smtp_host and smtp_user and smtp_pass:
         return SMTPEmailProvider(

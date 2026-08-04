@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Building2, Users, Puzzle, ToggleLeft, Sliders, Play, Activity } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
 
@@ -12,6 +12,21 @@ export default function Settings() {
   const [smtpConnecting, setSmtpConnecting] = useState(false);
   const [smtpSuccess, setSmtpSuccess] = useState(false);
   const [smtpError, setSmtpError] = useState<string | null>(null);
+  const [smtpConnected, setSmtpConnected] = useState(false);
+  const [connectedUser, setConnectedUser] = useState("");
+
+  const checkSmtpStatus = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/emails/smtp-config`);
+      if (res.ok) {
+        const data = await res.json();
+        setSmtpConnected(!!data.connected);
+        if (data.user) setConnectedUser(data.user);
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => { checkSmtpStatus(); }, []);
 
   const sidebarNavs = [
     { id: "organization", label: "Organization", icon: Building2 },
@@ -211,12 +226,29 @@ export default function Settings() {
                 borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
               }}>
-                <div>
-                  <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Google Workspace (SMTP/IMAP)</h4>
-                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>Connect your custom sales inbox (Gmail/Outlook) for automated outreach dispatching.</p>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>Google Workspace / Custom SMTP Inbox</h4>
+                    {smtpConnected ? (
+                      <span style={{
+                        fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20,
+                        background: "var(--green-dim)", color: "var(--green-text)", border: "1px solid var(--green-border)"
+                      }}>Active & Connected</span>
+                    ) : (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                        background: "var(--bg-surface)", color: "var(--text-muted)", border: "1px solid var(--border)"
+                      }}>Not Connected</span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                    {smtpConnected
+                      ? `Connected Sales Inbox: ${connectedUser}`
+                      : "Connect your custom sales inbox (Gmail App Password / Outlook) for direct outreach delivery."}
+                  </p>
                 </div>
-                <button onClick={() => setIsSmtpModalOpen(true)} className="btn-primary" style={{ fontSize: 11, flexShrink: 0 }}>
-                  Connect
+                <button onClick={() => setIsSmtpModalOpen(true)} className={smtpConnected ? "btn-ghost" : "btn-primary"} style={{ fontSize: 11, flexShrink: 0 }}>
+                  {smtpConnected ? "Manage Inbox" : "Connect"}
                 </button>
               </div>
             </div>
