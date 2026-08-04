@@ -218,27 +218,18 @@ export default function CompanyDetails() {
               )}
             </div>
           </div>
-
           {/* Dynamic Next Action Guidance */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {company?.draft_email || company?.pipeline_stage === "Draft Ready" ? (
+            {company?.draft_email ? (
               <button onClick={() => setIsPreviewOpen(true)} className="btn-primary" style={{ fontSize: 12, background: "var(--green)", borderColor: "var(--green)", color: "#fff" }}>
                 <Mail size={13} /> Review & Send Outreach Email
               </button>
-            ) : company.pipeline_stage === "Analyzed" ? (
+            ) : (
               <button onClick={handleGenerateOutreach} disabled={generating} className="btn-primary" style={{ fontSize: 12 }}>
                 {generating ? (
                   <><div style={{ width: 12, height: 12, border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Generating Email…</>
                 ) : (
                   <><Bot size={13} /> Generate AI Outreach Email</>
-                )}
-              </button>
-            ) : (
-              <button onClick={handleAnalyze} disabled={analyzing} className="btn-primary" style={{ fontSize: 12 }}>
-                {analyzing ? (
-                  <><div style={{ width: 12, height: 12, border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Analyzing Website…</>
-                ) : (
-                  <><Sparkles size={13} /> Run AI Website Analysis</>
                 )}
               </button>
             )}
@@ -258,24 +249,18 @@ export default function CompanyDetails() {
                     { label: "Run Full Auto-Prospecting", icon: Zap, onClick: () => { setIsActionMenuOpen(false); handleAutoProspect(); }, disabled: autoProspecting },
                     { label: "Re-run AI Website Analysis", icon: Sparkles, onClick: () => { setIsActionMenuOpen(false); handleAnalyze(); }, disabled: analyzing },
                     { label: "Re-generate AI Outreach Email", icon: Bot, onClick: () => { setIsActionMenuOpen(false); handleGenerateOutreach(); }, disabled: generating },
-                  ].map(item => {
-                    const Icon = item.icon;
-                    return (
-                      <button key={item.label} onClick={item.onClick} disabled={item.disabled} style={{
-                        width: "100%", padding: "11px 16px", background: "transparent",
-                        border: "none", borderBottom: "1px solid var(--border)",
-                        display: "flex", alignItems: "center", gap: 8,
-                        fontSize: 12, fontWeight: 600, color: "var(--text-secondary)",
-                        cursor: "pointer", fontFamily: "inherit", textAlign: "left",
-                        transition: "all 0.12s", opacity: item.disabled ? 0.5 : 1,
-                      }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
-                      >
-                        <Icon size={13} /> {item.label}
-                      </button>
-                    );
-                  })}
+                  ].map((act, i) => (
+                    <button key={i} onClick={act.onClick} disabled={act.disabled} style={{
+                      width: "100%", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10,
+                      fontSize: 12, fontWeight: 600, color: "var(--text-secondary)",
+                      background: "transparent", border: "none", cursor: "pointer", textAlign: "left",
+                    }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--bg-elevated)"}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                    >
+                      <act.icon size={13} /> {act.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -296,50 +281,84 @@ export default function CompanyDetails() {
         const progressPercent = isWonStage ? 100 : isSentStage ? 75 : isDraftStage ? 50 : isAnalyzedStage ? 25 : 10;
 
         const journeySteps = [
-          { num: 1, label: "Discovered",  done: true, active: false },
-          { num: 2, label: "Analyzed",    done: isAnalyzedStage && (isDraftStage || isSentStage), active: currentStage === "analyzed" && !isDraftStage },
-          { num: 3, label: "Draft Ready", done: isDraftStage && isSentStage, active: currentStage === "draft ready" && !isSentStage },
-          { num: 4, label: "Sent",        done: isSentStage && isWonStage, active: isSentStage && !isWonStage },
-          { num: 5, label: "Won",         done: isWonStage, active: isWonStage },
+          { num: 1, label: "Discovered",  done: true, active: false, action: () => {} },
+          { num: 2, label: "Analyzed",    done: isAnalyzedStage && (isDraftStage || isSentStage), active: currentStage === "analyzed" && !isDraftStage, action: handleAnalyze },
+          { num: 3, label: "Draft Ready", done: isDraftStage && isSentStage, active: currentStage === "draft ready" && !isSentStage, action: () => { if (company.draft_email) setIsPreviewOpen(true); else handleGenerateOutreach(); } },
+          { num: 4, label: "Sent",        done: isSentStage && isWonStage, active: isSentStage && !isWonStage, action: () => { if (company.draft_email) setIsPreviewOpen(true); } },
+          { num: 5, label: "Won",         done: isWonStage, active: isWonStage, action: () => {} },
         ];
 
         return (
-          <div style={{
-            background: "var(--bg-surface)", border: "1px solid var(--border)",
-            borderRadius: 14, padding: "24px 32px",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}>
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              {/* Dynamic Track line */}
-              <div style={{
-                position: "absolute", top: "50%", left: 0, right: 0, height: 2,
-                transform: "translateY(-50%)",
-                background: `linear-gradient(to right, var(--green) 0%, var(--green) ${progressPercent}%, var(--border) ${progressPercent}%)`,
-                borderRadius: 2, zIndex: 0,
-              }} />
-              {journeySteps.map((step, i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 1, background: "var(--bg-surface)", padding: "0 12px" }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: step.done ? "var(--green)" : step.active ? "#111827" : "var(--bg-elevated)",
-                    border: step.done ? "none" : step.active ? "2px solid #111827" : "2px solid var(--border)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: step.done || step.active ? "#fff" : "var(--text-muted)",
-                    fontWeight: 800, fontSize: 13,
-                    boxShadow: step.done ? "0 0 0 4px var(--green-dim)" : step.active ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
-                    transition: "all 0.2s",
-                  }}>
-                    {step.done ? <Check size={16} /> : step.num}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{
+              background: "var(--bg-surface)", border: "1px solid var(--border)",
+              borderRadius: 14, padding: "24px 32px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                {/* Dynamic Track line */}
+                <div style={{
+                  position: "absolute", top: "50%", left: 0, right: 0, height: 2,
+                  transform: "translateY(-50%)",
+                  background: `linear-gradient(to right, var(--green) 0%, var(--green) ${progressPercent}%, var(--border) ${progressPercent}%)`,
+                  borderRadius: 2, zIndex: 0,
+                }} />
+                {journeySteps.map((step, i) => (
+                  <div key={i} onClick={step.action} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 1, background: "var(--bg-surface)", padding: "0 12px", cursor: "pointer" }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: "50%",
+                      background: step.done ? "var(--green)" : step.active ? "#111827" : "var(--bg-elevated)",
+                      border: step.done ? "none" : step.active ? "2px solid #111827" : "2px solid var(--border)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: step.done || step.active ? "#fff" : "var(--text-muted)",
+                      fontWeight: 800, fontSize: 13,
+                      boxShadow: step.done ? "0 0 0 4px var(--green-dim)" : step.active ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
+                      transition: "all 0.2s",
+                    }}>
+                      {step.done ? <Check size={16} /> : step.num}
+                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: step.done || step.active ? 700 : 500,
+                      color: step.done ? "var(--green-text)" : step.active ? "var(--text-primary)" : "var(--text-muted)",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {step.num}. {step.label}
+                    </span>
                   </div>
-                  <span style={{
-                    fontSize: 11, fontWeight: step.done || step.active ? 700 : 500,
-                    color: step.done ? "var(--green-text)" : step.active ? "var(--text-primary)" : "var(--text-muted)",
-                    whiteSpace: "nowrap",
-                  }}>
-                    {step.num}. {step.label}
-                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Prominent Outreach Callout Banner */}
+            <div style={{
+              padding: "16px 20px", background: "var(--blue-dim)", border: "1px solid var(--blue-border)",
+              borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--blue)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+                  <Mail size={18} />
                 </div>
-              ))}
+                <div>
+                  <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--blue-text)" }}>
+                    {company.draft_email ? "AI Sales Email Draft Ready" : "Generate Custom AI Outreach Email"}
+                  </h4>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                    {company.draft_email
+                      ? `Drafted for ${company.name} • Ready for direct delivery from ${company.draft_email.sender || "your connected sales inbox"}`
+                      : `Click below to generate a tailored value proposition and proposal email for ${company.name}`}
+                  </p>
+                </div>
+              </div>
+              <button onClick={company.draft_email ? () => setIsPreviewOpen(true) : handleGenerateOutreach}
+                disabled={generating} className="btn-primary" style={{ fontSize: 12, flexShrink: 0, background: "var(--blue)", borderColor: "var(--blue)", color: "#fff" }}>
+                {generating ? (
+                  <><div style={{ width: 12, height: 12, border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Generating Email…</>
+                ) : company.draft_email ? (
+                  <><Mail size={13} /> Review & Send Email</>
+                ) : (
+                  <><Bot size={13} /> Generate AI Email</>
+                )}
+              </button>
             </div>
           </div>
         );
