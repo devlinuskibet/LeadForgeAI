@@ -455,6 +455,7 @@ export default function Settings() {
                     throw new Error(data.detail || "Failed to verify SMTP credentials");
                   }
                   setSmtpSuccess(true);
+                  checkSmtpStatus();
                   setTimeout(() => { setIsSmtpModalOpen(false); setSmtpSuccess(false); }, 1800);
                 } catch (e: any) {
                   setSmtpError(e.message || "Connection failed. Check host, port & App Password.");

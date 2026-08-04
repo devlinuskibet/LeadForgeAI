@@ -1,5 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
+import smtplib
+import json
+import os
+import uuid
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 class EmailProviderInterface(ABC):
     @abstractmethod
@@ -79,9 +85,6 @@ class SendGridEmailProvider(EmailProviderInterface):
                 "provider_name": "SendGrid (Fallback)"
             }
 
-import json
-import os
-
 SMTP_CONFIG_PATH = "/home/smtp_config.json" if os.path.exists("/home") else "smtp_config.json"
 
 def save_smtp_config(host: str, port: int, user: str, password: str, save_persist: bool = True):
@@ -152,10 +155,13 @@ class SMTPEmailProvider(EmailProviderInterface):
         try:
             if self.port == 465:
                 server = smtplib.SMTP_SSL(self.host, self.port, timeout=15)
+                server.ehlo()
             else:
                 server = smtplib.SMTP(self.host, self.port, timeout=15)
+                server.ehlo()
                 if self.use_tls:
                     server.starttls()
+                    server.ehlo()
             
             if self.user and self.password:
                 server.login(self.user, self.password)
@@ -168,9 +174,18 @@ class SMTPEmailProvider(EmailProviderInterface):
                 "status": "SENT",
                 "provider_name": "SMTP"
             }
+        except smtplib.SMTPAuthenticationError as auth_err:
+            print(f"SMTP Authentication Error: {auth_err}")
+            raise Exception("Gmail Authentication Failed: Please verify that 2-Step Verification is enabled in your Google Account settings, and enter a 16-character App Password (not your primary password).")
+        except smtplib.SMTPConnectError as conn_err:
+            print(f"SMTP Connect Error: {conn_err}")
+            raise Exception(f"SMTP Connect Error: Could not connect to {self.host}:{self.port}. Please check port and network connection.")
         except Exception as e:
-            print(f"SMTP send_email error: {e}")
-            raise Exception(f"SMTP Delivery Error: {str(e)}")
+            err_msg = str(e)
+            print(f"SMTP send_email error: {err_msg}")
+            if "535" in err_msg or "Authentication" in err_msg:
+                err_msg = "Invalid App Password or Email. Ensure 2-Step Verification is enabled in Google Account settings and generate a dedicated App Password."
+            raise Exception(f"SMTP Error: {err_msg}")
 
 
 def get_email_provider() -> EmailProviderInterface:
