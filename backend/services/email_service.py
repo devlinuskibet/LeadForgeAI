@@ -42,6 +42,7 @@ class EmailService:
             email.provider_response = response
             email.sent_by_user_id = user_id
             email.sent_at = datetime.now(timezone.utc)
+            email.delivered_at = datetime.now(timezone.utc)
             
             # Advance target company pipeline stage to "Sent"
             if email.entity_type == "company" and email.entity_id:
@@ -96,6 +97,7 @@ class EmailService:
         # Update email status and timestamps
         if event == "DELIVERED":
             email.status = EmailStatus.DELIVERED
+            email.delivered_at = datetime.now(timezone.utc)
             title = "Email Delivered"
             desc = "The email was successfully delivered to the recipient's inbox."
             if email.entity_type == "company":
@@ -103,8 +105,9 @@ class EmailService:
         elif event == "OPENED":
             email.status = EmailStatus.OPENED
             email.opened_at = datetime.now(timezone.utc)
-            title = "Email Opened"
-            desc = "The recipient opened the email."
+            email.opened_count = (email.opened_count or 0) + 1
+            title = f"Email Opened ({email.opened_count}x)"
+            desc = f"The recipient opened the email ({email.opened_count} time(s))."
             if email.entity_type == "company":
                 crm.advance_pipeline_stage(email.entity_id, "Engaged")
         elif event == "REPLIED":

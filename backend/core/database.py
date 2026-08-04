@@ -42,6 +42,8 @@ except Exception as table_err:
 _auto_migrate_columns = [
     ("companies", "location", "VARCHAR"),
     ("companies", "address", "VARCHAR"),
+    ("email_messages", "delivered_at", "TIMESTAMP WITH TIME ZONE"),
+    ("email_messages", "opened_count", "INTEGER DEFAULT 0"),
 ]
 
 try:

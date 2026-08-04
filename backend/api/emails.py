@@ -16,6 +16,12 @@ class EmailUpdate(BaseModel):
     recipient: Optional[str] = None
     sender: Optional[str] = None
 
+from fastapi import Response
+import base64
+from datetime import datetime, timezone
+
+TRANSPARENT_PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+
 @router.get("/{entity_type}/{entity_id}")
 def get_emails_for_entity(entity_type: str, entity_id: UUID, db: Session = Depends(get_db)):
     emails = db.query(EmailMessage).filter(
@@ -33,7 +39,13 @@ def get_emails_for_entity(entity_type: str, entity_id: UUID, db: Session = Depen
             "sender": email.sender,
             "recipients": email.recipients,
             "status": email.status.value,
-            "sent_at": email.sent_at.isoformat() if email.sent_at else None
+            "created_at": email.created_at.isoformat() if getattr(email, "created_at", None) else None,
+            "sent_at": email.sent_at.isoformat() if email.sent_at else None,
+            "delivered_at": email.delivered_at.isoformat() if getattr(email, "delivered_at", None) else (email.sent_at.isoformat() if email.sent_at else None),
+            "opened_at": email.opened_at.isoformat() if email.opened_at else None,
+            "opened_count": getattr(email, "opened_count", 0) or (1 if email.opened_at else 0),
+            "provider_name": email.provider_name or "SMTP",
+            "provider_message_id": email.provider_message_id
         }
         for email in emails
     ]
@@ -57,15 +69,47 @@ def update_email_draft(email_id: UUID, update: EmailUpdate, db: Session = Depend
     
     return {"message": "Draft updated"}
 
+@router.delete("/{email_id}")
+def delete_email(email_id: UUID, db: Session = Depends(get_db)):
+    email = db.query(EmailMessage).filter(EmailMessage.id == email_id).first()
+    if not email:
+        raise HTTPException(status_code=404, detail="Email not found")
+    db.delete(email)
+    db.commit()
+    return {"message": "Email record deleted successfully"}
+
 @router.post("/{email_id}/send")
 def send_email(email_id: UUID, db: Session = Depends(get_db)):
     service = EmailService(db)
     try:
-        # Pass user_id if we had auth middleware, skipping for now
         email = service.send_draft(str(email_id))
         return {"message": "Email sent", "status": email.status.value}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{email_id}/resend")
+def resend_email(email_id: UUID, db: Session = Depends(get_db)):
+    service = EmailService(db)
+    try:
+        email = service.send_draft(str(email_id))
+        return {"message": "Email resent successfully", "status": email.status.value}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{email_id}/pixel.png")
+def track_email_open(email_id: UUID, db: Session = Depends(get_db)):
+    """
+    1x1 Transparent Tracking Pixel embedded in outgoing HTML emails.
+    Automatically records recipient open event, timestamp, and increments open count.
+    """
+    email = db.query(EmailMessage).filter(EmailMessage.id == email_id).first()
+    if email:
+        from models.email_message import EmailStatus
+        email.status = EmailStatus.OPENED
+        email.opened_at = datetime.now(timezone.utc)
+        email.opened_count = (getattr(email, "opened_count", 0) or 0) + 1
+        db.commit()
+    return Response(content=TRANSPARENT_PNG, media_type="image/png")
 
 class WebhookPayload(BaseModel):
     provider_message_id: str

@@ -30,6 +30,8 @@ export default function CompanyDetails() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
 
+  const [emailsList, setEmailsList] = useState<any[]>([]);
+
   const fetchCompanyData = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/companies/${id}`);
@@ -53,7 +55,17 @@ export default function CompanyDetails() {
     } catch (e) { console.error(e); }
   };
 
-  useEffect(() => { fetchCompanyData(); fetchWorkflowHistory(); }, [id]);
+  const fetchEmailsList = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/emails/company/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEmailsList(data);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => { fetchCompanyData(); fetchWorkflowHistory(); fetchEmailsList(); }, [id]);
 
   useEffect(() => {
     let interval: any;
@@ -65,7 +77,7 @@ export default function CompanyDetails() {
             const data = await res.json();
             setJobStatus(data.status);
             if (data.status === "completed") {
-              setAutoProspecting(false); fetchCompanyData(); fetchWorkflowHistory(); setActiveTab("emails");
+              setAutoProspecting(false); fetchCompanyData(); fetchWorkflowHistory(); fetchEmailsList(); setActiveTab("emails");
             } else if (data.status === "failed") {
               setAutoProspecting(false); fetchWorkflowHistory();
             }
@@ -90,7 +102,7 @@ export default function CompanyDetails() {
       setGenerating(true);
       await fetch(`${API_BASE_URL}/api/copilot/company/${id}/generate-outreach`, { method: 'POST' });
       await new Promise(r => setTimeout(r, 1500));
-      fetchCompanyData(); setActiveTab("emails");
+      fetchCompanyData(); fetchEmailsList(); setActiveTab("emails");
     } catch (e) { console.error(e); }
     finally { setGenerating(false); }
   };
@@ -98,11 +110,21 @@ export default function CompanyDetails() {
   const handleAnalyze = async () => {
     try {
       setAnalyzing(true);
-      const res = await fetch(`${API_BASE_URL}/api/copilot/company/${id}/analyze`, { method: 'POST' });
-      if (res.ok) fetchCompanyData();
+      await fetch(`${API_BASE_URL}/api/copilot/company/${id}/analyze`, { method: 'POST' });
+      await new Promise(r => setTimeout(r, 1500));
+      fetchCompanyData(); setActiveTab("insights");
     } catch (e) { console.error(e); }
     finally { setAnalyzing(false); }
   };
+
+  const tabs = [
+    { id: "emails",    label: `Emails & Sent History (${emailsList.length})`, icon: Mail },
+    { id: "insights",  label: "Sales Intelligence",         icon: Zap },
+    { id: "about",     label: "About & Online Reputation",  icon: Building2 },
+    { id: "contacts",  label: `Decision Makers (${company.contacts?.length || 1})`, icon: Users },
+    { id: "timeline",  label: "Unified Timeline",           icon: Activity },
+    { id: "history",   label: `Workflow Telemetry (${workflowHistory.length})`, icon: History },
+  ];
 
   if (loading || !company) {
     return (
@@ -117,14 +139,6 @@ export default function CompanyDetails() {
 
   const totalValue = insights?.recommended_solutions?.reduce((a: number, s: any) => a + (s.estimated_value || 0), 0) || 3500;
   const score = insights?.opportunity_score || 92;
-
-  const tabs = [
-    { id: "insights",  label: "Sales Intelligence",         icon: Zap },
-    { id: "about",     label: "About & Online Reputation",  icon: Building2 },
-    { id: "contacts",  label: `Decision Makers (${company.contacts?.length || 1})`, icon: Users },
-    { id: "timeline",  label: "Unified Timeline",           icon: Activity },
-    { id: "history",   label: `Workflow Telemetry (${workflowHistory.length})`, icon: History },
-  ];
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20, paddingBottom: 48 }}>
@@ -403,6 +417,143 @@ export default function CompanyDetails() {
             );
           })}
         </div>
+
+        {/* ── Tab: Emails & Sent History ── */}
+        {activeTab === 'emails' && (
+          <div style={{ padding: "32px 28px", display: "flex", flexDirection: "column", gap: 24 }}>
+            {/* Header & Stats */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}>
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Emails & Outreach History</h3>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                  Track sent emails, delivery timestamps, open tracking pixels, and perform email management for {company.name}.
+                </p>
+              </div>
+              <button onClick={handleGenerateOutreach} disabled={generating} className="btn-primary" style={{ fontSize: 12 }}>
+                {generating ? "Generating Draft…" : "+ Generate New AI Email Draft"}
+              </button>
+            </div>
+
+            {/* Metric Summary Cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+              <div style={{ padding: "14px 16px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12 }}>
+                <span className="label-caps">Total Logged</span>
+                <p style={{ fontSize: 20, fontWeight: 900, color: "var(--text-primary)", marginTop: 4 }}>{emailsList.length}</p>
+              </div>
+              <div style={{ padding: "14px 16px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12 }}>
+                <span className="label-caps">Sent / Dispatched</span>
+                <p style={{ fontSize: 20, fontWeight: 900, color: "var(--blue-text)", marginTop: 4 }}>
+                  {emailsList.filter(e => e.status !== "DRAFT").length}
+                </p>
+              </div>
+              <div style={{ padding: "14px 16px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12 }}>
+                <span className="label-caps">Delivered</span>
+                <p style={{ fontSize: 20, fontWeight: 900, color: "var(--green-text)", marginTop: 4 }}>
+                  {emailsList.filter(e => e.status === "DELIVERED" || e.status === "OPENED" || e.status === "SENT").length}
+                </p>
+              </div>
+              <div style={{ padding: "14px 16px", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 12 }}>
+                <span className="label-caps">Opened (Pixel Tracked)</span>
+                <p style={{ fontSize: 20, fontWeight: 900, color: "#8b5cf6", marginTop: 4 }}>
+                  {emailsList.reduce((acc, curr) => acc + (curr.opened_count || (curr.status === "OPENED" ? 1 : 0)), 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Email Records List */}
+            {emailsList.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {emailsList.map((emailItem) => (
+                  <div key={emailItem.id} style={{
+                    padding: "20px", background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                    borderRadius: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                    display: "flex", flexDirection: "column", gap: 14
+                  }}>
+                    {/* Header line */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{
+                          fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20,
+                          background: emailItem.status === "OPENED" ? "rgba(139, 92, 246, 0.15)" : emailItem.status === "DELIVERED" || emailItem.status === "SENT" ? "var(--green-dim)" : emailItem.status === "FAILED" ? "var(--red-dim)" : "var(--bg-surface)",
+                          color: emailItem.status === "OPENED" ? "#8b5cf6" : emailItem.status === "DELIVERED" || emailItem.status === "SENT" ? "var(--green-text)" : emailItem.status === "FAILED" ? "var(--red-text)" : "var(--text-muted)",
+                          border: "1px solid var(--border)"
+                        }}>
+                          {emailItem.status} {emailItem.opened_count > 0 ? `(${emailItem.opened_count}x opens)` : ""}
+                        </span>
+                        <h4 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                          {emailItem.subject || "No Subject"}
+                        </h4>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <button onClick={() => {
+                          setEmailSubject(emailItem.subject);
+                          setEmailBody(emailItem.body);
+                          setIsPreviewOpen(true);
+                        }} className="btn-primary" style={{ fontSize: 11, padding: "6px 12px" }}>
+                          👁️ View / Inspect
+                        </button>
+                        <button onClick={async () => {
+                          if (confirm("Resend this outreach email now?")) {
+                            await fetch(`${API_BASE_URL}/api/emails/${emailItem.id}/resend`, { method: "POST" });
+                            fetchEmailsList();
+                            fetchCompanyData();
+                          }
+                        }} className="btn-ghost" style={{ fontSize: 11, padding: "6px 12px" }}>
+                          🚀 Resend
+                        </button>
+                        <button onClick={async () => {
+                          if (confirm("Delete this email record from DB?")) {
+                            await fetch(`${API_BASE_URL}/api/emails/${emailItem.id}`, { method: "DELETE" });
+                            fetchEmailsList();
+                            fetchCompanyData();
+                          }
+                        }} className="btn-ghost" style={{ fontSize: 11, padding: "6px 12px", color: "var(--red-text)" }}>
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Metadata Details Grid */}
+                    <div style={{
+                      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10,
+                      padding: "12px 14px", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 11
+                    }}>
+                      <div>
+                        <span style={{ color: "var(--text-muted)", display: "block" }}>Sender Inbox</span>
+                        <strong style={{ color: "var(--text-primary)" }}>{emailItem.sender || "leadforge1.ai@gmail.com"}</strong>
+                      </div>
+                      <div>
+                        <span style={{ color: "var(--text-muted)", display: "block" }}>Recipient</span>
+                        <strong style={{ color: "var(--text-primary)" }}>
+                          {Array.isArray(emailItem.recipients) ? emailItem.recipients.join(", ") : emailItem.recipients}
+                        </strong>
+                      </div>
+                      <div>
+                        <span style={{ color: "var(--text-muted)", display: "block" }}>Sent Timestamp</span>
+                        <strong style={{ color: "var(--text-primary)" }}>
+                          {emailItem.sent_at ? new Date(emailItem.sent_at).toLocaleString() : "Not sent yet"}
+                        </strong>
+                      </div>
+                      <div>
+                        <span style={{ color: "var(--text-muted)", display: "block" }}>Delivery & Open Activity</span>
+                        <strong style={{ color: emailItem.opened_at ? "#8b5cf6" : "var(--green-text)" }}>
+                          {emailItem.opened_at ? `Opened: ${new Date(emailItem.opened_at).toLocaleTimeString()} (${emailItem.opened_count || 1}x)` : emailItem.sent_at ? `Delivered: ${new Date(emailItem.sent_at).toLocaleTimeString()}` : "Pending"}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", padding: "40px 20px", background: "var(--bg-elevated)", borderRadius: 12, border: "1px dashed var(--border)" }}>
+                <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No email records found for this company yet.</p>
+                <button onClick={handleGenerateOutreach} disabled={generating} className="btn-primary" style={{ marginTop: 14, fontSize: 12 }}>
+                  + Generate AI Outreach Email
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Tab 1: Sales Intelligence ── */}
         {activeTab === 'insights' && (

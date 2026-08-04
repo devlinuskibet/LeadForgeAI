@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey, Text, DateTime, Enum, JSON
+from sqlalchemy import Column, String, Integer, ForeignKey, Text, DateTime, Enum, JSON
 from models.base import Base
 from models.compat import UUIDType
 import enum
@@ -40,7 +40,9 @@ class EmailMessage(Base):
 
     sent_by_user_id = Column(UUIDType, nullable=True)
     sent_at = Column(DateTime(timezone=True), nullable=True)
+    delivered_at = Column(DateTime(timezone=True), nullable=True)
     opened_at = Column(DateTime(timezone=True), nullable=True)
+    opened_count = Column(Integer, default=0, nullable=True)
     replied_at = Column(DateTime(timezone=True), nullable=True)
     thread_id = Column(String, nullable=True)
 
