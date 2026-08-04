@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Building2, Users, Puzzle, ToggleLeft, Sliders, Play, Activity } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("organization");
@@ -10,6 +11,7 @@ export default function Settings() {
   const [smtpPass, setSmtpPass] = useState("");
   const [smtpConnecting, setSmtpConnecting] = useState(false);
   const [smtpSuccess, setSmtpSuccess] = useState(false);
+  const [smtpError, setSmtpError] = useState<string | null>(null);
 
   const sidebarNavs = [
     { id: "organization", label: "Organization", icon: Building2 },
@@ -366,6 +368,12 @@ export default function Settings() {
               </div>
             )}
 
+            {smtpError && (
+              <div style={{ padding: "10px 14px", background: "var(--red-dim)", border: "1px solid var(--red-border)", borderRadius: 8, fontSize: 12, fontWeight: 600, color: "var(--red-text)" }}>
+                ✕ {smtpError}
+              </div>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
                 <label className="label-caps" style={{ display: "block", marginBottom: 6 }}>SMTP Host</label>
@@ -392,11 +400,35 @@ export default function Settings() {
                 Cancel
               </button>
               <button onClick={async () => {
+                if (!smtpUser || !smtpPass) {
+                  setSmtpError("Please provide Sender Email and App Password.");
+                  return;
+                }
                 setSmtpConnecting(true);
-                await new Promise(r => setTimeout(r, 1200));
-                setSmtpConnecting(false);
-                setSmtpSuccess(true);
-                setTimeout(() => { setIsSmtpModalOpen(false); setSmtpSuccess(false); }, 1500);
+                setSmtpError(null);
+                try {
+                  const res = await fetch(`${API_BASE_URL}/api/emails/test-smtp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      host: smtpHost,
+                      port: parseInt(smtpPort) || 587,
+                      user: smtpUser,
+                      password: smtpPass,
+                      recipient: smtpUser
+                    })
+                  });
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.detail || "Failed to verify SMTP credentials");
+                  }
+                  setSmtpSuccess(true);
+                  setTimeout(() => { setIsSmtpModalOpen(false); setSmtpSuccess(false); }, 1800);
+                } catch (e: any) {
+                  setSmtpError(e.message || "Connection failed. Check host, port & App Password.");
+                } finally {
+                  setSmtpConnecting(false);
+                }
               }} disabled={smtpConnecting} className="btn-primary" style={{ fontSize: 12 }}>
                 {smtpConnecting ? "Testing Connection…" : "Save & Test Connection"}
               </button>

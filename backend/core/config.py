@@ -17,7 +17,12 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     GOOGLE_PLACES_API_KEY: str | None = None
     SENDGRID_API_KEY: str | None = None
-    DEFAULT_SENDER_EMAIL: str = "outreach@leadforge.ai"
+    DEFAULT_SENDER_EMAIL: str = "leadforge1.ai@gmail.com"
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_USE_TLS: bool = True
 
     class Config:
         env_file = ".env"

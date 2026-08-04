@@ -84,3 +84,30 @@ def receive_webhook(provider_name: str, payload: WebhookPayload, db: Session = D
         return {"message": "Event processed"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+class SMTPTestPayload(BaseModel):
+    host: str = "smtp.gmail.com"
+    port: int = 587
+    user: str
+    password: str
+    recipient: str
+
+@router.post("/test-smtp")
+def test_smtp_connection(payload: SMTPTestPayload):
+    from services.email_provider import SMTPEmailProvider
+    provider = SMTPEmailProvider(
+        host=payload.host,
+        port=payload.port,
+        user=payload.user,
+        password=payload.password
+    )
+    try:
+        res = provider.send_email(
+            to_addresses=[payload.recipient],
+            subject="LeadForge AI Custom SMTP Connection Test",
+            body="Congratulations! Your custom SMTP sales inbox is active and successfully delivering emails.",
+            sender=payload.user
+        )
+        return {"status": "SUCCESS", "details": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
