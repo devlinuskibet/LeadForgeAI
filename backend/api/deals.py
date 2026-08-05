@@ -70,6 +70,23 @@ def delete_deal(deal_id: UUID, db: Session = Depends(get_db)):
 class DealNoteCreate(BaseModel):
     note: str
 
+class BulkDealUpdate(BaseModel):
+    deal_ids: List[UUID]
+    status: str
+
+@router.post("/bulk-update-status")
+def bulk_update_deals(payload: BulkDealUpdate, db: Session = Depends(get_db)):
+    from models.deal import Deal, DealStatus
+    try:
+        new_status = DealStatus(payload.status)
+        deals = db.query(Deal).filter(Deal.id.in_(payload.deal_ids)).all()
+        for d in deals:
+            d.status = new_status
+        db.commit()
+        return {"success": True, "updated_count": len(deals)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.post("/{deal_id}/notes")
 def add_deal_note(deal_id: UUID, payload: DealNoteCreate, db: Session = Depends(get_db)):
     from models.deal import Deal
