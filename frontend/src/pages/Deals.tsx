@@ -288,6 +288,19 @@ export default function Deals() {
     a.click();
   };
 
+  const exportDealsCSV = () => {
+    let csv = "ID,Deal Name,Company Name,Amount,Probability,Status,Target Close Date\n";
+    filteredDeals.forEach(d => {
+      csv += `"${d.id}","${(d.name || "").replace(/"/g, '""')}","${(d.company_name || "").replace(/"/g, '""')}",${d.amount || 0},${d.probability || 75},"${d.status}","${d.target_close_date || ""}"\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `LeadForge_Deals_Export_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  };
+
   const filteredDeals = deals.filter(d => {
     const matchesSearch = !searchQuery || (d.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || (d.company_name || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || d.status === statusFilter;
@@ -384,6 +397,14 @@ export default function Deals() {
               {st}
             </button>
           ))}
+          <button onClick={exportDealsCSV} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700,
+            background: "var(--bg-elevated)", color: "var(--text-primary)",
+            border: "1px solid var(--border)", cursor: "pointer", marginLeft: 8, fontFamily: "inherit"
+          }} title="Export deals to CSV">
+            <Download size={13} /> Export CSV
+          </button>
         </div>
       </div>
 
