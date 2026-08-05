@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X } from "lucide-react";
+import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
@@ -123,6 +123,8 @@ export default function Deals() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<any>(null);
   const [loadingProposal, setLoadingProposal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "WON" | "LOST">("ALL");
 
   const fetchDeals = async () => {
     try {
@@ -151,6 +153,12 @@ export default function Deals() {
     finally { setLoadingProposal(false); }
   };
 
+  const filteredDeals = deals.filter(d => {
+    const matchesSearch = !searchQuery || (d.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || (d.company_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "ALL" || d.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   const wr = metrics?.win_rate_percentage ?? 0;
   const wrColor = wr >= 50 ? "var(--green)" : wr >= 25 ? "var(--amber)" : "var(--red)";
 
@@ -170,31 +178,57 @@ export default function Deals() {
         <MetricCard label="Total Deals"    value={String(metrics?.total_deals_count ?? 0)}                   accent="var(--text-muted)" icon={FileText} />
       </div>
 
+      {/* Filter Toolbar */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+        padding: "12px 16px", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12
+      }}>
+        <div style={{ position: "relative", flex: 1, maxWidth: 320 }}>
+          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search deals or companies…" className="glass-input" style={{ paddingLeft: 34, fontSize: 12 }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Filter size={13} style={{ color: "var(--text-muted)", marginRight: 4 }} />
+          {(["ALL", "OPEN", "WON", "LOST"] as const).map(st => (
+            <button key={st} onClick={() => setStatusFilter(st)} style={{
+              padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: statusFilter === st ? 800 : 600,
+              background: statusFilter === st ? "var(--bg-elevated)" : "transparent",
+              color: statusFilter === st ? "var(--text-primary)" : "var(--text-muted)",
+              border: statusFilter === st ? "1px solid var(--border-strong)" : "1px solid transparent",
+              cursor: "pointer", fontFamily: "inherit"
+            }}>
+              {st}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Kanban */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-        <KanbanColumn title="Active Opportunities" count={deals.filter(d => d.status === "OPEN").length}  accentColor="var(--blue)"  borderColor="var(--blue-border)">
-          {deals.filter(d => d.status === "OPEN").map(d => (
+        <KanbanColumn title="Active Opportunities" count={filteredDeals.filter(d => d.status === "OPEN").length}  accentColor="var(--blue)"  borderColor="var(--blue-border)">
+          {filteredDeals.filter(d => d.status === "OPEN").map(d => (
             <KanbanCard key={d.id} deal={d} type="open" onWon={() => updateStatus(d.id, "WON")} onLost={() => updateStatus(d.id, "LOST")} onProposal={generateProposal} />
           ))}
-          {deals.filter(d => d.status === "OPEN").length === 0 && (
+          {filteredDeals.filter(d => d.status === "OPEN").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No active deals</p>
           )}
         </KanbanColumn>
 
-        <KanbanColumn title="Closed Won" count={deals.filter(d => d.status === "WON").length}  accentColor="var(--green)" borderColor="var(--green-border)">
-          {deals.filter(d => d.status === "WON").map(d => (
+        <KanbanColumn title="Closed Won" count={filteredDeals.filter(d => d.status === "WON").length}  accentColor="var(--green)" borderColor="var(--green-border)">
+          {filteredDeals.filter(d => d.status === "WON").map(d => (
             <KanbanCard key={d.id} deal={d} type="won" />
           ))}
-          {deals.filter(d => d.status === "WON").length === 0 && (
+          {filteredDeals.filter(d => d.status === "WON").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No won deals yet</p>
           )}
         </KanbanColumn>
 
-        <KanbanColumn title="Closed Lost" count={deals.filter(d => d.status === "LOST").length} accentColor="var(--red)"   borderColor="var(--red-border)">
-          {deals.filter(d => d.status === "LOST").map(d => (
+        <KanbanColumn title="Closed Lost" count={filteredDeals.filter(d => d.status === "LOST").length} accentColor="var(--red)"   borderColor="var(--red-border)">
+          {filteredDeals.filter(d => d.status === "LOST").map(d => (
             <KanbanCard key={d.id} deal={d} type="lost" onReopen={() => updateStatus(d.id, "OPEN")} />
           ))}
-          {deals.filter(d => d.status === "LOST").length === 0 && (
+          {filteredDeals.filter(d => d.status === "LOST").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No lost deals</p>
           )}
         </KanbanColumn>
