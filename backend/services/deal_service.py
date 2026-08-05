@@ -58,7 +58,7 @@ class DealService:
         self.db.refresh(new_deal)
         return new_deal
 
-    def update_deal_status(self, deal_id: UUID, status: str, amount: float = None) -> Deal:
+    def update_deal_status(self, deal_id: UUID, status: str, amount: float = None, name: str = None) -> Deal:
         deal = self.db.query(Deal).filter(Deal.id == deal_id).first()
         if not deal:
             raise Exception("Deal not found")
@@ -66,6 +66,8 @@ class DealService:
         deal.status = DealStatus(status)
         if amount is not None:
             deal.amount = amount
+        if name is not None and name.strip():
+            deal.name = name.strip()
             
         self.db.commit()
         self.db.refresh(deal)

@@ -18,6 +18,7 @@ class DealCreate(BaseModel):
 class DealUpdate(BaseModel):
     status: str
     amount: Optional[float] = None
+    name: Optional[str] = None
 
 @router.get("/")
 def get_deals(db: Session = Depends(get_db)):
@@ -48,7 +49,7 @@ def create_deal(payload: DealCreate, db: Session = Depends(get_db)):
 def update_deal(deal_id: UUID, payload: DealUpdate, db: Session = Depends(get_db)):
     service = DealService(db)
     try:
-        deal = service.update_deal_status(deal_id=deal_id, status=payload.status, amount=payload.amount)
+        deal = service.update_deal_status(deal_id=deal_id, status=payload.status, amount=payload.amount, name=payload.name)
         return {
             "success": True,
             "deal_id": str(deal.id),

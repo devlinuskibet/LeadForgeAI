@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus } from "lucide-react";
+import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2 } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
@@ -30,7 +30,7 @@ function MetricCard({ label, value, accent, icon: Icon }: { label: string; value
   );
 }
 
-function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, type }: any) {
+function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, type }: any) {
   const isLost = type === "lost";
   const isWon  = type === "won";
   return (
@@ -39,16 +39,21 @@ function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, type }: any) {
       borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 10,
       boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <h4 style={{ fontSize: 12, fontWeight: 700, color: isLost ? "var(--text-muted)" : "var(--text-primary)" }}>{deal.name}</h4>
-        <span style={{
-          fontSize: 11, fontWeight: 800, padding: "2px 8px", borderRadius: 6,
-          background: isWon ? "var(--green-dim)" : isLost ? "var(--bg-elevated)" : "var(--blue-dim)",
-          color: isWon ? "var(--green-text)" : isLost ? "var(--text-muted)" : "var(--blue-text)",
-          border: `1px solid ${isWon ? "var(--green-border)" : isLost ? "var(--border)" : "var(--blue-border)"}`,
-        }}>
-          {formatCurrency(deal.amount)}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <button onClick={() => onEdit(deal)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 2 }} title="Edit Deal">
+            <Edit2 size={11} />
+          </button>
+          <span style={{
+            fontSize: 11, fontWeight: 800, padding: "2px 8px", borderRadius: 6,
+            background: isWon ? "var(--green-dim)" : isLost ? "var(--bg-elevated)" : "var(--blue-dim)",
+            color: isWon ? "var(--green-text)" : isLost ? "var(--text-muted)" : "var(--blue-text)",
+            border: `1px solid ${isWon ? "var(--green-border)" : isLost ? "var(--border)" : "var(--blue-border)"}`,
+          }}>
+            {formatCurrency(deal.amount)}
+          </span>
+        </div>
       </div>
       <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{deal.company_name}</p>
 
@@ -133,6 +138,40 @@ export default function Deals() {
   const [newDealAmount, setNewDealAmount] = useState("5000");
   const [newDealCompanyId, setNewDealCompanyId] = useState("");
   const [creatingDeal, setCreatingDeal] = useState(false);
+
+  // Edit Deal state
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [editDealName, setEditDealName] = useState("");
+  const [editDealAmount, setEditDealAmount] = useState("");
+  const [updatingDeal, setUpdatingDeal] = useState(false);
+
+  const openEditModal = (d: Deal) => {
+    setEditingDeal(d);
+    setEditDealName(d.name);
+    setEditDealAmount(String(d.amount));
+  };
+
+  const handleUpdateDeal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDeal) return;
+    setUpdatingDeal(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/deals/${editingDeal.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: editingDeal.status,
+          name: editDealName,
+          amount: parseFloat(editDealAmount) || 0
+        })
+      });
+      if (res.ok) {
+        setEditingDeal(null);
+        fetchDeals();
+      }
+    } catch (err) { console.error(err); }
+    finally { setUpdatingDeal(false); }
+  };
 
   const fetchDeals = async () => {
     try {
@@ -251,7 +290,7 @@ export default function Deals() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
         <KanbanColumn title="Active Opportunities" count={filteredDeals.filter(d => d.status === "OPEN").length}  accentColor="var(--blue)"  borderColor="var(--blue-border)">
           {filteredDeals.filter(d => d.status === "OPEN").map(d => (
-            <KanbanCard key={d.id} deal={d} type="open" onWon={() => updateStatus(d.id, "WON")} onLost={() => updateStatus(d.id, "LOST")} onProposal={generateProposal} />
+            <KanbanCard key={d.id} deal={d} type="open" onWon={() => updateStatus(d.id, "WON")} onLost={() => updateStatus(d.id, "LOST")} onProposal={generateProposal} onEdit={openEditModal} />
           ))}
           {filteredDeals.filter(d => d.status === "OPEN").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No active deals</p>
@@ -260,7 +299,7 @@ export default function Deals() {
 
         <KanbanColumn title="Closed Won" count={filteredDeals.filter(d => d.status === "WON").length}  accentColor="var(--green)" borderColor="var(--green-border)">
           {filteredDeals.filter(d => d.status === "WON").map(d => (
-            <KanbanCard key={d.id} deal={d} type="won" />
+            <KanbanCard key={d.id} deal={d} type="won" onEdit={openEditModal} />
           ))}
           {filteredDeals.filter(d => d.status === "WON").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No won deals yet</p>
@@ -269,7 +308,7 @@ export default function Deals() {
 
         <KanbanColumn title="Closed Lost" count={filteredDeals.filter(d => d.status === "LOST").length} accentColor="var(--red)"   borderColor="var(--red-border)">
           {filteredDeals.filter(d => d.status === "LOST").map(d => (
-            <KanbanCard key={d.id} deal={d} type="lost" onReopen={() => updateStatus(d.id, "OPEN")} />
+            <KanbanCard key={d.id} deal={d} type="lost" onReopen={() => updateStatus(d.id, "OPEN")} onEdit={openEditModal} />
           ))}
           {filteredDeals.filter(d => d.status === "LOST").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No lost deals</p>
@@ -395,6 +434,49 @@ export default function Deals() {
               <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn-ghost" style={{ fontSize: 12 }}>Cancel</button>
               <button type="submit" disabled={creatingDeal} className="btn-primary" style={{ fontSize: 12 }}>
                 {creatingDeal ? "Creating Deal…" : "Log Deal"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      {editingDeal && (
+        <div style={{
+          position: "fixed", inset: 0,
+          background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20,
+        }}>
+          <form onSubmit={handleUpdateDeal} style={{
+            background: "var(--bg-surface)", border: "1px solid var(--border)",
+            borderRadius: 18, padding: 28, maxWidth: 480, width: "100%",
+            boxShadow: "0 32px 80px rgba(0,0,0,0.18)",
+            display: "flex", flexDirection: "column", gap: 16
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 14, borderBottom: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Edit Opportunity Details</h3>
+              <button type="button" onClick={() => setEditingDeal(null)} style={{
+                background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 7, padding: 7, cursor: "pointer", color: "var(--text-muted)",
+              }}><X size={14} /></button>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: 6 }}>Target Company</label>
+              <input type="text" value={editingDeal.company_name} disabled className="glass-input" style={{ fontSize: 12, opacity: 0.7 }} />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: 6 }}>Deal Opportunity Name</label>
+              <input type="text" value={editDealName} onChange={e => setEditDealName(e.target.value)} required className="glass-input" style={{ fontSize: 12 }} />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: 6 }}>Estimated Deal Value (USD / KES)</label>
+              <input type="number" value={editDealAmount} onChange={e => setEditDealAmount(e.target.value)} required className="glass-input" style={{ fontSize: 12 }} />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+              <button type="button" onClick={() => setEditingDeal(null)} className="btn-ghost" style={{ fontSize: 12 }}>Cancel</button>
+              <button type="submit" disabled={updatingDeal} className="btn-primary" style={{ fontSize: 12 }}>
+                {updatingDeal ? "Saving Changes…" : "Save Changes"}
               </button>
             </div>
           </form>
