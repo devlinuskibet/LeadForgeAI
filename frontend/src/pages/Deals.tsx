@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2, Trash2, Download } from "lucide-react";
+import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2, Trash2, Download, Calendar } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
 
-interface Deal { id: string; name: string; amount: number; probability?: number; status: "OPEN" | "WON" | "LOST"; company_id: string; company_name: string; }
+interface Deal { id: string; name: string; amount: number; probability?: number; target_close_date?: string; status: "OPEN" | "WON" | "LOST"; company_id: string; company_name: string; }
 interface DealMetrics { total_open_value: number; total_weighted_value?: number; total_won_value: number; total_lost_value: number; total_deals_count: number; win_rate_percentage: number; }
 
 function MetricCard({ label, value, accent, icon: Icon }: { label: string; value: string; accent: string; icon: any }) {
@@ -66,7 +66,12 @@ function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, onDelet
           </span>
         </div>
       </div>
-      <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{deal.company_name}</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)" }}>
+        <span>{deal.company_name}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 600 }}>
+          <Calendar size={10} /> {deal.target_close_date ? new Date(deal.target_close_date).toLocaleDateString() : "Close Q3"}
+        </span>
+      </div>
 
       {isWon && (
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>

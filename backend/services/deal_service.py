@@ -21,6 +21,7 @@ class DealService:
                 "name": d.name,
                 "amount": d.amount or 0.0,
                 "probability": getattr(d, "probability", 75.0) or 75.0,
+                "target_close_date": d.target_close_date.isoformat() if getattr(d, "target_close_date", None) else None,
                 "status": d.status.value,
                 "company_id": str(d.company_id),
                 "company_name": company.name if company else "Unknown Company",
