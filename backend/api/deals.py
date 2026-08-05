@@ -58,6 +58,15 @@ def update_deal(deal_id: UUID, payload: DealUpdate, db: Session = Depends(get_db
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.delete("/{deal_id}")
+def delete_deal(deal_id: UUID, db: Session = Depends(get_db)):
+    service = DealService(db)
+    try:
+        service.delete_deal(deal_id)
+        return {"success": True, "message": "Deal deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.post("/company/{company_id}/generate-proposal")
 def generate_proposal(company_id: UUID, db: Session = Depends(get_db)):
     service = ProposalService(db)

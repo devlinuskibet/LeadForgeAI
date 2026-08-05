@@ -73,6 +73,14 @@ class DealService:
         self.db.refresh(deal)
         return deal
 
+    def delete_deal(self, deal_id: UUID) -> bool:
+        deal = self.db.query(Deal).filter(Deal.id == deal_id).first()
+        if not deal:
+            raise Exception("Deal not found")
+        self.db.delete(deal)
+        self.db.commit()
+        return True
+
     def get_pipeline_metrics(self) -> Dict[str, Any]:
         deals = self.db.query(Deal).all()
         total_open = sum(d.amount or 0 for d in deals if d.status == DealStatus.OPEN)
