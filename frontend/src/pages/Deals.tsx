@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2, Trash2, Download, Calendar } from "lucide-react";
+import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2, Trash2, Download, Calendar, MessageSquare } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
@@ -30,7 +30,7 @@ function MetricCard({ label, value, accent, icon: Icon }: { label: string; value
   );
 }
 
-function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, onDelete, type }: any) {
+function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, onDelete, onAddNote, type }: any) {
   const isLost = type === "lost";
   const isWon  = type === "won";
   const prob = deal.probability || 75;
@@ -50,6 +50,9 @@ function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, onDelet
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <button onClick={() => onAddNote(deal)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 2 }} title="Log Activity Note">
+            <MessageSquare size={11} />
+          </button>
           <button onClick={() => onEdit(deal)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 2 }} title="Edit Deal">
             <Edit2 size={11} />
           </button>
@@ -232,6 +235,19 @@ export default function Deals() {
     finally { setCreatingDeal(false); }
   };
 
+  const handleAddNote = async (deal: Deal) => {
+    const noteText = prompt(`Log activity note for deal "${deal.name}":`);
+    if (!noteText || !noteText.trim()) return;
+    try {
+      await fetch(`${API_BASE_URL}/api/deals/${deal.id}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note: noteText.trim() })
+      });
+      alert("Activity note logged to company timeline successfully!");
+    } catch (e) { console.error(e); }
+  };
+
   const handleDeleteDeal = async (id: string) => {
     if (!confirm("Are you sure you want to delete this deal record?")) return;
     try {
@@ -333,7 +349,7 @@ export default function Deals() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
         <KanbanColumn title="Active Opportunities" count={filteredDeals.filter(d => d.status === "OPEN").length}  accentColor="var(--blue)"  borderColor="var(--blue-border)">
           {filteredDeals.filter(d => d.status === "OPEN").map(d => (
-            <KanbanCard key={d.id} deal={d} type="open" onWon={() => updateStatus(d.id, "WON")} onLost={() => updateStatus(d.id, "LOST")} onProposal={generateProposal} onEdit={openEditModal} onDelete={handleDeleteDeal} />
+            <KanbanCard key={d.id} deal={d} type="open" onWon={() => updateStatus(d.id, "WON")} onLost={() => updateStatus(d.id, "LOST")} onProposal={generateProposal} onEdit={openEditModal} onDelete={handleDeleteDeal} onAddNote={handleAddNote} />
           ))}
           {filteredDeals.filter(d => d.status === "OPEN").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No active deals</p>
@@ -342,7 +358,7 @@ export default function Deals() {
 
         <KanbanColumn title="Closed Won" count={filteredDeals.filter(d => d.status === "WON").length}  accentColor="var(--green)" borderColor="var(--green-border)">
           {filteredDeals.filter(d => d.status === "WON").map(d => (
-            <KanbanCard key={d.id} deal={d} type="won" onEdit={openEditModal} onDelete={handleDeleteDeal} />
+            <KanbanCard key={d.id} deal={d} type="won" onEdit={openEditModal} onDelete={handleDeleteDeal} onAddNote={handleAddNote} />
           ))}
           {filteredDeals.filter(d => d.status === "WON").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No won deals yet</p>
@@ -351,7 +367,7 @@ export default function Deals() {
 
         <KanbanColumn title="Closed Lost" count={filteredDeals.filter(d => d.status === "LOST").length} accentColor="var(--red)"   borderColor="var(--red-border)">
           {filteredDeals.filter(d => d.status === "LOST").map(d => (
-            <KanbanCard key={d.id} deal={d} type="lost" onReopen={() => updateStatus(d.id, "OPEN")} onEdit={openEditModal} onDelete={handleDeleteDeal} />
+            <KanbanCard key={d.id} deal={d} type="lost" onReopen={() => updateStatus(d.id, "OPEN")} onEdit={openEditModal} onDelete={handleDeleteDeal} onAddNote={handleAddNote} />
           ))}
           {filteredDeals.filter(d => d.status === "LOST").length === 0 && (
             <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No lost deals</p>
