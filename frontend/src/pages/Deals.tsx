@@ -319,6 +319,48 @@ export default function Deals() {
         <MetricCard label="Total Deals"    value={String(metrics?.total_deals_count ?? 0)}                   accent="var(--text-muted)" icon={FileText} />
       </div>
 
+      {/* Revenue Forecast Bar */}
+      {(() => {
+        const openVal = metrics?.total_open_value || 0;
+        const wonVal = metrics?.total_won_value || 0;
+        const lostVal = metrics?.total_lost_value || 0;
+        const sumVal = openVal + wonVal + lostVal || 1;
+        const openPct = Math.round((openVal / sumVal) * 100);
+        const wonPct = Math.round((wonVal / sumVal) * 100);
+        const lostPct = Math.min(100 - openPct - wonPct, 100);
+
+        return (
+          <div style={{
+            padding: "16px 20px", background: "var(--bg-elevated)", border: "1px solid var(--border)",
+            borderRadius: 14, display: "flex", flexDirection: "column", gap: 10
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12, fontWeight: 700 }}>
+              <span style={{ color: "var(--text-primary)" }}>Pipeline Revenue Breakdown & Conversion Distribution</span>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Total Tracked: {formatCurrency(sumVal)}</span>
+            </div>
+
+            {/* Segmented Progress Bar */}
+            <div style={{ height: 8, width: "100%", background: "var(--bg-surface)", borderRadius: 6, overflow: "hidden", display: "flex" }}>
+              <div style={{ width: `${openPct}%`, background: "var(--blue)", transition: "width 0.3s" }} title={`Active Open: ${openPct}%`} />
+              <div style={{ width: `${wonPct}%`, background: "var(--green)", transition: "width 0.3s" }} title={`Closed Won: ${wonPct}%`} />
+              <div style={{ width: `${lostPct}%`, background: "var(--red)", transition: "width 0.3s" }} title={`Closed Lost: ${lostPct}%`} />
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 11, color: "var(--text-muted)" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--blue)" }} /> Active Open ({openPct}%)
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--green)" }} /> Closed Won ({wonPct}%)
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--red)" }} /> Closed Lost ({lostPct}%)
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Filter Toolbar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
