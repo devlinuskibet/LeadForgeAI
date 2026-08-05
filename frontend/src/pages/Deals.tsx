@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter } from "lucide-react";
+import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
@@ -120,24 +120,62 @@ function KanbanColumn({ title, count, accentColor, borderColor, children }: any)
 export default function Deals() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [metrics, setMetrics] = useState<DealMetrics | null>(null);
+  const [companies, setCompanies] = useState<any[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<any>(null);
   const [loadingProposal, setLoadingProposal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "WON" | "LOST">("ALL");
 
+  // Create Deal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newDealName, setNewDealName] = useState("");
+  const [newDealAmount, setNewDealAmount] = useState("5000");
+  const [newDealCompanyId, setNewDealCompanyId] = useState("");
+  const [creatingDeal, setCreatingDeal] = useState(false);
+
   const fetchDeals = async () => {
     try {
-      const [r1, r2] = await Promise.all([
+      const [r1, r2, r3] = await Promise.all([
         fetch(`${API_BASE_URL}/api/deals/`),
         fetch(`${API_BASE_URL}/api/deals/metrics`),
+        fetch(`${API_BASE_URL}/api/companies/`),
       ]);
       if (r1.ok) setDeals(await r1.json());
       if (r2.ok) setMetrics(await r2.json());
+      if (r3.ok) {
+        const compData = await r3.json();
+        setCompanies(compData);
+        if (compData.length > 0 && !newDealCompanyId) setNewDealCompanyId(compData[0].id);
+      }
     } catch (e) { console.error(e); }
   };
 
   useEffect(() => { fetchDeals(); }, []);
+
+  const handleCreateDeal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDealName || !newDealCompanyId) return;
+    setCreatingDeal(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/deals/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newDealName,
+          amount: parseFloat(newDealAmount) || 0,
+          company_id: newDealCompanyId,
+          status: "OPEN"
+        })
+      });
+      if (res.ok) {
+        setIsCreateModalOpen(false);
+        setNewDealName("");
+        fetchDeals();
+      }
+    } catch (err) { console.error(err); }
+    finally { setCreatingDeal(false); }
+  };
 
   const updateStatus = async (id: string, s: "OPEN" | "WON" | "LOST") => {
     await fetch(`${API_BASE_URL}/api/deals/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: s }) });
@@ -165,9 +203,14 @@ export default function Deals() {
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 }}>
 
-      <div>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Deals & Revenue Pipeline</h2>
-        <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>Track deal conversions, active opportunities, and AI-generated proposals.</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Deals & Revenue Pipeline</h2>
+          <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>Track deal conversions, active opportunities, and AI-generated proposals.</p>
+        </div>
+        <button onClick={() => setIsCreateModalOpen(true)} className="btn-primary" style={{ fontSize: 12, padding: "8px 16px" }}>
+          <Plus size={14} /> Create New Deal
+        </button>
       </div>
 
       {/* Metrics */}
@@ -306,6 +349,55 @@ export default function Deals() {
               </div>
             )}
           </div>
+        </div>
+      )}
+      {isCreateModalOpen && (
+        <div style={{
+          position: "fixed", inset: 0,
+          background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20,
+        }}>
+          <form onSubmit={handleCreateDeal} style={{
+            background: "var(--bg-surface)", border: "1px solid var(--border)",
+            borderRadius: 18, padding: 28, maxWidth: 480, width: "100%",
+            boxShadow: "0 32px 80px rgba(0,0,0,0.18)",
+            display: "flex", flexDirection: "column", gap: 16
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 14, borderBottom: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Log New Opportunity / Deal</h3>
+              <button type="button" onClick={() => setIsCreateModalOpen(false)} style={{
+                background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 7, padding: 7, cursor: "pointer", color: "var(--text-muted)",
+              }}><X size={14} /></button>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: 6 }}>Target Company</label>
+              <select value={newDealCompanyId} onChange={e => setNewDealCompanyId(e.target.value)} className="glass-input" style={{ fontSize: 12 }}>
+                {companies.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: 6 }}>Deal Opportunity Name</label>
+              <input type="text" value={newDealName} onChange={e => setNewDealName(e.target.value)} required
+                placeholder="e.g. AI Workflow Retainer" className="glass-input" style={{ fontSize: 12 }} />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", display: "block", marginBottom: 6 }}>Estimated Deal Value (USD / KES)</label>
+              <input type="number" value={newDealAmount} onChange={e => setNewDealAmount(e.target.value)} required
+                placeholder="5000" className="glass-input" style={{ fontSize: 12 }} />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+              <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn-ghost" style={{ fontSize: 12 }}>Cancel</button>
+              <button type="submit" disabled={creatingDeal} className="btn-primary" style={{ fontSize: 12 }}>
+                {creatingDeal ? "Creating Deal…" : "Log Deal"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
