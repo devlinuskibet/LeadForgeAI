@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2, Trash2 } from "lucide-react";
+import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Search, Filter, Plus, Edit2, Trash2, Download } from "lucide-react";
 
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
@@ -249,6 +249,24 @@ export default function Deals() {
     finally { setLoadingProposal(false); }
   };
 
+  const downloadProposalDoc = (p: any) => {
+    if (!p) return;
+    let content = `# ${p.title || "AI Solution Proposal"}\n\n`;
+    content += `## Executive Summary\n${p.executive_summary || ""}\n\n`;
+    content += `## Scope & Investment Breakdown\n`;
+    (p.scope_items || []).forEach((item: any) => {
+      content += `- **${item.module}**: $${item.estimated_price?.toLocaleString()} (Confidence: ${item.confidence})\n`;
+    });
+    content += `\n**Total Solution Value**: $${p.total_estimated_value?.toLocaleString()} USD\n`;
+    
+    const blob = new Blob([content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Proposal_${(p.title || "LeadForge").replace(/[^a-zA-Z0-9]/g, "_")}.md`;
+    a.click();
+  };
+
   const filteredDeals = deals.filter(d => {
     const matchesSearch = !searchQuery || (d.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || (d.company_name || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || d.status === statusFilter;
@@ -401,6 +419,10 @@ export default function Deals() {
                     ${proposal.total_estimated_value?.toLocaleString()} USD
                   </span>
                 </div>
+
+                <button onClick={() => downloadProposalDoc(proposal)} className="btn-primary" style={{ fontSize: 12, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <Download size={14} /> Download Proposal Document (.md)
+                </button>
               </div>
             ) : (
               <div style={{ padding: "48px 0", textAlign: "center", color: "var(--text-muted)", fontSize: 12 }}>
