@@ -323,6 +323,41 @@ export default function Deals() {
         </button>
       </div>
 
+      {/* Pipeline Health Summary Callout */}
+      <div style={{
+        background: "linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.06) 100%)",
+        border: "1px solid var(--blue-border)", borderRadius: 14, padding: "14px 20px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: "var(--blue-dim)", border: "1px solid var(--blue-border)",
+            display: "flex", alignItems: "center", justifyContent: "center", color: "var(--blue-text)"
+          }}>
+            <TrendingUp size={16} />
+          </div>
+          <div>
+            <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-primary)" }}>
+              Pipeline Status: {wr >= 40 ? "High Velocity Pipeline" : "Steady Growth Pipeline"}
+            </span>
+            <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+              {deals.filter(d => d.status === "OPEN").length} open opportunities representing {formatCurrency(metrics?.total_open_value)} active potential revenue.
+            </p>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 20,
+            background: wr >= 50 ? "var(--green-dim)" : "var(--blue-dim)",
+            color: wr >= 50 ? "var(--green-text)" : "var(--blue-text)",
+            border: `1px solid ${wr >= 50 ? "var(--green-border)" : "var(--blue-border)"}`
+          }}>
+            {wr}% Win Rate
+          </span>
+        </div>
+      </div>
+
       {/* Metrics */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
         <MetricCard label="Pipeline Value" value={formatCurrency(metrics?.total_open_value)} accent="var(--blue)"  icon={DollarSign} />

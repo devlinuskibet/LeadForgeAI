@@ -4,7 +4,7 @@ from core.database import get_db
 from services.deal_service import DealService
 from services.proposal_service import ProposalService
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 router = APIRouter(prefix="/deals", tags=["deals"])
