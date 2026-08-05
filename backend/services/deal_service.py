@@ -20,6 +20,7 @@ class DealService:
                 "id": str(d.id),
                 "name": d.name,
                 "amount": d.amount or 0.0,
+                "probability": getattr(d, "probability", 75.0) or 75.0,
                 "status": d.status.value,
                 "company_id": str(d.company_id),
                 "company_name": company.name if company else "Unknown Company",
@@ -84,6 +85,7 @@ class DealService:
     def get_pipeline_metrics(self) -> Dict[str, Any]:
         deals = self.db.query(Deal).all()
         total_open = sum(d.amount or 0 for d in deals if d.status == DealStatus.OPEN)
+        total_weighted = sum((d.amount or 0) * ((getattr(d, "probability", 75.0) or 75.0) / 100.0) for d in deals if d.status == DealStatus.OPEN)
         total_won = sum(d.amount or 0 for d in deals if d.status == DealStatus.WON)
         total_lost = sum(d.amount or 0 for d in deals if d.status == DealStatus.LOST)
         
@@ -93,6 +95,7 @@ class DealService:
 
         return {
             "total_open_value": total_open,
+            "total_weighted_value": round(total_weighted, 2),
             "total_won_value": total_won,
             "total_lost_value": total_lost,
             "total_deals_count": len(deals),

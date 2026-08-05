@@ -12,6 +12,7 @@ class Deal(Base):
 
     name = Column(String, nullable=False)
     amount = Column(Float, nullable=True)
+    probability = Column(Float, default=75.0, nullable=True)
     status = Column(Enum(DealStatus), default=DealStatus.OPEN, nullable=False)
     opportunity_id = Column(ForeignKey("opportunities.id"), nullable=False)
     company_id = Column(ForeignKey("companies.id"), nullable=False)

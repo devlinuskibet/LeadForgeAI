@@ -44,6 +44,7 @@ _auto_migrate_columns = [
     ("companies", "address", "VARCHAR"),
     ("email_messages", "delivered_at", "TIMESTAMP WITH TIME ZONE"),
     ("email_messages", "opened_count", "INTEGER DEFAULT 0"),
+    ("deals", "probability", "FLOAT DEFAULT 75.0"),
 ]
 
 try:

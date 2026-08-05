@@ -4,8 +4,8 @@ import { DollarSign, Trophy, TrendingUp, Sparkles, FileText, CheckCircle2, X, Se
 import { API_BASE_URL } from "../config/api";
 import { formatCurrency } from "../utils/currency";
 
-interface Deal { id: string; name: string; amount: number; status: "OPEN" | "WON" | "LOST"; company_id: string; company_name: string; }
-interface DealMetrics { total_open_value: number; total_won_value: number; total_lost_value: number; total_deals_count: number; win_rate_percentage: number; }
+interface Deal { id: string; name: string; amount: number; probability?: number; status: "OPEN" | "WON" | "LOST"; company_id: string; company_name: string; }
+interface DealMetrics { total_open_value: number; total_weighted_value?: number; total_won_value: number; total_lost_value: number; total_deals_count: number; win_rate_percentage: number; }
 
 function MetricCard({ label, value, accent, icon: Icon }: { label: string; value: string; accent: string; icon: any }) {
   return (
@@ -33,6 +33,7 @@ function MetricCard({ label, value, accent, icon: Icon }: { label: string; value
 function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, onDelete, type }: any) {
   const isLost = type === "lost";
   const isWon  = type === "won";
+  const prob = deal.probability || 75;
   return (
     <div style={{
       background: "var(--bg-surface)", border: "1px solid var(--border)",
@@ -40,7 +41,14 @@ function KanbanCard({ deal, onWon, onLost, onReopen, onProposal, onEdit, onDelet
       boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-        <h4 style={{ fontSize: 12, fontWeight: 700, color: isLost ? "var(--text-muted)" : "var(--text-primary)" }}>{deal.name}</h4>
+        <div>
+          <h4 style={{ fontSize: 12, fontWeight: 700, color: isLost ? "var(--text-muted)" : "var(--text-primary)" }}>{deal.name}</h4>
+          {!isLost && !isWon && (
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--blue-text)", marginTop: 2, display: "inline-block" }}>
+              {prob}% Win Probability
+            </span>
+          )}
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onEdit(deal)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 2 }} title="Edit Deal">
             <Edit2 size={11} />
@@ -264,8 +272,9 @@ export default function Deals() {
       </div>
 
       {/* Metrics */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
         <MetricCard label="Pipeline Value" value={formatCurrency(metrics?.total_open_value)} accent="var(--blue)"  icon={DollarSign} />
+        <MetricCard label="Weighted Forecast" value={formatCurrency(metrics?.total_weighted_value ?? ((metrics?.total_open_value || 0) * 0.75))} accent="#8b5cf6" icon={Sparkles} />
         <MetricCard label="Won Revenue"    value={formatCurrency(metrics?.total_won_value)}  accent="var(--green)" icon={Trophy} />
         <MetricCard label="Win Rate"       value={`${wr}%`}                                                  accent={wrColor}      icon={TrendingUp} />
         <MetricCard label="Total Deals"    value={String(metrics?.total_deals_count ?? 0)}                   accent="var(--text-muted)" icon={FileText} />
