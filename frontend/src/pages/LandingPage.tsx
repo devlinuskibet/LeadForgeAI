@@ -13,6 +13,7 @@ export default function LandingPage() {
   const [isAnnual, setIsAnnual] = useState(true);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [demoState, setDemoState] = useState<"search" | "analyzing" | "complete">("search");
+  const [demoQuery, setDemoQuery] = useState("Dental Clinics · Nairobi");
 
   const toggleTheme = () => {
     const next = theme === "light" ? "dark" : "light";
@@ -157,9 +158,22 @@ export default function LandingPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
             {/* Left demo controls */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>1. Target Industry & Location Search</label>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>1. Target Industry & Location Search</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {["Dental Clinics · Nairobi", "Plumbers · Rongai", "Agencies · Westlands"].map(q => (
+                    <button key={q} onClick={() => { setDemoQuery(q); setDemoState("search"); }} style={{
+                      padding: "3px 8px", borderRadius: 12, fontSize: 10, fontWeight: 700,
+                      background: demoQuery === q ? "var(--bg-elevated)" : "transparent",
+                      color: demoQuery === q ? "var(--text-primary)" : "var(--text-muted)",
+                      border: `1px solid ${demoQuery === q ? "var(--border-strong)" : "var(--border)"}`, cursor: "pointer", fontFamily: "inherit"
+                    }}>{q.split(" · ")[0]}</button>
+                  ))}
+                </div>
+              </div>
+
               <div style={{ display: "flex", gap: 10 }}>
-                <input type="text" readOnly value="Dental Clinics · Nairobi" className="glass-input" style={{ fontSize: 13, fontWeight: 700 }} />
+                <input type="text" readOnly value={demoQuery} className="glass-input" style={{ fontSize: 13, fontWeight: 700 }} />
                 <button onClick={runInteractiveDemo} disabled={demoState === "analyzing"} className="btn-primary" style={{ fontSize: 12, padding: "0 18px", flexShrink: 0 }}>
                   {demoState === "analyzing" ? "Searching…" : "Discover Leads"}
                 </button>
