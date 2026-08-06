@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, Settings, LogOut, Radar, DollarSign, Sparkles, Bell, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -18,27 +18,35 @@ function useTheme() {
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggle } = useTheme();
 
+  const authUser = JSON.parse(localStorage.getItem("lf-auth-user") || '{"name":"Linus Kibet","role":"Administrator"}');
+
+  const handleSignOut = () => {
+    localStorage.removeItem("lf-auth-user");
+    navigate("/login");
+  };
+
   const navItems = [
-    { label: "Overview",            path: "/",          icon: LayoutDashboard },
-    { label: "Companies & Leads",   path: "/companies", icon: Users },
-    { label: "Prospect Discovery",  path: "/discovery", icon: Radar },
-    { label: "Deals & Revenue",     path: "/deals",     icon: DollarSign },
-    { label: "AI Management",       path: "/settings",  icon: Settings },
+    { label: "Overview",            path: "/app",          icon: LayoutDashboard },
+    { label: "Companies & Leads",   path: "/app/companies", icon: Users },
+    { label: "Prospect Discovery",  path: "/app/discovery", icon: Radar },
+    { label: "Deals & Revenue",     path: "/app/deals",     icon: DollarSign },
+    { label: "AI Management",       path: "/app/settings",  icon: Settings },
   ];
 
   const pageTitle: Record<string, string> = {
-    "/":           "Pipeline Overview",
-    "/companies":  "Companies & Leads",
-    "/discovery":  "Prospect Discovery",
-    "/deals":      "Deals & Revenue",
-    "/settings":   "AI Management",
+    "/app":           "Pipeline Overview",
+    "/app/companies":  "Companies & Leads",
+    "/app/discovery":  "Prospect Discovery",
+    "/app/deals":      "Deals & Revenue",
+    "/app/settings":   "AI Management",
   };
 
   const currentTitle = Object.entries(pageTitle)
     .reverse()
-    .find(([p]) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p))?.[1] ?? "LeadForge";
+    .find(([p]) => p === "/app" ? location.pathname === "/app" : location.pathname.startsWith(p))?.[1] ?? "LeadForge";
 
   return (
     <div style={{
@@ -89,8 +97,8 @@ export default function DashboardLayout() {
         <nav style={{ flex: 1, padding: "14px 10px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
           {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = item.path === "/"
-              ? location.pathname === "/"
+            const isActive = item.path === "/app"
+              ? location.pathname === "/app"
               : location.pathname.startsWith(item.path);
 
             return (
@@ -148,19 +156,20 @@ export default function DashboardLayout() {
               fontSize: 10, fontWeight: 800, color: "#fff",
               flexShrink: 0,
             }}>
-              L
+              {(authUser.name || "L").charAt(0).toUpperCase()}
             </div>
             <div style={{ overflow: "hidden" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                Linus Kibet
+                {authUser.name || "Linus Kibet"}
               </div>
               <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
-                Administrator
+                {authUser.role || "Administrator"}
               </div>
             </div>
           </div>
 
           <button
+            onClick={handleSignOut}
             style={{
               display: "flex", alignItems: "center", gap: 8,
               width: "100%", padding: "8px 11px",
