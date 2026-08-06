@@ -67,8 +67,8 @@ jobs:
 
       - name: Commit & Push Telemetry Health Update
         run: |
-          git config --global user.name "LeadForge Health Bot"
-          git config --global user.email "bot@leadforge.ai"
+          git config --global user.name "Linus Kibet"
+          git config --global user.email "linzskybes@gmail.com"
           git add telemetry/health_log.json
           git status
           git diff-index --quiet HEAD || (git commit -m "chore(telemetry): automated system health check & telemetry update [$(date -u +'%Y-%m-%d %H:%M UTC')]" && git push)
