@@ -1,0 +1,24 @@
+{
+  "project": "LeadForgeAI",
+  "environment": "production",
+  "azure_url": "https://leadforge-backend-api-cnb0hge5cyfpgwc7.uaenorth-01.azurewebsites.net",
+  "logs": [
+    {
+      "timestamp": "2026-08-06T12:26:00Z",
+      "status": "HEALTHY",
+      "tests_passed": 34,
+      "backend": "FastAPI v0.110.0",
+      "database": "SQLite / PostgreSQL Fallback",
+      "azure_status": "ONLINE",
+      "triggered_by": "Initial Setup"
+    },
+    {
+      "timestamp": "2026-08-06T09:29:40.013667+00:00",
+      "status": "HEALTHY",
+      "tests_passed": 34,
+      "backend": "FastAPI v0.110.0",
+      "azure_status": "ONLINE",
+      "triggered_by": "Local Streak Script"
+    }
+  ]
+}
