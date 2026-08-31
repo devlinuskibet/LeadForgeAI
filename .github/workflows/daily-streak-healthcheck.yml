@@ -99,9 +99,9 @@ jobs:
             git push origin master || (git pull --rebase origin master && git push origin master)
           fi
 
-      - name: Keepalive Workflow Automation
-        uses: gautamkrishnar/keepalive-workflow@v2
-        with:
-          committer_username: "Linus Kibet"
-          committer_email: "linzskybes@gmail.com"
-          commit_message: "chore(ci): keepalive scheduled workflow active [$(date -u +'%Y-%m-%d')]"
+      - name: Workflow Keepalive Pulse
+        run: |
+          echo "Keeping scheduled workflows active with regular repository commits."
+          gh workflow enable daily-streak-healthcheck.yml 2>/dev/null || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
