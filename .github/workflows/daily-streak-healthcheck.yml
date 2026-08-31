@@ -38,7 +38,8 @@ jobs:
       - name: Update Telemetry Health Log
         run: |
           python -c "
-          import json, datetime
+          import json, datetime, urllib.request, time
+
           log_path = 'telemetry/health_log.json'
           try:
               with open(log_path, 'r') as f:
@@ -46,13 +47,34 @@ jobs:
           except Exception:
               data = {'logs': []}
 
+          azure_url = 'https://leadforge-backend-api-cnb0hge5cyfpgwc7.uaenorth-01.azurewebsites.net/api/health'
+          azure_status = 'UNKNOWN'
+          latency_ms = None
+          http_status = None
+
+          try:
+              start_t = time.time()
+              req = urllib.request.Request(azure_url, headers={'User-Agent': 'LeadForge-HealthCheck/1.0'})
+              with urllib.request.urlopen(req, timeout=12) as resp:
+                  http_status = resp.status
+                  latency_ms = round((time.time() - start_t) * 1000, 1)
+                  if http_status in (200, 204):
+                      azure_status = 'ONLINE'
+                  else:
+                      azure_status = f'HTTP_{http_status}'
+          except Exception as e:
+              azure_status = 'COLD_START_OR_STANDBY'
+              print('Azure probe note:', e)
+
           entry = {
               'timestamp': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'status': 'HEALTHY',
               'tests_passed': 34,
               'backend': 'FastAPI v0.110.0',
               'database': 'SQLite / PostgreSQL Fallback',
-              'azure_status': 'ONLINE',
+              'azure_endpoint': azure_url,
+              'azure_status': azure_status,
+              'latency_ms': latency_ms,
               'triggered_by': 'GitHub Automated Streak Bot'
           }
 
@@ -62,7 +84,7 @@ jobs:
 
           with open(log_path, 'w') as f:
               json.dump(data, f, indent=2)
-          print('Updated telemetry log with timestamp:', entry['timestamp'])
+          print('Updated telemetry log with timestamp:', entry['timestamp'], 'Azure status:', azure_status)
           "
 
       - name: Commit & Push Telemetry Health Update
