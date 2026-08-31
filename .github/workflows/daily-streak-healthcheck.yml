@@ -98,3 +98,10 @@ jobs:
             git pull --rebase origin master || true
             git push origin master || (git pull --rebase origin master && git push origin master)
           fi
+
+      - name: Keepalive Workflow Automation
+        uses: gautamkrishnar/keepalive-workflow@v2
+        with:
+          committer_username: "Linus Kibet"
+          committer_email: "linzskybes@gmail.com"
+          commit_message: "chore(ci): keepalive scheduled workflow active [$(date -u +'%Y-%m-%d')]"
