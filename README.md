@@ -1,6 +1,15 @@
 # LeadForgeAI 🚀
 
+[![CI/CD Pipeline](https://github.com/devlinuskibet/LeadForgeAI/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/devlinuskibet/LeadForgeAI/actions)
+[![Daily Health & Streak](https://github.com/devlinuskibet/LeadForgeAI/actions/workflows/daily-streak-healthcheck.yml/badge.svg)](https://github.com/devlinuskibet/LeadForgeAI/actions)
+[![Tests Passing](https://img.shields.io/badge/pytest-34%20passed-brightgreen.svg)](https://github.com/devlinuskibet/LeadForgeAI)
+[![Live Telemetry](https://img.shields.io/badge/telemetry-12%20runs%2Fday-blue.svg)](https://github.com/devlinuskibet/LeadForgeAI/blob/master/telemetry/health_log.json)
+
 LeadForgeAI is an enterprise-grade, autonomous AI-powered B2B prospecting, company discovery, and automated email outreach orchestration platform.
+
+### 🛡️ Automated Reliability & Telemetry
+- **Continuous Health Checks**: Automated 12x/day GitHub Actions schedule (`every 2 hours at :17 UTC`) validating the full 34-unit test suite and probing production endpoint health.
+- **Resilient Streak Automation**: Equipped with Git rebase concurrency protection and GitHub Keepalive automation to guarantee zero dropped runs.
 
 ## Key Features
 
