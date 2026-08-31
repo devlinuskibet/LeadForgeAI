@@ -2,8 +2,8 @@ name: Automated Daily Health Check & Streak Keeper
 
 on:
   schedule:
-    # Runs 12 times a day (every 2 hours: at 00:00, 02:00, 04:00, 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00 UTC)
-    - cron: '0 */2 * * *'
+    # Runs 12 times a day (every 2 hours at :17 past the hour to avoid GitHub Actions top-of-the-hour queue throttling)
+    - cron: '17 */2 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
