@@ -93,4 +93,8 @@ jobs:
           git config --global user.email "linzskybes@gmail.com"
           git add telemetry/health_log.json
           git status
-          git diff-index --quiet HEAD || (git commit -m "chore(telemetry): automated system health check & telemetry update [$(date -u +'%Y-%m-%d %H:%M UTC')]" && git push)
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "chore(telemetry): automated system health check & telemetry update [$(date -u +'%Y-%m-%d %H:%M UTC')]"
+            git pull --rebase origin master || true
+            git push origin master || (git pull --rebase origin master && git push origin master)
+          fi
