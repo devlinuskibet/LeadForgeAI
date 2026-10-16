@@ -4,17 +4,6 @@
   "azure_url": "https://leadforge-backend-api-cnb0hge5cyfpgwc7.uaenorth-01.azurewebsites.net",
   "logs": [
     {
-      "timestamp": "2026-09-21T23:20:56.947686+00:00",
-      "status": "HEALTHY",
-      "tests_passed": 34,
-      "backend": "FastAPI v0.110.0",
-      "database": "SQLite / PostgreSQL Fallback",
-      "azure_endpoint": "https://leadforge-backend-api-cnb0hge5cyfpgwc7.uaenorth-01.azurewebsites.net/api/health",
-      "azure_status": "ONLINE",
-      "latency_ms": 922.8,
-      "triggered_by": "GitHub Automated Streak Bot"
-    },
-    {
       "timestamp": "2026-09-22T05:05:35.680025+00:00",
       "status": "HEALTHY",
       "tests_passed": 34,
@@ -1094,6 +1083,17 @@
     },
     {
       "timestamp": "2026-10-16T18:07:54.203434+00:00",
+      "status": "HEALTHY",
+      "tests_passed": 34,
+      "backend": "FastAPI v0.110.0",
+      "database": "SQLite / PostgreSQL Fallback",
+      "azure_endpoint": "https://leadforge-backend-api-cnb0hge5cyfpgwc7.uaenorth-01.azurewebsites.net/api/health",
+      "azure_status": "COLD_START_OR_STANDBY",
+      "latency_ms": null,
+      "triggered_by": "GitHub Automated Streak Bot"
+    },
+    {
+      "timestamp": "2026-10-16T21:17:33.213646+00:00",
       "status": "HEALTHY",
       "tests_passed": 34,
       "backend": "FastAPI v0.110.0",
